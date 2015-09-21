@@ -26,6 +26,14 @@ header.navigation {
         color: lighten($medium-gray, 10%);
       }
 
+      &.onboarding-icon{
+        padding-left: 20px;
+      }
+
+      &.marketplace-icon{
+        padding-left: 20px;
+      }
+
       &.notification-icon {
         background: $color-error;
         border: 2px solid #FFFFFF;
