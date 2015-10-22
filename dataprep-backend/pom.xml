@@ -29,7 +29,6 @@
         <module>../dataprep-backend-common</module>
         <module>../dataprep-transformation</module>
         <module>../dataprep-dataset</module>
-        <module>../dataprep-metrics</module>
         <module>../dataprep-preparation</module>
         <module>../dataprep-api</module>
     </modules>
@@ -119,7 +118,7 @@
             <dependency>
                 <groupId>org.glassfish</groupId>
                 <artifactId>javax.el</artifactId>
-                <version>${org.talend.dataquality.record.linkage.version}</version>
+                <version>3.0.0</version>
             </dependency>
             <dependency>
                 <groupId>org.springframework.boot</groupId>
@@ -144,38 +143,31 @@
             </dependency>
             <dependency>
                 <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-starter-security</artifactId>
+                <artifactId>spring-boot-starter-aop</artifactId>
                 <version>${spring.boot.version}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>ch.qos.logback</groupId>
                         <artifactId>logback-classic</artifactId>
                     </exclusion>
+                    <exclusion>
+                        <groupId>ch.qos.logback</groupId>
+                        <artifactId>logback-core</artifactId>
+                    </exclusion>
                 </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-starter-aop</artifactId>
-                <version>${spring.boot.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-starter-data-mongodb</artifactId>
-                <version>${spring.boot.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-starter-data-rest</artifactId>
                 <version>${spring.boot.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-starter-actuator</artifactId>
-                <version>${spring.boot.version}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>ch.qos.logback</groupId>
                         <artifactId>logback-classic</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>ch.qos.logback</groupId>
+                        <artifactId>logback-core</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -299,11 +291,6 @@
                 <groupId>io.reactivex</groupId>
                 <artifactId>rxjava</artifactId>
                 <version>1.0.7</version>
-            </dependency>
-            <dependency>
-                <groupId>org.talend.dataprep</groupId>
-                <artifactId>dataprep-metrics</artifactId>
-                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.talend.dataprep</groupId>
