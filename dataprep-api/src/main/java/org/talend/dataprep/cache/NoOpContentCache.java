@@ -14,7 +14,7 @@ import org.springframework.stereotype.Component;
  * actual content cache in case configuration does not include HDFS configuration.
  */
 @Component
-@ConditionalOnProperty(name = "content.cache", havingValue = "disabled")
+@ConditionalOnProperty(name = "api.cache", havingValue = "disabled", matchIfMissing = true)
 public class NoOpContentCache implements ContentCache {
 
     /** This class' logger. */

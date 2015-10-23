@@ -79,12 +79,22 @@
                         <groupId>org.eclipse.jetty.orbit</groupId>
                         <artifactId>javax.servlet</artifactId>
                     </exclusion>
+                    <exclusion>
+                        <groupId>com.clearspring.analytics</groupId>
+                        <artifactId>stream</artifactId>
+                    </exclusion>
                 </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.talend.dataquality</groupId>
                 <artifactId>org.talend.dataquality.statistics</artifactId>
                 <version>${org.talend.dataquality.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>com.clearspring.analytics</groupId>
+                        <artifactId>stream</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.talend.dataquality</groupId>

@@ -12,6 +12,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.scheduling.annotation.EnableScheduling;
@@ -22,7 +23,7 @@ import org.talend.dataprep.exception.TDPException;
 import org.talend.dataprep.exception.error.CommonErrorCodes;
 
 @Component
-@ConditionalOnProperty(name = "content.cache", havingValue = "file")
+@ConditionalOnProperty(name = "api.cache", havingValue = "file")
 @EnableScheduling
 public class FileSystemContentCache implements ContentCache {
 
@@ -31,7 +32,8 @@ public class FileSystemContentCache implements ContentCache {
 
     private final String location;
 
-    public FileSystemContentCache(@Value("${content.cache.location}") String location) {
+    @Autowired
+    public FileSystemContentCache(@Value("${api.cache.file.location}") String location) {
         if (!location.endsWith("/")) {
             location += "/";
         }
