@@ -1,54 +1,36 @@
 package org.talend.dataprep.cache;
 
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.file.*;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.LocatedFileStatus;
-import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.fs.RemoteIterator;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.SpringApplicationConfiguration;
-import org.springframework.boot.test.WebIntegrationTest;
-import org.springframework.core.env.ConfigurableEnvironment;
-import org.springframework.mock.env.MockPropertySource;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.talend.dataprep.api.Application;
 import org.talend.dataprep.api.preparation.Preparation;
 import org.talend.dataprep.api.preparation.Step;
 
-@RunWith(SpringJUnit4ClassRunner.class)
-@SpringApplicationConfiguration(classes = Application.class)
-@WebIntegrationTest
-public class HDFSContentCacheTest {
+public class FileSystemContentCacheTest {
+
+    public static final String TEST_DIRECTORY = "/tmp/talend";
 
     private static final String DATASET_ID = "1234";
 
     private static final String AUTHOR = "Thor";
 
     private static final String NAME = "Mjöllnir";
+
     private static final String STEP_ID = "5678";
 
-    @Autowired
-    private FileSystem fileSystem;
-
-    @Autowired
-    private HDFSContentCache cache;
-
-    @Autowired
-    private ConfigurableEnvironment environment;
+    private FileSystemContentCache cache;
 
     /** A default preparation ready to be used by the tests. */
     private Preparation preparation;
@@ -56,15 +38,13 @@ public class HDFSContentCacheTest {
     /**
      * Default empty constructor.
      */
-    public HDFSContentCacheTest() {
+    public FileSystemContentCacheTest() {
         this.preparation = getPreparation(DATASET_ID, NAME, AUTHOR);
     }
 
     @Before
-    public void setUp() {
-        // Ensures HDFS is activated for HDFS content cache
-        MockPropertySource connectionInformation = new MockPropertySource().withProperty("hdfs.location", "file:/target");
-        environment.getPropertySources().addFirst(connectionInformation);
+    public void setUp() throws Exception {
+        cache = new FileSystemContentCache(TEST_DIRECTORY);
     }
 
     @After
@@ -75,29 +55,27 @@ public class HDFSContentCacheTest {
     @Test
     public void testHasNot() throws Exception {
         // Cache is empty when test starts, has() must return false for content
-        assertThat(cache.has(new ContentCacheKey(preparation, STEP_ID)), is(false));
+        Assert.assertThat(cache.has(new ContentCacheKey(preparation, STEP_ID)), is(false));
     }
-
 
     @Test
     public void testPutHas() throws Exception {
         // Put a content in cache...
         ContentCacheKey key = new ContentCacheKey(preparation, STEP_ID);
-        assertThat(cache.has(key), is(false));
+        Assert.assertThat(cache.has(key), is(false));
         addCacheEntry(key, "content");
         // ... has() must return true
-        assertThat(cache.has(key), is(true));
+        Assert.assertThat(cache.has(key), is(true));
     }
-
 
     @Test
     public void testPutWithSampleSize() throws Exception {
         // Put a content in cache...
         ContentCacheKey key = new ContentCacheKey(preparation, STEP_ID, 25l);
-        assertThat(cache.has(key), is(false));
+        Assert.assertThat(cache.has(key), is(false));
         addCacheEntry(key, "content with sample");
         // ... has() must return true
-        assertThat(cache.has(key), is(true));
+        Assert.assertThat(cache.has(key), is(true));
     }
 
     @Test
@@ -105,12 +83,12 @@ public class HDFSContentCacheTest {
         ContentCacheKey origin = new ContentCacheKey(preparation, "origin");
         ContentCacheKey key = new ContentCacheKey(preparation, Step.ROOT_STEP.id());
         // Put a content in cache...
-        assertThat(cache.has(origin), is(false));
-        assertThat(cache.has(key), is(false));
+        Assert.assertThat(cache.has(origin), is(false));
+        Assert.assertThat(cache.has(key), is(false));
         addCacheEntry(key, "content");
         // ... has() must return true
-        assertThat(cache.has(origin), is(true));
-        assertThat(cache.has(key), is(true));
+        Assert.assertThat(cache.has(origin), is(true));
+        Assert.assertThat(cache.has(key), is(true));
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -133,44 +111,44 @@ public class HDFSContentCacheTest {
         addCacheEntry(key, content);
         // ... get() should return this content back.
         final String actual = IOUtils.toString(cache.get(key));
-        assertThat(actual, is(content));
+        Assert.assertThat(actual, is(content));
     }
 
     @Test
     public void testGetWithSampleSize() throws Exception {
-        ContentCacheKey key = new ContentCacheKey(preparation, STEP_ID, 72l);
+        ContentCacheKey key = new ContentCacheKey(preparation, STEP_ID, 72L);
         String content = "content limited to 72 lines";
         // Put a content in cache...
         addCacheEntry(key, content);
         // ... get() should return this content back.
         final String actual = IOUtils.toString(cache.get(key));
-        assertThat(actual, is(content));
+        Assert.assertThat(actual, is(content));
     }
 
     @Test
     public void testEvict() throws Exception {
-        ContentCacheKey key = new ContentCacheKey(preparation, STEP_ID, 43l);
+        ContentCacheKey key = new ContentCacheKey(preparation, STEP_ID, 43L);
         // Put a content in cache...
         addCacheEntry(key, "content");
-        assertThat(cache.has(key), is(true));
+        Assert.assertThat(cache.has(key), is(true));
         // ... evict() it...
         cache.evict(key);
         // ... has() must immediately return false
-        assertThat(cache.has(key), is(false));
+        Assert.assertThat(cache.has(key), is(false));
     }
 
     @Test
     public void testEvictAPreparation() throws Exception {
         List<ContentCacheKey> keys = new ArrayList<>();
-        keys.add(new ContentCacheKey(preparation, STEP_ID, 43l));
+        keys.add(new ContentCacheKey(preparation, STEP_ID, 43L));
         keys.add(new ContentCacheKey(preparation, STEP_ID + 123));
-        keys.add(new ContentCacheKey(preparation, STEP_ID + 456, 22l));
+        keys.add(new ContentCacheKey(preparation, STEP_ID + 456, 22L));
         keys.add(new ContentCacheKey(preparation, STEP_ID + 789));
 
         // Put a content in cache...
         for (ContentCacheKey key : keys) {
             addCacheEntry(key, "content");
-            assertThat(cache.has(key), is(true));
+            Assert.assertThat(cache.has(key), is(true));
         }
 
         // evict the whole preparation
@@ -179,7 +157,7 @@ public class HDFSContentCacheTest {
 
         // ... has() must immediately return false
         for (ContentCacheKey key : keys) {
-            assertThat(cache.has(key), is(false));
+            Assert.assertThat(cache.has(key), is(false));
         }
     }
 
@@ -190,21 +168,21 @@ public class HDFSContentCacheTest {
         List<ContentCacheKey> keys = new ArrayList<>();
 
         Preparation prep1 = getPreparation(DATASET_ID, "mark20", "Tony Stark");
-        keys.add(new ContentCacheKey(prep1, STEP_ID, 43l));
+        keys.add(new ContentCacheKey(prep1, STEP_ID, 43L));
         keys.add(new ContentCacheKey(prep1, STEP_ID + 123));
 
         Preparation prep2 = getPreparation(DATASET_ID, "Mjöllnir", "Thor");
         keys.add(new ContentCacheKey(prep2, STEP_ID + 753));
-        keys.add(new ContentCacheKey(prep2, STEP_ID + 897, 78l));
+        keys.add(new ContentCacheKey(prep2, STEP_ID + 897, 78L));
 
         Preparation prep3 = getPreparation(DATASET_ID, "Smash", "Hulk");
-        keys.add(new ContentCacheKey(prep3, STEP_ID + 852, 6000l));
+        keys.add(new ContentCacheKey(prep3, STEP_ID + 852, 6000L));
         keys.add(new ContentCacheKey(prep3, STEP_ID + 249));
 
         // Put a content in cache...
         for (ContentCacheKey key : keys) {
             addCacheEntry(key, "content");
-            assertThat(cache.has(key), is(true));
+            Assert.assertThat(cache.has(key), is(true));
         }
 
         // evict the whole dataset
@@ -213,7 +191,7 @@ public class HDFSContentCacheTest {
 
         // ... has() must immediately return false
         for (ContentCacheKey key : keys) {
-            assertThat(cache.has(key), is(false));
+            Assert.assertThat(cache.has(key), is(false));
         }
     }
 
@@ -228,7 +206,7 @@ public class HDFSContentCacheTest {
 
         for (ContentCacheKey key : keys) {
             addCacheEntry(key, "content");
-            assertThat(cache.has(key), is(true));
+            Assert.assertThat(cache.has(key), is(true));
         }
 
         // when the janitor is called
@@ -236,7 +214,7 @@ public class HDFSContentCacheTest {
 
         // then, none of the cache entries should be removed
         for (ContentCacheKey key : keys) {
-            assertThat(cache.has(key), is(true));
+            Assert.assertThat(cache.has(key), is(true));
         }
 
         // clean up the mess afterwards
@@ -253,7 +231,7 @@ public class HDFSContentCacheTest {
         }
         for (ContentCacheKey key : keys) {
             addCacheEntry(key, "content");
-            assertThat(cache.has(key), is(true));
+            Assert.assertThat(cache.has(key), is(true));
         }
 
         // when eviction is performed and the janitor is called
@@ -261,13 +239,15 @@ public class HDFSContentCacheTest {
         cache.janitor();
 
         // then no file in the cache should be left
-        final RemoteIterator<LocatedFileStatus> files = fileSystem.listFiles(new Path("cache/datasets/"), true);
-        while (files.hasNext()) {
-            final Path file = files.next().getPath();
-            if (!StringUtils.contains(file.getName(), ".nfs")) {
-                fail("file " + file.getName() + " was not cleaned by the janitor");
+        Files.walkFileTree(Paths.get(TEST_DIRECTORY), new SimpleFileVisitor<Path>() {
+            @Override
+            public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+                if (!StringUtils.contains(file.toFile().getName(), ".nfs")) {
+                    Assert.fail("file " + file + " was not cleaned by the janitor");
+                }
+                return super.visitFile(file, attrs);
             }
-        }
+        });
     }
 
     @Test(expected = IllegalArgumentException.class)
