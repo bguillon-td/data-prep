@@ -99,7 +99,33 @@ public class SplitTest {
     }
 
     @Test
-    public void test_TDP_831() {
+    public void test_TDP_786_empty_pattern() {
+        // given
+        final Map<String, String> values = new HashMap<>();
+        values.put("0000", "lorem bacon");
+        values.put("0001", "Je vais bien (tout va bien)");
+        values.put("0002", "01/01/2015");
+        final DataSetRow row = new DataSetRow(values);
+
+        parameters.put(Split.SEPARATOR_PARAMETER, "other");
+        parameters.put(Split.MANUAL_SEPARATOR_PARAMETER, "");
+
+        final Map<String, String> expectedValues = new HashMap<>();
+        expectedValues.put("0000", "lorem bacon");
+        expectedValues.put("0001", "Je vais bien (tout va bien)");
+        expectedValues.put("0003", "");
+        expectedValues.put("0004", "");
+        expectedValues.put("0002", "01/01/2015");
+
+        // when
+        action.applyOnColumn(row, new TransformationContext(), parameters, "0001");
+
+        // then
+        assertEquals(expectedValues, row.values());
+    }
+
+    @Test
+    public void test_TDP_831_invalid_pattern() {
         // given
         final Map<String, String> values = new HashMap<>();
         values.put("0000", "lorem bacon");
