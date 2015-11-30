@@ -267,13 +267,13 @@ describe('Datagrid directive', function () {
             stateMock.playground.data = {columns: [{id: '0000'}, {id: '0001'}], preview: false};
             scope.$digest();
 
-            jasmine.clock().tick(200);
+            jasmine.clock().tick(250);
             expect(grid.resizeCanvas).not.toHaveBeenCalled();
 
             //when
             stateMock.playground.lookup.visibility = true;
             scope.$digest();
-            jasmine.clock().tick(200);
+            jasmine.clock().tick(250);
 
             //then
             expect(grid.resizeCanvas).toHaveBeenCalled();

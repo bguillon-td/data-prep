@@ -163,7 +163,7 @@
                     if(grid) {
                         setTimeout(function(){
                             grid.resizeCanvas();
-                        },200);
+                        },250);
                     }
                 }
 
