@@ -119,6 +119,14 @@ public class Split extends ActionMetadata implements ColumnAction {
             return;
         }
 
+        try {
+            // Check if separator is a valid regex
+            Pattern.compile(realSeparator);
+        } catch (PatternSyntaxException e) {
+            // In case the pattern is not valid: nothing to do, do not create new columns.
+            return;
+        }
+
         // create the new columns
         int limit = Integer.parseInt(parameters.get(LIMIT));
         final RowMetadata rowMetadata = row.getRowMetadata();
@@ -148,16 +156,7 @@ public class Split extends ActionMetadata implements ColumnAction {
             return;
         }
 
-        String[] split = new String[0];
-        try {
-            // Check if separator is a valid regex
-            Pattern.compile(realSeparator);
-
-            // execute split when separator is valid
-            split = originalValue.split(realSeparator, limit);
-        } catch (PatternSyntaxException e) {
-            // In case the pattern is not valid: nothing to do, empty string will go in the cells.
-        }
+        String[] split = originalValue.split(realSeparator, limit);
 
         final Iterator<String> iterator = newColumns.iterator();
 
