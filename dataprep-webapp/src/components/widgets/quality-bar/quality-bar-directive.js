@@ -15,20 +15,27 @@
      * @param {object} quality {empty: number, invalid: number, valid: number} The quality values
      * @param {object} column The quality target column
      * @param {string} enterAnimation Do not animate on enter if this flag === 'false'
+     * ???????????????????????????????????????????
+     * ???????????????????????????????????????????
+     * ???????????????????????????????????????????
      */
-    function DgQualityBar($timeout) {
+    function QualityBar($timeout) {
         return {
             restrict: 'E',
-            templateUrl: 'components/datagrid/quality-bar/quality-bar.html',
+            templateUrl: 'components/widgets/quality-bar/quality-bar.html',
             replace: true,
             scope: {
+                triggerFilter : '&',
+                applyAction : '&',
+                emptyCellsActions : '=',
+                invalidCellsActions : '=',
+                enterAnimation: '@',
                 quality: '=',
-                column: '=',
-                enterAnimation: '@'
+                column: '='
             },
             bindToController: true,
-            controller: 'DgQualityBarCtrl',
-            controllerAs: 'dgQualityBarCtrl',
+            controller: 'QualityBarCtrl',
+            controllerAs: 'qualityBarCtrl',
             link: function(scope, iElement, iAttrs, ctrl) {
                 var initializing = true;
 
@@ -89,6 +96,6 @@
         };
     }
 
-    angular.module('data-prep.quality-bar')
-        .directive('dgQualityBar', DgQualityBar);
+    angular.module('talend.widget')
+        .directive('qualityBar', QualityBar);
 })();

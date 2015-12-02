@@ -3,18 +3,17 @@
 
     /**
      * @ngdoc controller
-     * @name data-prep.quality-bar.controller:QualityBarCtrl
+     * @name talend.widget.controller:QualityBarCtrl
      * @description Quality bar controller
      * @requires data-prep.services.filter.service:FilterService
      * @requires data-prep.services.transformation.service:ColumnSuggestionService
      * @requires data-prep.services.transformation.service:TransformationApplicationService
      */
-    function DgQualityBarCtrl(FilterService, TransformationApplicationService, ColumnSuggestionService) {
+    function QualityBarCtrl() {
         var MIN_QUALITY_WIDTH = 10;
         var vm = this;
 
-        vm.columnSuggestionService = ColumnSuggestionService;
-        vm.state = state;
+        //vm.columnSuggestionService = ColumnSuggestionService;
 
         /**
          * @ngdoc method
@@ -142,7 +141,11 @@
          * @param {object} column - the column to filter
          */
         vm.filterValidRecords = function (column) {
-            FilterService.addFilter('valid_records', column.id, column.name);
+            vm.triggerFilter({
+                type:'valid_records',
+                colId: column.id,
+                colName:column.name
+                });
         };
 
         /**
@@ -153,7 +156,11 @@
          * @param {object} column - the column to filter
          */
         vm.filterInvalidRecords = function (column) {
-            FilterService.addFilter('invalid_records', column.id, column.name);
+            vm.triggerFilter({
+                type:'invalid_records',
+                colId: column.id,
+                colName:column.name
+            });
         };
 
         /**
@@ -164,7 +171,11 @@
          * @param {object} column - the column to filter
          */
         vm.filterEmptyRecords = function (column) {
-            FilterService.addFilter('empty_records', column.id, column.name);
+            vm.triggerFilter({
+                type:'empty_records',
+                colId: column.id,
+                colName:column.name
+            });
         };
 
         /**
@@ -175,43 +186,14 @@
          * @param {Object} action The action to apply
          */
         vm.applyActionOnColumn = function applyActionOnColumn(action) {
-            TransformationApplicationService.append(action, 'column');
+            vm.applyAction({
+                action: action,
+                actionScope: 'column'
+            });
         };
     }
 
-    /**
-     * @ngdoc property
-     * @name transformationsForEmptyCells
-     * @propertyOf data-prep.quality-bar.controller:QualityBarCtrl
-     * @description The transformations applied to empty cells.
-     * This is bound to {@link data-prep.services.transformation.service:ColumnSuggestionService ColumnSuggestionService}.transformationsForEmptyCells
-     */
-    Object.defineProperty(DgQualityBarCtrl.prototype,
-        'transformationsForEmptyCells', {
-            enumerable: true,
-            configurable: false,
-            get: function () {
-                return this.columnSuggestionService.transformationsForEmptyCells;
-            }
-        });
-
-    /**
-     * @ngdoc property
-     * @name transformationsForInvalidCells
-     * @propertyOf data-prep.quality-bar.controller:QualityBarCtrl
-     * @description The transformations column applied to invalid cells.
-     * This is bound to {@link data-prep.services.transformation.service:ColumnSuggestionService ColumnSuggestionService}.transformationsForInvalidCells
-     */
-    Object.defineProperty(DgQualityBarCtrl.prototype,
-        'transformationsForInvalidCells', {
-            enumerable: true,
-            configurable: false,
-            get: function () {
-                return this.columnSuggestionService.transformationsForInvalidCells;
-            }
-        });
-
-    angular.module('data-prep.quality-bar')
-        .controller('DgQualityBarCtrl', DgQualityBarCtrl);
+    angular.module('talend.widget')
+        .controller('QualityBarCtrl', QualityBarCtrl);
 
 })();

@@ -26,6 +26,17 @@
 
 </div>
 
+<!--<dg-quality-bar-->
+        <!--quality="datagridHeaderCtrl.column.quality"-->
+        <!--column="datagridHeaderCtrl.column"></dg-quality-bar>-->
+
+<hr style="margin: 0px">
+
 <quality-bar
+        trigger-filter="datagridHeaderCtrl.filterService.addFilter(type, colId, colName)"
+        apply-action="datagridHeaderCtrl.transformationApplicationService.append(action, actionScope)"
+        empty-cells-actions="datagridHeaderCtrl.columnSuggestionService.transformationsForEmptyCells"
+        invalid-cells-actions="datagridHeaderCtrl.columnSuggestionService.transformationsForInvalidCells"
+        enter-animation="true"
         quality="datagridHeaderCtrl.column.quality"
         column="datagridHeaderCtrl.column"></quality-bar>

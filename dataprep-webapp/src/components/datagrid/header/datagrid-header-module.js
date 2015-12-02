@@ -11,12 +11,16 @@
      * @requires data-prep.services.playground
      * @requires data-prep.services.transformation
      * @requires data-prep.quality-bar
+     * ??????????????
+     * ??????????????
+     * ??????????????
      */
     angular.module('data-prep.datagrid-header', [
         'talend.widget',
         'data-prep.transformation-menu',
         'data-prep.services.utils',
         'data-prep.services.playground',
+        'data-prep.services.filter',
         'data-prep.services.transformation',
         'data-prep.quality-bar'
     ]);

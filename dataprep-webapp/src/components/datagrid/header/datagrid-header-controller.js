@@ -9,13 +9,17 @@
      * @requires data-prep.services.utils.service:ConverterService
      * @requires data-prep.services.playground.service:PlaygroundService
      */
-    function DatagridHeaderCtrl(TransformationCacheService, ConverterService, PlaygroundService) {
+    function DatagridHeaderCtrl(TransformationCacheService, ConverterService, PlaygroundService,
+                                FilterService, TransformationApplicationService, ColumnSuggestionService) {
         var ACTION_SCOPE = 'column_metadata';
         var RENAME_ACTION = 'rename_column';
         var originalName;
 
         var vm = this;
         vm.converterService = ConverterService;
+        vm.filterService = FilterService;
+        vm.transformationApplicationService = TransformationApplicationService;
+        vm.columnSuggestionService = ColumnSuggestionService;
 
         /**
          * @ngdoc property

@@ -1,16 +1,16 @@
 <div class="quality-bar">
     <div talend-dropdown
          class="record-ok"
-         ng-style="{width: qualityBarCtrl.width.valid + '%'}"
-         ng-class="{'no-transition' : qualityBarCtrl.blockTransition}"
-         ng-if="qualityBarCtrl.quality.valid > 0"
-         title="{{ qualityBarCtrl.quality.valid }} {{::'VALID_RECORDS' | translate}} ({{ qualityBarCtrl.percent.valid }}%)">
+         ng-style="{width: dgQualityBarCtrl.width.valid + '%'}"
+         ng-class="{'no-transition' : dgQualityBarCtrl.blockTransition}"
+         ng-if="dgQualityBarCtrl.quality.valid > 0"
+         title="{{ dgQualityBarCtrl.quality.valid }} {{::'VALID_RECORDS' | translate}} ({{ dgQualityBarCtrl.percent.valid }}%)">
 
         <div class="dropdown-container">
             <div class="dropdown-action quality-bar-action"></div>
             <ul class="dropdown-menu dropdown-menu-small-top quality-bar-menu" role="menu">
-                <li ng-click="qualityBarCtrl.filterValidRecords(qualityBarCtrl.column)">
-                    <a><span translate-once="SELECT_VALID_RECORDS"></span> {{ qualityBarCtrl.column.name | uppercase }}</a>
+                <li ng-click="dgQualityBarCtrl.filterValidRecords(dgQualityBarCtrl.column)">
+                    <a><span translate-once="SELECT_VALID_RECORDS"></span> {{ dgQualityBarCtrl.column.name | uppercase }}</a>
                 </li>
             </ul>
         </div>
@@ -18,23 +18,23 @@
 
     <div talend-dropdown
          class="record-empty"
-         ng-style="{width: qualityBarCtrl.width.empty + '%'}"
-         ng-class="{'no-transition' : qualityBarCtrl.blockTransition}"
-         ng-if="qualityBarCtrl.quality.empty > 0"
-         title="{{ qualityBarCtrl.quality.empty }} {{::'EMPTY_RECORDS' | translate}} ({{ qualityBarCtrl.percent.empty }}%)">
+         ng-style="{width: dgQualityBarCtrl.width.empty + '%'}"
+         ng-class="{'no-transition' : dgQualityBarCtrl.blockTransition}"
+         ng-if="dgQualityBarCtrl.quality.empty > 0"
+         title="{{ dgQualityBarCtrl.quality.empty }} {{::'EMPTY_RECORDS' | translate}} ({{ dgQualityBarCtrl.percent.empty }}%)">
 
         <div class="dropdown-container">
             <div class="dropdown-action quality-bar-action"></div>
             <ul class="dropdown-menu dropdown-menu-small-top quality-bar-menu" role="menu" >
-                <li ng-click="qualityBarCtrl.filterEmptyRecords(qualityBarCtrl.column)">
-                    <a><span translate-once="SELECT_EMPTY_RECORDS"></span> {{ qualityBarCtrl.column.name | uppercase
+                <li ng-click="dgQualityBarCtrl.filterEmptyRecords(dgQualityBarCtrl.column)">
+                    <a><span translate-once="SELECT_EMPTY_RECORDS"></span> {{ dgQualityBarCtrl.column.name | uppercase
                         }}</a>
                 </li>
                 <li class="divider"></li>
                 <li class="coming-soon"><a><span translate-once="FILL_EMPTY_WITH_TOP_VALUE"></span></a></li>
                 <li class="coming-soon"><a><span translate-once="FILL_EMPTY_WITH_BOTTOM_VALUE"></span></a></li>
 
-                <li ng-repeat="transfo in qualityBarCtrl.state.playground.suggestions.column.transformationsForEmptyCells" ng-click="qualityBarCtrl.applyActionOnColumn(transfo)">
+                <li ng-repeat="transfo in dgQualityBarCtrl.transformationsForEmptyCells" ng-click="dgQualityBarCtrl.applyActionOnColumn(transfo)">
                     <a>{{transfo.label}}</a>
                 </li>
             </ul>
@@ -42,22 +42,22 @@
     </div>
 
     <div class="record-nok" talend-dropdown
-         ng-style="{width: qualityBarCtrl.width.invalid + '%'}"
-         ng-class="{'no-transition' : qualityBarCtrl.blockTransition}"
-         ng-if="qualityBarCtrl.quality.invalid > 0"
-         title="{{ qualityBarCtrl.quality.invalid }} {{::'INVALID_RECORDS' | translate}} ({{ qualityBarCtrl.percent.invalid }}%)">
+         ng-style="{width: dgQualityBarCtrl.width.invalid + '%'}"
+         ng-class="{'no-transition' : dgQualityBarCtrl.blockTransition}"
+         ng-if="dgQualityBarCtrl.quality.invalid > 0"
+         title="{{ dgQualityBarCtrl.quality.invalid }} {{::'INVALID_RECORDS' | translate}} ({{ dgQualityBarCtrl.percent.invalid }}%)">
 
         <div class="dropdown-container">
             <div class="dropdown-action quality-bar-action"></div>
             <ul class="dropdown-menu dropdown-menu-small-top quality-bar-menu" role="menu" >
-                <li ng-click="qualityBarCtrl.filterInvalidRecords(qualityBarCtrl.column)">
-                    <a><span translate-once="SELECT_INVALID_RECORDS"></span> {{ qualityBarCtrl.column.name | uppercase}}</a>
+                <li ng-click="dgQualityBarCtrl.filterInvalidRecords(dgQualityBarCtrl.column)">
+                    <a><span translate-once="SELECT_INVALID_RECORDS"></span> {{ dgQualityBarCtrl.column.name | uppercase}}</a>
                 </li>
                 <li class="divider"></li>
                 <li class="coming-soon"><a><span translate-once="REPLACE_INVALID_WITH_TOP_VALUE"></span></a></li>
                 <li class="coming-soon"><a><span translate-once="REPLACE_INVALID_WITH_BOTTOM_VALUE"></span></a></li>
 
-                <li ng-repeat="transfo in qualityBarCtrl.state.playground.suggestions.column.transformationsForInvalidCells" ng-click="qualityBarCtrl.applyActionOnColumn(transfo)">
+                <li ng-repeat="transfo in dgQualityBarCtrl.transformationsForInvalidCells" ng-click="dgQualityBarCtrl.applyActionOnColumn(transfo)">
                     <a>{{transfo.label}}</a>
                 </li>
             </ul>
