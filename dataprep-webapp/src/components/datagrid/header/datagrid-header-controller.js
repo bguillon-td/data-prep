@@ -21,7 +21,8 @@
         vm.transformationApplicationService = TransformationApplicationService;
         vm.columnSuggestionService = ColumnSuggestionService;
 
-        /**
+        /**        'data-prep.services.filter',
+         'data-prep.services.transformation'
          * @ngdoc property
          * @name newName
          * @propertyOf data-prep.datagrid-header.controller:DatagridHeaderCtrl

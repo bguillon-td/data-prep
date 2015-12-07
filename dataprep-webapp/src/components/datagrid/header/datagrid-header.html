@@ -26,17 +26,39 @@
 
 </div>
 
-<!--<dg-quality-bar-->
-        <!--quality="datagridHeaderCtrl.column.quality"-->
-        <!--column="datagridHeaderCtrl.column"></dg-quality-bar>-->
+<quality-bar enter-animation="true"
+             quality="datagridHeaderCtrl.column.quality">
 
-<hr style="margin: 0px">
+    <div class="valid-menu-item">
+        <li ng-click="datagridHeaderCtrl.filterService.addFilter('valid_records', datagridHeaderCtrl.column.id, datagridHeaderCtrl.column.name)">
+            <a><span translate-once="SELECT_VALID_RECORDS"></span> {{ datagridHeaderCtrl.column.name | uppercase }}</a>
+        </li>
+    </div>
 
-<quality-bar
-        trigger-filter="datagridHeaderCtrl.filterService.addFilter(type, colId, colName)"
-        apply-action="datagridHeaderCtrl.transformationApplicationService.append(action, actionScope)"
-        empty-cells-actions="datagridHeaderCtrl.columnSuggestionService.transformationsForEmptyCells"
-        invalid-cells-actions="datagridHeaderCtrl.columnSuggestionService.transformationsForInvalidCells"
-        enter-animation="true"
-        quality="datagridHeaderCtrl.column.quality"
-        column="datagridHeaderCtrl.column"></quality-bar>
+    <div class="empty-menu-items">
+        <li ng-click="datagridHeaderCtrl.filterService.addFilter('empty_records', datagridHeaderCtrl.column.id, datagridHeaderCtrl.column.name)">
+            <a><span translate-once="SELECT_EMPTY_RECORDS"></span> {{ datagridHeaderCtrl.column.name | uppercase}}</a>
+        </li>
+        <li class="divider"></li>
+        <li class="coming-soon"><a><span translate-once="FILL_EMPTY_WITH_TOP_VALUE"></span></a></li>
+        <li class="coming-soon"><a><span translate-once="FILL_EMPTY_WITH_BOTTOM_VALUE"></span></a></li>
+
+        <li ng-repeat="transfo in datagridHeaderCtrl.columnSuggestionService.transformationsForEmptyCells" ng-click="datagridHeaderCtrl.transformationApplicationService.append(transfo, 'column')">
+            <a>{{transfo.label}}</a>
+        </li>
+    </div>
+
+    <div class="invalid-menu-items">
+        <li ng-click="datagridHeaderCtrl.filterService.addFilter('invalid_records', datagridHeaderCtrl.column.id, datagridHeaderCtrl.column.name)">
+            <a><span translate-once="SELECT_INVALID_RECORDS"></span> {{ datagridHeaderCtrl.column.name | uppercase}}</a>
+        </li>
+        <li class="divider"></li>
+        <li class="coming-soon"><a><span translate-once="REPLACE_INVALID_WITH_TOP_VALUE"></span></a></li>
+        <li class="coming-soon"><a><span translate-once="REPLACE_INVALID_WITH_BOTTOM_VALUE"></span></a></li>
+
+        <li ng-repeat="transfo in datagridHeaderCtrl.columnSuggestionService.transformationsForInvalidCells" ng-click="datagridHeaderCtrl.transformationApplicationService.append(transfo, 'column')">
+            <a>{{transfo.label}}</a>
+        </li>
+    </div>
+
+</quality-bar>

@@ -7,32 +7,22 @@
      * @description Quality bar tooltip
      * @restrict E
      * @usage
-     <talend-quality-bar
+     <quality-bar
              quality="quality"
-             column="column"
              enterAnimation="enableEnterAnimation">
      </talend-tooltip>
      * @param {object} quality {empty: number, invalid: number, valid: number} The quality values
-     * @param {object} column The quality target column
      * @param {string} enterAnimation Do not animate on enter if this flag === 'false'
-     * ???????????????????????????????????????????
-     * ???????????????????????????????????????????
-     * ???????????????????????????????????????????
      */
     function QualityBar($timeout) {
         return {
             restrict: 'E',
             templateUrl: 'components/widgets/quality-bar/quality-bar.html',
-            replace: true,
             scope: {
-                triggerFilter : '&',
-                applyAction : '&',
-                emptyCellsActions : '=',
-                invalidCellsActions : '=',
                 enterAnimation: '@',
-                quality: '=',
-                column: '='
+                quality: '='
             },
+            transclude: true,
             bindToController: true,
             controller: 'QualityBarCtrl',
             controllerAs: 'qualityBarCtrl',
@@ -42,7 +32,7 @@
                 /**
                  * @ngdoc method
                  * @name enableTransition
-                 * @methodOf data-prep.quality-bar.directive:QualityBar
+                 * @methodOf talend.widget.directive:QualityBar
                  * @description [PRIVATE] Enable animation
                  */
                 var enableTransition = function enableTransition() {
@@ -52,7 +42,7 @@
                 /**
                  * @ngdoc method
                  * @name refreshBarsWithAnimation
-                 * @methodOf data-prep.quality-bar.directive:QualityBar
+                 * @methodOf talend.widget.directive:QualityBar
                  * @description [PRIVATE] Block animation, reset width to 0 and calculate the new width with animation enabling
                  */
                 var refreshBarsWithAnimation = function refreshBarsWithAnimation() {
@@ -75,7 +65,7 @@
                 /**
                  * @ngdoc method
                  * @name refreshBars
-                 * @methodOf data-prep.quality-bar.directive:QualityBar
+                 * @methodOf talend.widget.directive:QualityBar
                  * @description [PRIVATE] Refresh the quality bars infos (percent and width)
                  * When enterAnimation === 'false', we do NOT animate on first render
                  */

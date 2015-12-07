@@ -21,7 +21,6 @@
         'data-prep.services.utils',
         'data-prep.services.playground',
         'data-prep.services.filter',
-        'data-prep.services.transformation',
-        'data-prep.quality-bar'
+        'data-prep.services.transformation'
     ]);
 })();
