@@ -16,11 +16,11 @@
 
         /**
          * @ngdoc method
-         * @name showHideCheckbox
+         * @name showCheckbox
          * @methodOf data-prep.lookup-datagrid-header.controller:LookupDatagridHeaderCtrl
          * @description show/hide the checkbox responsible for adding the columns to the lookup action
          */
-        vm.showHideCheckbox = function(){
+        vm.showCheckbox = function showCheckbox(){
             if(vm.state.playground.lookup.selectedColumn){
                 return vm.column.id !== vm.state.playground.lookup.selectedColumn.id;
             }

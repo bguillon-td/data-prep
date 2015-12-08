@@ -8,13 +8,14 @@
         <div class="grid-header-type" ng-if="(!lookupDatagridHeaderCtrl.column.domain)">{{ lookupDatagridHeaderCtrl.converterService.simplifyType(lookupDatagridHeaderCtrl.column.type) }}</div>
     </div>
 
-    <lookup-quality-bar
-            quality="lookupDatagridHeaderCtrl.column.quality"
-            column="lookupDatagridHeaderCtrl.column">
-    </lookup-quality-bar>
+    <quality-bar
+            enter-animation="false"
+            has-menu="false"
+            quality="lookupDatagridHeaderCtrl.column.quality">
+    </quality-bar>
 
     <div class="add-to-lookup">
-        <div ng-if="lookupDatagridHeaderCtrl.showHideCheckbox()">
+        <div ng-if="lookupDatagridHeaderCtrl.showCheckbox()">
             <input type="checkbox"
                    ng-model="lookupDatagridHeaderCtrl.added.isAdded"
                    ng-click="lookupDatagridHeaderCtrl.updateColsToAdd($event)">

@@ -13,8 +13,6 @@
         var MIN_QUALITY_WIDTH = 10;
         var vm = this;
 
-        //vm.columnSuggestionService = ColumnSuggestionService;
-
         /**
          * @ngdoc method
          * @name getMinimalPercent
@@ -132,65 +130,6 @@
         vm.hashQuality = function hashQuality() {
             return vm.quality.empty + '' + vm.quality.invalid + '' + vm.quality.valid;
         };
-
-        ///**
-        // * @ngdoc method
-        // * @name filterValidRecords
-        // * @methodOf data-prep.datagrid-header.controller:DatagridHeaderCtrl
-        // * @description Create a filter for all valid records on the given column.
-        // * @param {object} column - the column to filter
-        // */
-        //vm.filterValidRecords = function (column) {
-        //    vm.triggerFilter({
-        //        type:'valid_records',
-        //        colId: column.id,
-        //        colName:column.name
-        //        });
-        //};
-
-        ///**
-        // * @ngdoc method
-        // * @name filterInvalidRecords
-        // * @methodOf data-prep.datagrid-header.controller:DatagridHeaderCtrl
-        // * @description Create a filter for invalid records on the given column.
-        // * @param {object} column - the column to filter
-        // */
-        //vm.filterInvalidRecords = function (column) {
-        //    vm.triggerFilter({
-        //        type:'invalid_records',
-        //        colId: column.id,
-        //        colName:column.name
-        //    });
-        //};
-
-        ///**
-        // * @ngdoc method
-        // * @name filterEmptyRecords
-        // * @methodOf data-prep.datagrid-header.controller:DatagridHeaderCtrl
-        // * @description Create a filter for empty records on the given column.
-        // * @param {object} column - the column to filter
-        // */
-        //vm.filterEmptyRecords = function (column) {
-        //    vm.triggerFilter({
-        //        type:'empty_records',
-        //        colId: column.id,
-        //        colName:column.name
-        //    });
-        //};
-
-        ///**
-        // * @ngdoc method
-        // * @name applyActionOnColumn
-        // * @methodOf data-prep.datagrid-header.controller:DatagridHeaderCtrl
-        // * @description Apply a given transformation on the current column
-        // * @param {Object} action The action to apply
-        // */
-        //vm.applyActionOnColumn = function applyActionOnColumn(action) {
-        //    vm.applyAction({
-        //        action: action,
-        //        actionScope: 'column'
-        //    });
-        //};
     }
 
     angular.module('talend.widget')

@@ -105,6 +105,22 @@
                         transformationsForInvalidCells: _.filter(values[1].allTransformations, isAppliedToCells(INVALID_CELLS))
                     });
 
+<<<<<<< HEAD
+=======
+                    if(!service.transformationsForEmptyCells.length){
+                        service.transformationsForEmptyCells = _.chain(values[1])
+                            .filter(isAppliedToCells(EMPTY_CELLS))
+                            .sortBy(labelCriteria)
+                            .value();
+                    }
+
+                    if(!service.transformationsForInvalidCells.length){
+                        service.transformationsForInvalidCells = _.chain(values[1])
+                            .filter(isAppliedToCells(INVALID_CELLS))
+                            .sortBy(labelCriteria)
+                            .value();
+                    }
+>>>>>>> TDP-1023 reusable qualityBar widget
                 })
                 .finally(function () {
                     StateService.setSuggestionsLoading(false);

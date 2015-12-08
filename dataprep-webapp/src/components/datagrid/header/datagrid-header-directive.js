@@ -20,7 +20,7 @@
      </datagrid-header>
      * @param {object} column The column metadata
      */
-    function DatagridHeader($timeout, $compile) {
+    function DatagridHeader($timeout) {
         return {
             restrict: 'E',
             templateUrl: 'components/datagrid/header/datagrid-header.html',
@@ -173,25 +173,6 @@
                     iElement.on('$destroy', function () {
                         scope.$destroy();
                     });
-
-                    scope.$watch(
-                        function () {
-                            return ctrl.column.quality;
-                        },
-                        function (newQuality) {
-                            if (newQuality) {
-                                $timeout(function(){
-                                    var validMenuContent = $compile(iElement.find('.valid-menu-item >'))(scope);
-                                    var emptyMenuContent = $compile(iElement.find('.empty-menu-items >'))(scope);
-                                    var invalidMenuContent = $compile(iElement.find('.invalid-menu-items >'))(scope);
-
-                                    iElement.find('.valid-partition .quality-bar-menu').eq(0).append(validMenuContent);
-                                    iElement.find('.empty-partition .quality-bar-menu').eq(0).append(emptyMenuContent);
-                                    iElement.find('.invalid-partition .quality-bar-menu').eq(0).append(invalidMenuContent);
-                                }, 300);
-                            }
-                        }
-                    );
                 }
             }
         };

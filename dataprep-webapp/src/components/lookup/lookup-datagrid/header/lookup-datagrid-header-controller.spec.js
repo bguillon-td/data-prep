@@ -35,7 +35,7 @@ describe('Lookup datagrid header controller', function () {
             id: '0001'
         };
         //when
-        var showCheckbox = ctrl.showHideCheckbox();
+        var showCheckbox = ctrl.showCheckbox();
 
         //then
         expect(showCheckbox).toBeTruthy();
@@ -48,7 +48,7 @@ describe('Lookup datagrid header controller', function () {
             id: '0000'
         };
         //when
-        var showCheckbox = ctrl.showHideCheckbox();
+        var showCheckbox = ctrl.showCheckbox();
 
         //then
         expect(showCheckbox).toBeFalsy();

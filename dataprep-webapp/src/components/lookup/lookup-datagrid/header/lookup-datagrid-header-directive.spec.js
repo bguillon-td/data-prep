@@ -31,7 +31,7 @@ describe('Dataset column header directive', function () {
 			$timeout.flush();
 
 			ctrl = element.controller('lookupDatagridHeader');
-			spyOn(ctrl, 'showHideCheckbox').and.returnValue(true);
+			spyOn(ctrl, 'showCheckbox').and.returnValue(true);
 			scope.$digest();
 		};
 	}));

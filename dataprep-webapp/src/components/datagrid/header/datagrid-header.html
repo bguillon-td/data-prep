@@ -27,6 +27,7 @@
 </div>
 
 <quality-bar enter-animation="true"
+             has-menu="true"
              quality="datagridHeaderCtrl.column.quality">
 
     <div class="valid-menu-item">
@@ -43,7 +44,7 @@
         <li class="coming-soon"><a><span translate-once="FILL_EMPTY_WITH_TOP_VALUE"></span></a></li>
         <li class="coming-soon"><a><span translate-once="FILL_EMPTY_WITH_BOTTOM_VALUE"></span></a></li>
 
-        <li ng-repeat="transfo in datagridHeaderCtrl.columnSuggestionService.transformationsForEmptyCells" ng-click="datagridHeaderCtrl.transformationApplicationService.append(transfo, 'column')">
+        <li ng-repeat="transfo in datagridHeaderCtrl.columnSuggestionService.transformationsForEmptyCells track by $index" ng-click="datagridHeaderCtrl.transformationApplicationService.append(transfo, 'column')">
             <a>{{transfo.label}}</a>
         </li>
     </div>
@@ -56,7 +57,7 @@
         <li class="coming-soon"><a><span translate-once="REPLACE_INVALID_WITH_TOP_VALUE"></span></a></li>
         <li class="coming-soon"><a><span translate-once="REPLACE_INVALID_WITH_BOTTOM_VALUE"></span></a></li>
 
-        <li ng-repeat="transfo in datagridHeaderCtrl.columnSuggestionService.transformationsForInvalidCells" ng-click="datagridHeaderCtrl.transformationApplicationService.append(transfo, 'column')">
+        <li ng-repeat="transfo in datagridHeaderCtrl.columnSuggestionService.transformationsForInvalidCells track by $index" ng-click="datagridHeaderCtrl.transformationApplicationService.append(transfo, 'column')">
             <a>{{transfo.label}}</a>
         </li>
     </div>
