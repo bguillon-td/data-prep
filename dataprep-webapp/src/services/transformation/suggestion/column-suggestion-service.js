@@ -97,30 +97,20 @@
                     var suggestions = prepareSuggestions(values[0], values[1].allCategories);
                     allCategories = prepareTransformations(suggestions, values[1].allCategories);
 
-                    StateService.setColumnTransformations({
+                    var colTransformations = {
                         allSuggestions: values[0],
                         allTransformations: values[1].allTransformations,
-                        filteredTransformations: allCategories,
-                        transformationsForEmptyCells: _.filter(values[1].allTransformations, isAppliedToCells(EMPTY_CELLS)),
-                        transformationsForInvalidCells: _.filter(values[1].allTransformations, isAppliedToCells(INVALID_CELLS))
-                    });
+                        filteredTransformations: allCategories
+                    };
+                    colTransformations.transformationsForEmptyCells = !state.playground.suggestions.column.transformationsForEmptyCells.length ?
+                                                                        _.filter(values[1].allTransformations, isAppliedToCells(EMPTY_CELLS)):
+                                                                        state.playground.suggestions.column.transformationsForEmptyCells;
 
-<<<<<<< HEAD
-=======
-                    if(!service.transformationsForEmptyCells.length){
-                        service.transformationsForEmptyCells = _.chain(values[1])
-                            .filter(isAppliedToCells(EMPTY_CELLS))
-                            .sortBy(labelCriteria)
-                            .value();
-                    }
+                    colTransformations.transformationsForInvalidCells = !state.playground.suggestions.column.transformationsForInvalidCells.length ?
+                                                                        _.filter(values[1].allTransformations, isAppliedToCells(INVALID_CELLS)):
+                                                                        state.playground.suggestions.column.transformationsForInvalidCells;
 
-                    if(!service.transformationsForInvalidCells.length){
-                        service.transformationsForInvalidCells = _.chain(values[1])
-                            .filter(isAppliedToCells(INVALID_CELLS))
-                            .sortBy(labelCriteria)
-                            .value();
-                    }
->>>>>>> TDP-1023 reusable qualityBar widget
+                    StateService.setColumnTransformations(colTransformations);
                 })
                 .finally(function () {
                     StateService.setSuggestionsLoading(false);
@@ -215,12 +205,11 @@
          * @description Reset the current column and the transformations
          */
         function reset() {
+            //TODO move reset to the suggestionsState
             state.playground.suggestions.column.allTransformations = [];
             state.playground.suggestions.column.allSuggestions = [];
             service.searchActionString = '';
             state.playground.suggestions.column.filteredTransformations = [];
-            state.playground.suggestions.column.transformationsForEmptyCells = [];
-            state.playground.suggestions.column.transformationsForInvalidCells = [];
             allCategories = null;
         }
     }

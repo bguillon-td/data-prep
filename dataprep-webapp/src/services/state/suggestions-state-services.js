@@ -45,13 +45,9 @@
                 filteredTransformations: [],
                 allCategories: null
             };
-            suggestionsState.column = {
-                allSuggestions: [],
-                allTransformations: [],
-                filteredTransformations: [],
-                transformationsForEmptyCells: [],
-                transformationsForInvalidCells: []
-            };
+            suggestionsState.column.allSuggestions =  [];
+            suggestionsState.column.allTransformations =  [];
+            suggestionsState.column.filteredTransformations =  [];
         }
     }
 

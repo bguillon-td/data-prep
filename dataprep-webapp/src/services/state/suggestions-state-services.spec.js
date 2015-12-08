@@ -114,11 +114,8 @@ describe('Grid state service', function () {
             expect(suggestionsState.column.allSuggestions).toEqual([]);
             expect(suggestionsState.column.allTransformations).toEqual([]);
             expect(suggestionsState.column.filteredTransformations).toEqual([]);
-            expect(suggestionsState.column.transformationsForInvalidCells).toEqual([]);
-            expect(suggestionsState.column.transformationsForEmptyCells).toEqual([]);
+            expect(suggestionsState.column.transformationsForInvalidCells).toEqual([{}]);
+            expect(suggestionsState.column.transformationsForEmptyCells).toEqual([{}]);
         }));
-
-
-
     });
 });
