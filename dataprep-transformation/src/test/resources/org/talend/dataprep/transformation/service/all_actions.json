@@ -2242,5 +2242,68 @@
         "default": ""
       }
     ]
+  },
+  {
+    "category": "column_metadata",
+    "name": "create_new_column",
+    "dynamic": false,
+    "parameters": [
+      {
+        "name": "column_id",
+        "type": "string",
+        "implicit": true,
+        "canBeBlank": true,
+        "default": ""
+      },
+      {
+        "name": "row_id",
+        "type": "string",
+        "implicit": true,
+        "canBeBlank": true,
+        "default": ""
+      },
+      {
+        "name": "scope",
+        "type": "string",
+        "implicit": true,
+        "canBeBlank": true,
+        "default": ""
+      },
+      {
+        "name": "filter",
+        "type": "filter",
+        "implicit": true,
+        "canBeBlank": true,
+        "default": ""
+      },
+      {
+        "name": "mode_new_column",
+        "type": "select",
+        "default": "Another column",
+        "configuration": {
+          "values": [
+            {
+              "value": "Another column",
+              "parameters": [
+                {
+                  "name": "selected_column",
+                  "type": "column",
+                  "implicit": false,
+                  "canBeBlank": false,
+                  "default": ""
+                }
+              ]
+            },
+            {
+              "value": "A constant"
+            },
+            {
+              "value": "Nothing, this column will be empty"
+            }
+          ],
+          "multiple": false
+        }
+      }
+    ]
   }
 ]
