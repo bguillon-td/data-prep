@@ -16,12 +16,10 @@
      */
     function LookupDatagridColumnService(state, $rootScope, $compile, LookupDatagridStyleService) {
         var grid;
-        var availableHeaders = [];
         var colIndexName = 'tdpId';
 
         return {
             init: init,
-            renewAllColumns: renewAllColumns,
             createColumns: createColumns
         };
 
@@ -87,29 +85,6 @@
         //------------------------------------------------------------------------------------------------------
         /**
          * @ngdoc method
-         * @name destroyHeader
-         * @methodOf data-prep.lookup.service:LookupDatagridColumnService
-         * @param {object} headerDefinition The header definition that contains scope (the angular scope) and header (the element)
-         * @description Destroy the angular scope and header element
-         */
-        function destroyHeader(headerDefinition) {
-            headerDefinition.scope.$destroy();
-            headerDefinition.header.remove();
-        }
-
-        /**
-         * @ngdoc method
-         * @name renewAllColumns
-         * @methodOf data-prep.lookup.service:LookupDatagridColumnService
-         * @description Set the 'renewAllFlag' with provided value to control whether the headers should be reused or recreated
-         */
-        function renewAllColumns() {
-            _.forEach(availableHeaders, destroyHeader);
-            availableHeaders = [];
-        }
-
-        /**
-         * @ngdoc method
          * @name createHeader
          * @methodOf data-prep.lookup.service:LookupDatagridColumnService
          * @description [PRIVATE] Create a column header object containing
@@ -139,8 +114,7 @@
          * @methodOf data-prep.lookup.service:LookupDatagridColumnService
          * @param {object} event The Slickgrid header creation event
          * @param {object} columnsArgs The column header arguments passed by SlickGrid
-         * @description This is part of the process to avoid recreation od the lookup-datagrid header when it is not necessary.
-         * It fetch an existing saved header to reuse it, or create it otherwise.
+         * @description creates and attaches column header
          * The existing header is then updated with the new column metadata.
          */
         function createAndAttachHeader(event, columnsArgs) {
@@ -149,25 +123,7 @@
                 return;
             }
 
-            //Get existing header and remove it from available headers list
-            var headerDefinition = _.find(availableHeaders, {id: columnDef.id});
-            if (headerDefinition) {
-                var headerIndex = availableHeaders.indexOf(headerDefinition);
-                availableHeaders.splice(headerIndex, 1);
-            }
-
-            //Create the header if no available created header, update it otherwise
-            if (headerDefinition) {
-                headerDefinition.scope.column = columnDef.tdpColMetadata;
-                headerDefinition.scope.$digest();
-            }
-            else {
-                headerDefinition = createHeader(columnDef.tdpColMetadata);
-            }
-
-            //Update column definition
-            columnDef.scope = headerDefinition.scope;
-            columnDef.header = headerDefinition.header;
+            var headerDefinition = createHeader(columnDef.tdpColMetadata);
 
             //Append the header
             var node = angular.element(columnsArgs.node);

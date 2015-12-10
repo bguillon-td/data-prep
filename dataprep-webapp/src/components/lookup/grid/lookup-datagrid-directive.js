@@ -14,12 +14,11 @@
      * @requires data-prep.lookup.service:LookupDatagridGridService
      * @requires data-prep.lookup.service:LookupDatagridColumnService
      * @requires data-prep.lookup.service:LookupDatagridStyleService
-     * @requires data-prep.lookup.service:LookupDatagridSizeService
      * @requires data-prep.lookup.service:LookupDatagridTooltipService
      * @restrict E
      */
-    function LookupDatagrid(state, LookupDatagridGridService, LookupDatagridColumnService, LookupDatagridStyleService,
-                            LookupDatagridSizeService, LookupDatagridTooltipService) {
+    function LookupDatagrid(state, LookupDatagridGridService, LookupDatagridColumnService,
+                            LookupDatagridStyleService, LookupDatagridTooltipService) {
         return {
             restrict: 'E',
             templateUrl: 'components/lookup/grid/lookup-datagrid.html',
@@ -73,8 +72,7 @@
                             selectedColumn = stateSelectedColumn ? _.find(columns, {id: stateSelectedColumn.id}) : null;
 
                             LookupDatagridStyleService.updateColumnClass(columns, selectedColumn);
-                            LookupDatagridSizeService.autosizeColumns(columns); // IMPORTANT : this set columns in the grid
-                            LookupDatagridColumnService.renewAllColumns();
+                            grid.setColumns(columns); // IMPORTANT : this set columns in the grid
                         }, 0);
                     }
                 };
