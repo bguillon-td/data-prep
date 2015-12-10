@@ -22,7 +22,7 @@
                             LookupDatagridSizeService, LookupDatagridTooltipService) {
         return {
             restrict: 'E',
-            templateUrl: 'components/lookup/lookup-datagrid/lookup-datagrid.html',
+            templateUrl: 'components/lookup/grid/lookup-datagrid.html',
             bindToController: true,
             controllerAs: 'lookupDatagridCtrl',
             controller: 'LookupDatagridCtrl',

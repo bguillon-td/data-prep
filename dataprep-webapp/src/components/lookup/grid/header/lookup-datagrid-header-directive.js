@@ -17,7 +17,7 @@
     function LookupDatagridHeader() {
         return {
             restrict: 'E',
-            templateUrl: 'components/lookup/lookup-datagrid/header/lookup-datagrid-header.html',
+            templateUrl: 'components/lookup/grid/header/lookup-datagrid-header.html',
             scope: {
                 column: '=',
                 added: '='
