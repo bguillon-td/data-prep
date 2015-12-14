@@ -1,4 +1,4 @@
-<div class="whole-grid-header">
+<div class="lookup-grid-header">
     <div class="grid-header">
         <div class="talend-dropdown-text-div">
             <div class="grid-header-title" title="{{ lookupDatagridHeaderCtrl.column.name }}">{{ lookupDatagridHeaderCtrl.column.name }}</div>
@@ -15,7 +15,7 @@
     </quality-bar>
 
     <div class="add-to-lookup">
-        <div ng-if="lookupDatagridHeaderCtrl.showCheckbox()">
+        <div ng-show="lookupDatagridHeaderCtrl.showCheckbox()">
             <input type="checkbox"
                    ng-model="lookupDatagridHeaderCtrl.added.isAdded"
                    ng-click="lookupDatagridHeaderCtrl.updateColsToAdd($event)">

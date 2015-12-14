@@ -14,7 +14,6 @@
 
         return {
             init: init,
-            resetCellStyles: resetCellStyles,
             updateColumnClass: updateColumnClass,
             columnFormatter: columnFormatter
         };
@@ -29,7 +28,6 @@
          */
         function resetCellStyles() {
             grid.resetActiveCell();
-            grid.setCellCssStyles('highlight', {});
         }
 
         /**
@@ -180,7 +178,7 @@
          * @ngdoc method
          * @name attachCellListeners
          * @methodOf data-prep.lookup.service:LookupDatagridStyleService
-         * @description Attach cell action listeners : update columns classes and highlight cells
+         * @description Attach cell action listeners : update columns classes
          */
         function attachCellListeners() {
             grid.onActiveCellChanged.subscribe(function (e, args) {
