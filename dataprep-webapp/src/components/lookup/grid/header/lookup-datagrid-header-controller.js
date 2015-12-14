@@ -40,10 +40,6 @@
             e.stopPropagation();
             StateService.updateLookupColumnsToAdd();
         };
-
-        vm.toggleCheckbox = function toggleCheckbox(e){
-            e.stopPropagation();
-        }
     }
 
     angular.module('data-prep.lookup-datagrid-header')

@@ -24,12 +24,9 @@ describe('Lookup Datagrid grid service', function () {
 		spyOn(dataViewMock.onRowsChanged, 'subscribe').and.returnValue();
 	}));
 
-	beforeEach(inject(function (LookupDatagridColumnService, LookupDatagridStyleService, LookupDatagridSizeService,
-								LookupDatagridExternalService, LookupDatagridTooltipService) {
+	beforeEach(inject(function (LookupDatagridColumnService, LookupDatagridStyleService, LookupDatagridTooltipService) {
 		spyOn(LookupDatagridColumnService, 'init').and.returnValue();
 		spyOn(LookupDatagridStyleService, 'init').and.returnValue();
-		spyOn(LookupDatagridSizeService, 'init').and.returnValue();
-		spyOn(LookupDatagridExternalService, 'init').and.returnValue();
 		spyOn(LookupDatagridTooltipService, 'init').and.returnValue();
 	}));
 
@@ -45,16 +42,13 @@ describe('Lookup Datagrid grid service', function () {
 
 	describe('on creation', function() {
 		it('should init the other datagrid services', inject(function (LookupDatagridGridService, LookupDatagridColumnService,
-																	   LookupDatagridStyleService, LookupDatagridSizeService,
-																	   LookupDatagridExternalService, LookupDatagridTooltipService) {
+																	   LookupDatagridStyleService, LookupDatagridTooltipService) {
 			//when
 			LookupDatagridGridService.initGrid();
 
 			//then
 			expect(LookupDatagridColumnService.init).toHaveBeenCalled();
 			expect(LookupDatagridStyleService.init).toHaveBeenCalled();
-			expect(LookupDatagridSizeService.init).toHaveBeenCalled();
-			expect(LookupDatagridExternalService.init).toHaveBeenCalled();
 			expect(LookupDatagridTooltipService.init).toHaveBeenCalled();
 		}));
 

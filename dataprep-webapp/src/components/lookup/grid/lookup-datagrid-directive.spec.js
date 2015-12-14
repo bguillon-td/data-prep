@@ -30,7 +30,7 @@ describe('Lookup datagrid directive', function() {
 
 	beforeEach(module('htmlTemplates'));
 
-	beforeEach(inject(function($rootScope, $compile, LookupDatagridGridService, LookupDatagridColumnService, LookupDatagridSizeService, LookupDatagridStyleService, LookupDatagridExternalService, StateService) {
+	beforeEach(inject(function($rootScope, $compile, LookupDatagridGridService, LookupDatagridColumnService, LookupDatagridStyleService, StateService) {
 		scope = $rootScope.$new();
 		createElement = function() {
 			element = angular.element('<lookup-datagrid></lookup-datagrid>');
@@ -51,10 +51,7 @@ describe('Lookup datagrid directive', function() {
 
 		spyOn(LookupDatagridGridService, 'initGrid').and.callThrough();
 		spyOn(LookupDatagridColumnService, 'createColumns').and.returnValue(createdColumns);
-		spyOn(LookupDatagridColumnService, 'renewAllColumns').and.returnValue();
-		spyOn(LookupDatagridSizeService, 'autosizeColumns').and.returnValue();
 		spyOn(LookupDatagridStyleService, 'updateColumnClass').and.returnValue();
-		spyOn(LookupDatagridStyleService, 'resetCellStyles').and.returnValue();
 		spyOn(StateService, 'setLookupSelectedColumn').and.returnValue();
 	}));
 
@@ -121,11 +118,6 @@ describe('Lookup datagrid directive', function() {
 					//then
 					expect(LookupDatagridColumnService.createColumns).toHaveBeenCalledWith(data.metadata.columns);
 				}));
-
-				it('should reset renew all columns flag', inject(function(LookupDatagridColumnService) {
-					//then
-					expect(LookupDatagridColumnService.renewAllColumns).toHaveBeenCalledWith();
-				}));
 			});
 
 			describe('column style', function() {
@@ -154,13 +146,6 @@ describe('Lookup datagrid directive', function() {
 
 					//then
 					expect(LookupDatagridStyleService.updateColumnClass).toHaveBeenCalledWith(createdColumns, data.metadata.columns[1]);
-				}));
-			});
-
-			describe('column size', function() {
-				it('should auto size created columns (and set them in grid, done by autosize() function)', inject(function(LookupDatagridSizeService) {
-					//then
-					expect(LookupDatagridSizeService.autosizeColumns).toHaveBeenCalledWith(createdColumns);
 				}));
 			});
 
