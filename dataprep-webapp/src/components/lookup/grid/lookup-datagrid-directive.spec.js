@@ -171,7 +171,6 @@ describe('Lookup datagrid directive', function() {
 				}));
 			});
 
-
 			it('should execute the grid update only once when the second call is triggered before the first timeout', inject(function(LookupDatagridGridService, LookupDatagridColumnService) {
 				//given
 				expect(LookupDatagridColumnService.createColumns.calls.count()).toBe(1);
