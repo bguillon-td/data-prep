@@ -15,7 +15,7 @@
     </quality-bar>
 
     <div class="add-to-lookup">
-        <div ng-show="lookupDatagridHeaderCtrl.showCheckbox()">
+        <div ng-if="lookupDatagridHeaderCtrl.showCheckbox()">
             <input type="checkbox"
                    ng-model="lookupDatagridHeaderCtrl.added.isAdded"
                    ng-click="lookupDatagridHeaderCtrl.updateColsToAdd($event)">
