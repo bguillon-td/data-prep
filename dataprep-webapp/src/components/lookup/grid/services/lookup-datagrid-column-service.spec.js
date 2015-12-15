@@ -17,17 +17,6 @@ describe('Lookup Datagrid column service', function () {
 	}));
 
 	describe('on creation', function () {
-		//it('should add SlickGrid header destroy handler', inject(function (LookupDatagridColumnService) {
-		//	//given
-		//	spyOn(gridMock.onBeforeHeaderCellDestroy, 'subscribe').and.returnValue();
-
-		//	//when
-		//	LookupDatagridColumnService.init(gridMock);
-
-		//	//then
-		//	expect(gridMock.onBeforeHeaderCellDestroy.subscribe).toHaveBeenCalled();
-		//}));
-
 		it('should add SlickGrid header creation handler', inject(function (LookupDatagridColumnService) {
 			//given
 			spyOn(gridMock.onHeaderCellRendered, 'subscribe').and.returnValue();
@@ -127,122 +116,9 @@ describe('Lookup Datagrid column service', function () {
 		}));
 	});
 
-	describe('on column header destroy event', function() {
-		//var columnDef;
-
-		//beforeEach(inject(function(LookupDatagridColumnService) {
-		//	spyOn(gridMock.onBeforeHeaderCellDestroy, 'subscribe').and.returnValue();
-
-		//	columnDef = {
-		//		header: {remove: function() {}, detach: function() {}},
-		//		scope: {$destroy: function() {}}
-		//	};
-
-		//	spyOn(columnDef.header, 'detach').and.returnValue();
-		//	spyOn(columnDef.header, 'remove').and.returnValue();
-		//	spyOn(columnDef.scope, '$destroy').and.returnValue();
-
-		//	LookupDatagridColumnService.init(gridMock);
-		//}));
-
-		//it('should do nothing when column is part of a preview', inject(function(LookupDatagridColumnService) {
-		//	//given
-		//	columnDef.preview = true;
-		//	var columnsArgs = {
-		//		id: '0001',
-		//		column: columnDef
-		//	};
-		//	LookupDatagridColumnService.renewAllColumns(true);
-
-		//	//when
-		//	var onBeforeHeaderCellDestroy = gridMock.onBeforeHeaderCellDestroy.subscribe.calls.argsFor(0)[0];
-		//	onBeforeHeaderCellDestroy(null, columnsArgs);
-
-		//	//then
-		//	expect(columnDef.header.detach).not.toHaveBeenCalled();
-		//	expect(columnDef.header.remove).not.toHaveBeenCalled();
-		//	expect(columnDef.scope.$destroy).not.toHaveBeenCalled();
-		//}));
-
-		//it('should destroy header when renewAllFlag is set to true', inject(function(LookupDatagridColumnService) {
-		//	//given
-		//	columnDef.preview = false;
-		//	var columnsArgs = {
-		//		id: '0001',
-		//		column: columnDef
-		//	};
-		//	LookupDatagridColumnService.renewAllColumns(true);
-
-		//	//when
-		//	var onBeforeHeaderCellDestroy = gridMock.onBeforeHeaderCellDestroy.subscribe.calls.argsFor(0)[0];
-		//	onBeforeHeaderCellDestroy(null, columnsArgs);
-
-		//	//then
-		//	expect(columnDef.header.detach).not.toHaveBeenCalled();
-		//	expect(columnDef.header.remove).toHaveBeenCalled();
-		//	expect(columnDef.scope.$destroy).toHaveBeenCalled();
-		//}));
-
-		//it('should detach header when renewAllFlag is set to false', inject(function(LookupDatagridColumnService) {
-		//	//given
-		//	columnDef.preview = false;
-		//	var columnsArgs = {
-		//		id: '0001',
-		//		column: columnDef
-		//	};
-		//	LookupDatagridColumnService.renewAllColumns(false);
-
-		//	//when
-		//	var onBeforeHeaderCellDestroy = gridMock.onBeforeHeaderCellDestroy.subscribe.calls.argsFor(0)[0];
-		//	onBeforeHeaderCellDestroy(null, columnsArgs);
-
-		//	//then
-		//	expect(columnDef.header.detach).toHaveBeenCalled();
-		//	expect(columnDef.header.remove).not.toHaveBeenCalled();
-		//	expect(columnDef.scope.$destroy).not.toHaveBeenCalled();
-		//}));
-
-		//it('should NOT detach header for index column', inject(function(LookupDatagridColumnService) {
-		//	//given
-		//	columnDef.preview = false;
-		//	var columnsArgs = {
-		//		id: 'tdpId',
-		//		column: {
-		//			id: 'tdpId',
-		//			header: {remove: function() {}, detach: function() {}},
-		//			scope: {$destroy: function() {}}
-		//		}
-		//	};
-		//	LookupDatagridColumnService.renewAllColumns(false);
-
-		//	//when
-		//	var onBeforeHeaderCellDestroy = gridMock.onBeforeHeaderCellDestroy.subscribe.calls.argsFor(0)[0];
-		//	onBeforeHeaderCellDestroy(null, columnsArgs);
-
-		//	//then
-		//	expect(columnDef.header.detach).not.toHaveBeenCalled();
-		//}));
-	});
-
 	describe('on column header rendered event', function() {
 		var availableScope;
 		var availableHeader;
-
-		//function saveHeader(id, scope, header) {
-			//var columnsToDestroy = {
-			//	id: id,
-			//	scope: scope,
-			//	header: header,
-			//	preview: false
-			//};
-			//var headerToDetach = {
-			//	column: columnsToDestroy
-			//};
-
-			//destroy to save header in the available headers
-			//var onBeforeHeaderCellDestroy = gridMock.onBeforeHeaderCellDestroy.subscribe.calls.argsFor(0)[0];
-			//onBeforeHeaderCellDestroy(null, headerToDetach);
-		//}
 
 		beforeEach(inject(function(LookupDatagridColumnService) {
 			//spyOn(gridMock.onBeforeHeaderCellDestroy, 'subscribe').and.returnValue();
@@ -257,30 +133,6 @@ describe('Lookup Datagrid column service', function () {
 
 			spyOn(availableScope, '$digest').and.returnValue();
 		}));
-
-	//it('should attach and update available header that has the same id', inject(function() {
-	//	//given
-	//	var columnsArgs = {
-	//		column:  {
-	//			id: '0001',
-	//			tdpColMetadata: {}
-	//		},
-	//		node: angular.element('<div></div>')[0]
-	//	};
-
-	//	//when
-	//	var onHeaderCellRendered = gridMock.onHeaderCellRendered.subscribe.calls.argsFor(0)[0];
-	//	onHeaderCellRendered(null, columnsArgs);
-
-	//	//then
-	//	expect(availableScope.column).toBe(columnsArgs.column.tdpColMetadata);
-	//	expect(availableScope.$digest).toHaveBeenCalled();
-
-	//	expect(columnsArgs.column.header).toBe(availableHeader);
-	//	expect(columnsArgs.column.scope).toBe(availableScope);
-
-	//	expect(angular.element(columnsArgs.node).find('#availableHeader').length).toBe(1);
-	//}));
 
 		it('should create and attach a new header', inject(function() {
 			//given
@@ -297,12 +149,6 @@ describe('Lookup Datagrid column service', function () {
 			onHeaderCellRendered(null, columnsArgs);
 
 			//then
-			expect(columnsArgs.column.scope).toBeDefined();
-			expect(columnsArgs.column.header).toBeDefined();
-
-			expect(columnsArgs.column.header).not.toBe(availableHeader);
-			expect(columnsArgs.column.scope).not.toBe(availableScope);
-
 			expect(angular.element(columnsArgs.node).find('lookup-datagrid-header').length).toBe(1);
 		}));
 
@@ -320,9 +166,6 @@ describe('Lookup Datagrid column service', function () {
 			onHeaderCellRendered(null, columnsArgs);
 
 			//then
-			expect(columnsArgs.column.scope).not.toBeDefined();
-			expect(columnsArgs.column.header).not.toBeDefined();
-
 			expect(angular.element(columnsArgs.node).find('lookup-datagrid-header').length).toBe(0);
 		}));
 	});

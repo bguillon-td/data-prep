@@ -6,7 +6,23 @@ describe('Lookup Datagrid grid service', function () {
 
 	var realSlickGrid = Slick;
 	var dataViewMock, stateMock;
+	var gridMock;
 
+	var gridColumns = [
+		{id: '0000', field: 'col0', tdpColMetadata: {id: '0000', name: 'col0'}},
+		{id: '0001', field: 'col1', tdpColMetadata: {id: '0001', name: 'col1111111111111'}},
+		{id: '0002', field: 'col2', tdpColMetadata: {id: '0002', name: 'col2'}},
+		{id: '0003', field: 'col3', tdpColMetadata: {id: '0003', name: 'col3'}},
+		{id: '0004', field: 'col4', tdpColMetadata: {id: '0004', name: 'col4'}},
+		{id: 'tdpId', field: 'tdpId', tdpColMetadata: {id: 'tdpId', name: 'tdpId'}}
+	];
+
+	var gridEventsSpy = function(){
+		spyOn(gridMock.onActiveCellChanged, 'subscribe').and.returnValue();
+		spyOn(gridMock.onHeaderClick, 'subscribe').and.returnValue();
+		spyOn(gridMock.onHeaderContextMenu, 'subscribe').and.returnValue();
+	}
+;
 	beforeEach(module('data-prep.lookup'));
 
 	beforeEach(function () {
@@ -59,6 +75,35 @@ describe('Lookup Datagrid grid service', function () {
 			//then
 			expect(stateMock.playground.lookup.dataView.onRowCountChanged.subscribe).toHaveBeenCalled();
 			expect(stateMock.playground.lookup.dataView.onRowsChanged.subscribe).toHaveBeenCalled();
+		}));
+
+		it('should add grid active cell change listener', inject(function ($rootScope, LookupDatagridGridService) {
+			//when
+			gridMock = LookupDatagridGridService.initGrid();
+			gridEventsSpy();
+
+			//then
+			expect(gridMock.onActiveCellChanged.subscribe).toHaveBeenCalled();
+		}));
+
+		it('should add header click listener', inject(function (LookupDatagridGridService) {
+			//when
+			gridMock = LookupDatagridGridService.initGrid();
+			gridEventsSpy();
+			$rootScope.$digest();
+
+			//then
+			expect(gridMock.onHeaderClick.subscribe).toHaveBeenCalled();
+		}));
+
+		it('should add header right click listener', inject(function (LookupDatagridGridService) {
+			//when
+			gridMock = LookupDatagridGridService.initGrid();
+			gridEventsSpy();
+			$rootScope.$digest();
+
+			//then
+			expect(gridMock.onHeaderContextMenu.subscribe).toHaveBeenCalled();
 		}));
 	});
 

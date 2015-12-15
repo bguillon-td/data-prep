@@ -1,13 +1,14 @@
 describe('Lookup datagrid directive', function() {
 	'use strict';
 
-	var stateMock, dataViewMock, scope, createElement, element, grid,
-		createdColumns = [
-			{id: 'tdpId'},
-			{id: '0000', tdpColMetadata: {id: '0000'}},
-			{id: '0001', tdpColMetadata: {id: '0001'}},
-			{id: '0002', tdpColMetadata: {id: '0002'}}
-		];
+	var stateMock, dataViewMock, scope, createElement, element, grid;
+
+	var createdColumns = [
+		{id: 'tdpId'},
+		{id: '0000', tdpColMetadata: {id: '0000'}},
+		{id: '0001', tdpColMetadata: {id: '0001'}},
+		{id: '0002', tdpColMetadata: {id: '0002'}}
+	];
 
 	beforeEach(function () {
 		dataViewMock = new DataViewMock();
@@ -30,7 +31,7 @@ describe('Lookup datagrid directive', function() {
 
 	beforeEach(module('htmlTemplates'));
 
-	beforeEach(inject(function($rootScope, $compile, LookupDatagridGridService, LookupDatagridColumnService, LookupDatagridStyleService, StateService) {
+	beforeEach(inject(function($rootScope, $compile, LookupDatagridGridService, LookupDatagridColumnService, LookupDatagridStyleService) {
 		scope = $rootScope.$new();
 		createElement = function() {
 			element = angular.element('<lookup-datagrid></lookup-datagrid>');
@@ -45,14 +46,13 @@ describe('Lookup datagrid directive', function() {
 		var realInitGrid = LookupDatagridGridService.initGrid;
 		LookupDatagridGridService.initGrid = function(parentId) {
 			grid = realInitGrid(parentId);
+			spyOn(grid, 'setColumns').and.returnValue();
 			spyOn(grid, 'invalidate').and.returnValue();
 			return grid;
 		};
 
 		spyOn(LookupDatagridGridService, 'initGrid').and.callThrough();
-		spyOn(LookupDatagridColumnService, 'createColumns').and.returnValue(createdColumns);
 		spyOn(LookupDatagridStyleService, 'updateColumnClass').and.returnValue();
-		spyOn(StateService, 'setLookupSelectedColumn').and.returnValue();
 	}));
 
 	beforeEach(function() {
@@ -69,8 +69,10 @@ describe('Lookup datagrid directive', function() {
 	describe('on data change', function() {
 		var data;
 
-		beforeEach(inject(function() {
+		beforeEach(inject(function(LookupDatagridColumnService) {
 			//given
+			spyOn(LookupDatagridColumnService, 'createColumns').and.returnValue(createdColumns);
+
 			createElement();
             data = {
                 metadata: {
@@ -98,7 +100,7 @@ describe('Lookup datagrid directive', function() {
 				expect(LookupDatagridGridService.initGrid.calls.count()).toBe(1);
 
 				//when
-				stateMock.playground.lookupData = {};
+				stateMock.playground.lookupData = {metadata:{}};
 				scope.$digest();
 
 				//then
@@ -121,7 +123,7 @@ describe('Lookup datagrid directive', function() {
 			});
 
 			describe('column style', function() {
-				it('should reset cell styles when there is a selected cell', inject(function(LookupDatagridStyleService) {
+				it('should reset cell styles when there is a selected column', inject(function(LookupDatagridStyleService) {
 					//given
 					stateMock.playground.lookup.selectedColumn = {id: '0001'};
 
@@ -131,7 +133,20 @@ describe('Lookup datagrid directive', function() {
 					jasmine.clock().tick(1);
 
 					//then
-					expect(LookupDatagridStyleService.updateColumnClass).toHaveBeenCalledWith(createdColumns, createdColumns[2]);
+					expect(LookupDatagridStyleService.updateColumnClass).toHaveBeenCalledWith(createdColumns, data.metadata.columns[1]);
+				}));
+
+				it('should reset cell styles when there is NOT a selected cell', inject(function(LookupDatagridStyleService) {
+					//given
+					stateMock.playground.lookup.selectedColumn = undefined;
+
+					//when
+					stateMock.playground.lookupData = {metadata:{}};
+					scope.$digest();
+					jasmine.clock().tick(1);
+
+					//then
+					expect(LookupDatagridStyleService.updateColumnClass).toHaveBeenCalledWith(createdColumns, null);
 				}));
 
 				it('should update selected column style', inject(function(LookupDatagridStyleService) {
@@ -149,6 +164,14 @@ describe('Lookup datagrid directive', function() {
 				}));
 			});
 
+			describe('with new columns', function() {
+				it('should create new columns', inject(function() {
+					//then
+					expect(grid.setColumns).toHaveBeenCalledWith(createdColumns);
+				}));
+			});
+
+
 			it('should execute the grid update only once when the second call is triggered before the first timeout', inject(function(LookupDatagridGridService, LookupDatagridColumnService) {
 				//given
 				expect(LookupDatagridColumnService.createColumns.calls.count()).toBe(1);
@@ -163,7 +186,7 @@ describe('Lookup datagrid directive', function() {
 
 				stateMock.playground.lookupData = {metadata:{}};
 				scope.$digest();
-				jasmine.clock().tick(300);
+				jasmine.clock().tick(1);
 
 				//then
 				expect(LookupDatagridColumnService.createColumns.calls.count()).toBe(2);

@@ -12,78 +12,78 @@
 //		{id: 'tdpId', field: 'tdpId', tdpColMetadata: {id: 'tdpId', name: 'tdpId'}}
 //	];
 //
-//	beforeEach(module('data-prep.lookup'));
-//
-//	beforeEach(inject(function (StateService) {
-//		/*global SlickGridMock:false */
-//		gridMock = new SlickGridMock();
-//		gridMock.initColumnsMock(gridColumns);
-//
-//		spyOn(gridMock.onActiveCellChanged, 'subscribe').and.returnValue();
-//		spyOn(gridMock.onHeaderClick, 'subscribe').and.returnValue();
-//		spyOn(gridMock.onHeaderContextMenu, 'subscribe').and.returnValue();
-//
-//		spyOn(StateService, 'setLookupSelectedColumn').and.returnValue();
-//	}));
-//
-//
-//	describe('on creation', function () {
-//		it('should add grid active cell change listener', inject(function (LookupDatagridExternalService) {
-//			//when
-//			LookupDatagridExternalService.init(gridMock);
-//
-//			//then
-//			expect(gridMock.onActiveCellChanged.subscribe).toHaveBeenCalled();
-//		}));
-//
-//		it('should add header click listener', inject(function (LookupDatagridExternalService) {
-//			//when
-//			LookupDatagridExternalService.init(gridMock);
-//
-//			//then
-//			expect(gridMock.onHeaderClick.subscribe).toHaveBeenCalled();
-//		}));
-//
-//		it('should add header right click listener', inject(function (LookupDatagridExternalService) {
-//			//when
-//			LookupDatagridExternalService.init(gridMock);
-//
-//			//then
-//			expect(gridMock.onHeaderContextMenu.subscribe).toHaveBeenCalled();
-//		}));
-//	});
-//
-//	describe('on active cell event', function () {
-//		it('should update current selectedColumn', inject(function ($timeout, LookupDatagridExternalService, StateService) {
-//			//given
-//			LookupDatagridExternalService.init(gridMock);
-//			var args = {cell: 1};
-//
-//			//when
-//			var onActiveCellChanged = gridMock.onActiveCellChanged.subscribe.calls.argsFor(0)[0];
-//			onActiveCellChanged(null, args);
-//
-//			//then
-//			expect(StateService.setLookupSelectedColumn).toHaveBeenCalled();
-//		}));
-//
-//		it('should NOT update current selectedColumn on cell changed', inject(function ($timeout, LookupDatagridExternalService, StateService) {
-//			//given
-//			LookupDatagridExternalService.init(gridMock);
-//			var args = {cell: 1};
-//
-//
-//			var onActiveCellChanged = gridMock.onActiveCellChanged.subscribe.calls.argsFor(0)[0];
-//			onActiveCellChanged(null, args);
-//			expect(StateService.setLookupSelectedColumn.calls.count()).toBe(1);
-//
-//			//when
-//			onActiveCellChanged(null, {cell: 1});
-//
-//			//then
-//			expect(StateService.setLookupSelectedColumn.calls.count()).toBe(1);
-//		}));
-//	});
+/*	beforeEach(module('data-prep.lookup'));
+
+	beforeEach(inject(function (StateService) {
+		/!*global SlickGridMock:false *!/
+		gridMock = new SlickGridMock();
+		gridMock.initColumnsMock(gridColumns);
+
+		spyOn(gridMock.onActiveCellChanged, 'subscribe').and.returnValue();
+		spyOn(gridMock.onHeaderClick, 'subscribe').and.returnValue();
+		spyOn(gridMock.onHeaderContextMenu, 'subscribe').and.returnValue();
+
+		spyOn(StateService, 'setLookupSelectedColumn').and.returnValue();
+	}));*/
+/*
+
+	describe('on creation', function () {
+		it('should add grid active cell change listener', inject(function (LookupDatagridExternalService) {
+			//when
+			LookupDatagridExternalService.init(gridMock);
+
+			//then
+			expect(gridMock.onActiveCellChanged.subscribe).toHaveBeenCalled();
+		}));
+
+		it('should add header click listener', inject(function (LookupDatagridExternalService) {
+			//when
+			LookupDatagridExternalService.init(gridMock);
+
+			//then
+			expect(gridMock.onHeaderClick.subscribe).toHaveBeenCalled();
+		}));
+
+		it('should add header right click listener', inject(function (LookupDatagridExternalService) {
+			//when
+			LookupDatagridExternalService.init(gridMock);
+
+			//then
+			expect(gridMock.onHeaderContextMenu.subscribe).toHaveBeenCalled();
+		}));
+	});*/
+/*
+	describe('on active cell event', function () {
+		it('should update current selectedColumn', inject(function ($timeout, LookupDatagridExternalService, StateService) {
+			//given
+			LookupDatagridExternalService.init(gridMock);
+			var args = {cell: 1};
+
+			//when
+			var onActiveCellChanged = gridMock.onActiveCellChanged.subscribe.calls.argsFor(0)[0];
+			onActiveCellChanged(null, args);
+
+			//then
+			expect(StateService.setLookupSelectedColumn).toHaveBeenCalled();
+		}));
+
+		it('should NOT update current selectedColumn on cell changed', inject(function ($timeout, LookupDatagridExternalService, StateService) {
+			//given
+			LookupDatagridExternalService.init(gridMock);
+			var args = {cell: 1};
+
+
+			var onActiveCellChanged = gridMock.onActiveCellChanged.subscribe.calls.argsFor(0)[0];
+			onActiveCellChanged(null, args);
+			expect(StateService.setLookupSelectedColumn.calls.count()).toBe(1);
+
+			//when
+			onActiveCellChanged(null, {cell: 1});
+
+			//then
+			expect(StateService.setLookupSelectedColumn.calls.count()).toBe(1);
+		}));
+	});*/
 //
 //
 //	describe('on header click event', function () {
