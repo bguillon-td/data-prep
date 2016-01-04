@@ -43,6 +43,7 @@ import org.talend.dataprep.schema.csv.CSVFormatGuesser;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.jayway.restassured.response.Response;
+import org.talend.dataprep.security.Security;
 
 public class DataSetServiceTests extends DataSetBaseTest {
 
@@ -67,6 +68,9 @@ public class DataSetServiceTests extends DataSetBaseTest {
     /** DataPrep jackson ready to use builder. */
     @Autowired
     Jackson2ObjectMapperBuilder builder;
+
+    @Autowired
+    private Security security;
 
     @Test
     public void CORSHeaders() throws Exception {
@@ -112,7 +116,7 @@ public class DataSetServiceTests extends DataSetBaseTest {
         assertFalse(favoritesResp.get(1));
 
         // add favorite
-        UserData userData = new UserData("anonymousUser");
+        UserData userData = new UserData(security.getUserId());
         HashSet<String> favorites = new HashSet<>();
         favorites.add(id1);
         favorites.add(id2);
@@ -340,7 +344,7 @@ public class DataSetServiceTests extends DataSetBaseTest {
         dataSetMetadataRepository.add(dataSetMetadata);
         contentStore.storeAsRaw(dataSetMetadata, new ByteArrayInputStream(new byte[0]));
 
-        final UserData userData = new UserData("anonymousUser");
+        final UserData userData = new UserData(security.getUserId());
         userDataRepository.save(userData);
         final Set<String> favorites = new HashSet<>();
         favorites.add(datasetId);
@@ -751,7 +755,7 @@ public class DataSetServiceTests extends DataSetBaseTest {
         assertFalse(isFavorites);
 
         // add favorite
-        UserData userData = new UserData("anonymousUser");
+        UserData userData = new UserData(security.getUserId());
         HashSet<String> favorites = new HashSet<>();
         favorites.add("1234");
         userData.setFavoritesDatasets(favorites);
@@ -841,8 +845,7 @@ public class DataSetServiceTests extends DataSetBaseTest {
         when().get("/datasets/favorites").then().statusCode(HttpStatus.OK.value()).body(equalTo("[]"));
         String dsId1 = UUID.randomUUID().toString();
         String dsId2 = UUID.randomUUID().toString();
-        // this test assumes that the default user id is "anonymousUser"
-        UserData userData = new UserData("anonymousUser");
+        UserData userData = new UserData(security.getUserId());
         HashSet<String> favorites = new HashSet<>();
         favorites.add(dsId1);
         favorites.add(dsId2);
