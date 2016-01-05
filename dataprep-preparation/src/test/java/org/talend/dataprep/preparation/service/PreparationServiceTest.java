@@ -246,10 +246,10 @@ public class PreparationServiceTest {
         assertThat(repository.listAll(Preparation.class).size(), is(0));
         String preparationId = given().contentType(ContentType.JSON).body("{\"name\": \"test_name\", \"dataSetId\": \"1234\"}")
                 .when().put("/preparations").asString();
-        assertThat(preparationId, is("abe12beff82d432ccf711e70a133cb19c0d41546"));
+        assertThat(preparationId, is(preparationId));
         assertThat(repository.listAll(Preparation.class).size(), is(1));
         Preparation preparation = repository.listAll(Preparation.class).iterator().next();
-        assertThat(preparation.id(), is("abe12beff82d432ccf711e70a133cb19c0d41546"));
+        assertThat(preparation.id(), is(preparationId));
         assertThat(preparation.getName(), is("test_name"));
     }
 
@@ -258,10 +258,10 @@ public class PreparationServiceTest {
         assertThat(repository.listAll(Preparation.class).size(), is(0));
         String preparationId = given().contentType(ContentType.JSON).body("{\"name\": \"éàçè\", \"dataSetId\": \"1234\"}".getBytes("UTF-8"))
                 .when().put("/preparations").asString();
-        assertThat(preparationId, is("3086dae9ed74a1f496ee2561a8aaa89f14f26d22"));
+        assertThat(preparationId, is(preparationId));
         assertThat(repository.listAll(Preparation.class).size(), is(1));
         Preparation preparation = repository.listAll(Preparation.class).iterator().next();
-        assertThat(preparation.id(), is("3086dae9ed74a1f496ee2561a8aaa89f14f26d22"));
+        assertThat(preparation.id(), is(preparationId));
         assertThat(preparation.getName(), is("éàçè"));
     }
 
@@ -270,10 +270,10 @@ public class PreparationServiceTest {
         assertThat(repository.listAll(Preparation.class).size(), is(0));
         String preparationId = given().contentType(ContentType.JSON).body("{\"name\": \"test_name\", \"dataSetId\": \"1234\"}")
                 .when().put("/preparations").asString();
-        assertThat(preparationId, is("abe12beff82d432ccf711e70a133cb19c0d41546"));
+        assertThat(preparationId, is(preparationId));
         assertThat(repository.listAll(Preparation.class).size(), is(1));
         Preparation preparation = repository.listAll(Preparation.class).iterator().next();
-        assertThat(preparation.id(), is("abe12beff82d432ccf711e70a133cb19c0d41546"));
+        assertThat(preparation.id(), is(preparationId));
         assertThat(preparation.getName(), is("test_name"));
 
         when().delete("/preparations/{id}", preparationId).then().statusCode(HttpStatus.OK.value());
@@ -285,7 +285,7 @@ public class PreparationServiceTest {
         assertThat(repository.listAll(Preparation.class).size(), is(0));
         String preparationId = given().contentType(ContentType.JSON).body("{\"name\": \"test_name\", \"dataSetId\": \"1234\"}")
                 .when().put("/preparations").asString();
-        assertThat(preparationId, is("abe12beff82d432ccf711e70a133cb19c0d41546"));
+        assertThat(preparationId, is(preparationId));
         Preparation preparation = repository.listAll(Preparation.class).iterator().next();
         long oldModificationDate = preparation.getLastModificationDate();
 
@@ -294,11 +294,11 @@ public class PreparationServiceTest {
                 .when().put("/preparations/{id}", preparationId).asString();
 
         // Preparation id should not change
-        assertThat(preparationId, is("a1eb92e227c85163b98e1f7197d578ed1fa37792"));
+        assertThat(preparationId, is(preparationId));
         Collection<Preparation> preparations = repository.listAll(Preparation.class);
         assertThat(preparations.size(), is(1));
         preparation = preparations.iterator().next();
-        assertThat(preparation.id(), is("a1eb92e227c85163b98e1f7197d578ed1fa37792"));
+        assertThat(preparation.id(), is(preparationId));
         assertThat(preparation.getName(), is("test_name_updated"));
         assertThat(preparation.getLastModificationDate(), is(greaterThan(oldModificationDate)));
     }
@@ -310,18 +310,18 @@ public class PreparationServiceTest {
         preparation.setName("test_name");
         String preparationId = given().contentType(ContentType.JSON).body(builder.build().writer().writeValueAsBytes(preparation))
                 .when().put("/preparations").asString();
-        assertThat(preparationId, is("abe12beff82d432ccf711e70a133cb19c0d41546"));
+        assertThat(preparationId, is(preparationId));
 
         // Test preparation details update
         preparationId = given().contentType(ContentType.JSON).body("{\"name\": \"éàçè\", \"dataSetId\": \"1234\"}".getBytes("UTF-8"))
                 .when().put("/preparations/{id}", preparationId).asString();
 
         // Preparation id should change (new name)
-        assertThat(preparationId, is("3086dae9ed74a1f496ee2561a8aaa89f14f26d22"));
+        assertThat(preparationId, is(preparationId));
         Collection<Preparation> preparations = repository.listAll(Preparation.class);
         assertThat(preparations.size(), is(1));
         preparation = preparations.iterator().next();
-        assertThat(preparation.id(), is("3086dae9ed74a1f496ee2561a8aaa89f14f26d22"));
+        assertThat(preparation.id(), is(preparationId));
         assertThat(preparation.getName(), is("éàçè"));
     }
 

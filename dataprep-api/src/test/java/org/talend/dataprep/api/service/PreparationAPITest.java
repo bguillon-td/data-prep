@@ -44,14 +44,14 @@ public class PreparationAPITest extends ApiServiceTestBase {
     @Test
     public void testPreparationsList() throws Exception {
         // given
-        createPreparationFromDataset("1234", "testPreparation");
+        String preparationId = createPreparationFromDataset("1234", "testPreparation");
 
         // when : short format
         final JsonPath shortFormat = when().get("/api/preparations/?format=short").jsonPath();
 
         // then
         final List<String> values = shortFormat.getList("");
-        assertThat(values.get(0), is("972489da6d36a9110d033f9907e790731699c3af"));
+        assertThat(values.get(0), is(preparationId));
 
         // when : long format
         final JsonPath longFormat = when().get("/api/preparations/?format=long").jsonPath();
@@ -62,7 +62,7 @@ public class PreparationAPITest extends ApiServiceTestBase {
         assertThat(longFormat.getList("author").size(), is(1));
         assertThat(longFormat.getList("author").get(0), is(security.getUserId()));
         assertThat(longFormat.getList("id").size(), is(1));
-        assertThat(longFormat.getList("id").get(0), is("972489da6d36a9110d033f9907e790731699c3af"));
+        assertThat(longFormat.getList("id").get(0), is(preparationId));
         assertThat(longFormat.getList("actions").size(), is(1));
         assertThat(((List) longFormat.getList("actions").get(0)).size(), is(0));
     }
@@ -76,7 +76,7 @@ public class PreparationAPITest extends ApiServiceTestBase {
         final JsonPath longFormat = given().get("/api/preparations/{id}/details", preparationId).jsonPath();
         assertThat(longFormat.getString("dataSetId"), is("1234"));
         assertThat(longFormat.getString("author"), is(security.getUserId()));
-        assertThat(longFormat.getString("id"), is("972489da6d36a9110d033f9907e790731699c3af"));
+        assertThat(longFormat.getString("id"), is(preparationId));
         assertThat(longFormat.getList("actions").size(), is(0));
     }
 
