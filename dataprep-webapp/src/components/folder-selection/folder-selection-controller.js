@@ -17,7 +17,6 @@
 		 */
 		vm.foldersFound = [];
 
-
 		/**
 		 * @ngdoc method
 		 * @name initFolders
@@ -99,11 +98,11 @@
 		 * @param {object} folder - the folder to use for cloning the data
 		 */
 		vm.chooseFolder = function (folder) {
-			var previousSelected = vm.folderDestination;
+			var previousSelected = state.folder.choosedFolder;
 			if (previousSelected) {
 				previousSelected.selected = false;
 			}
-			vm.folderDestination = folder;
+			StateService.setChoosedFolder(folder);
 			folder.selected = true;
 		};
 

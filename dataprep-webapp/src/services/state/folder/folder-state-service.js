@@ -5,7 +5,9 @@
         currentFolder: {id: '', path: ''}, // currentFolder is initialized with root value
         currentFolderContent: {},
         foldersStack: [],
-        menuChildren: []
+        menuChildren: [],
+        choosedFolder: {},
+        datasetToCopyClone: {}
     };
 
     /**
@@ -18,7 +20,9 @@
             setCurrentFolder: setCurrentFolder,
             setCurrentFolderContent: setCurrentFolderContent,
             setFoldersStack: setFoldersStack,
-            setMenuChildren: setMenuChildren
+            setMenuChildren: setMenuChildren,
+            setChoosedFolder: setChoosedFolder,
+            setDatasetToCopyClone: setDatasetToCopyClone
         };
 
         /**
@@ -60,6 +64,14 @@
          */
         function setMenuChildren(children) {
             folderState.menuChildren = children;
+        }
+
+        function setChoosedFolder(folder){
+            folderState.choosedFolder = folder;
+        }
+
+        function setDatasetToCopyClone(dataset){
+            folderState.datasetToCopyClone = dataset;
         }
     }
 

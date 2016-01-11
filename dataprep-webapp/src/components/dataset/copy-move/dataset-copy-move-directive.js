@@ -12,22 +12,20 @@
         return {
             restrict: 'E',
             templateUrl: 'components/dataset/copy-move/dataset-copy-move.html',
-            replace: true,
+            replace: false,
             bindToController: true,
             scope: {
                 state: '='
             },
             controllerAs: 'datasetCopyMoveCtrl',
-            controller: 'DatasetCopyMoveCtrl',
+            controller: 'datasetCopyMoveCtrl',
             link: function (scope, iElement, iAttrs, ctrl) {
-
                 scope.$watch(function () {
                     return ctrl.state;
-                }, function (newValue, oldValue) {
+                }, function (newValue) {
                     ctrl.state = newValue;
-                    console.log('DatasetCopyMove directive state:'+ctrl.state + ',' + newValue);
-                });
 
+                });
             }
         };
     }

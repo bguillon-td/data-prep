@@ -78,6 +78,8 @@
             setCurrentFolderContent: FolderStateService.setCurrentFolderContent,
             setFoldersStack: FolderStateService.setFoldersStack,
             setMenuChildren: FolderStateService.setMenuChildren,
+            setChoosedFolder: FolderStateService.setChoosedFolder,
+            setDatasetToCopyClone: FolderStateService.setDatasetToCopyClone,
 
             //easter eggs
             enableEasterEgg: EasterEggsStateService.enableEasterEgg,

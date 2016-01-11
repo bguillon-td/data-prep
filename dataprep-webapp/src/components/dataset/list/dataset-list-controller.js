@@ -24,9 +24,6 @@
         vm.uploadWorkflowService = UploadWorkflowService;
         vm.state = state;
 
-        vm.isCloningDs = false;
-        vm.isMovingDs = false;
-
         /**
          * @ngdoc property
          * @name folderName
@@ -71,16 +68,6 @@
          * @type {object}
          */
         vm.sortOrderSelected = DatasetListSortService.getOrderItem();
-
-        /**
-         * @type {Array} folder found after a search
-         */
-        vm.foldersFound = [];
-
-        /**
-         * @type {string} name used for dataset clone
-         */
-        vm.cloneName = '';
 
         /**
          * @ngdoc method
@@ -173,67 +160,6 @@
                         type: 'dataset',
                         name: dataset.name
                     });
-                });
-        };
-
-        /**
-         * @ngdoc method
-         * @name clone
-         * @methodOf data-prep.dataset-list.controller:DatasetListCtrl
-         * @description perform the dataset cloning to the folder destination
-         */
-        vm.clone = function () {
-            vm.isCloningDs = true;
-            vm.cloneNameForm.$commitViewValue();
-
-            DatasetService.clone(vm.datasetToClone, vm.folderDestination, vm.cloneName)
-                .then(function () {
-                    MessageService.success('COPY_SUCCESS_TITLE', 'COPY_SUCCESS');
-
-                    // force going to current folder to refresh the content
-                    FolderService.getContent(state.folder.currentFolder);
-                    // reset some values to initial values
-                    vm.folderDestinationModal = false;
-                    vm.datasetToClone = null;
-                    vm.folderDestination = null;
-                    vm.foldersFound = [];
-                    vm.cloneName = '';
-                    vm.isCloningDs = false;
-
-                }, function () {
-                    vm.isCloningDs = false;
-                    setTimeout(vm.focusOnNameInput, 1100);
-                });
-        };
-
-        /**
-         * @ngdoc method
-         * @name move
-         * @methodOf data-prep.dataset-list.controller:DatasetListCtrl
-         * @description perform the dataset moving to the folder destination
-         */
-        vm.move = function () {
-            vm.isMovingDs = true;
-            vm.cloneNameForm.$commitViewValue();
-
-            DatasetService.move(vm.datasetToClone, state.folder.currentFolder, vm.folderDestination, vm.cloneName)
-                .then(function () {
-                    MessageService.success('MOVE_SUCCESS_TITLE', 'MOVE_SUCCESS');
-
-                    // force going to current folder to refresh the content
-                    FolderService.getContent(state.folder.currentFolder);
-
-                    // reset some values to initial values
-                    vm.folderDestinationModal = false;
-                    vm.datasetToClone = null;
-                    vm.folderDestination = null;
-                    vm.foldersFound = [];
-                    vm.cloneName = '';
-                    vm.isMovingDs = false;
-
-                }, function () {
-                    vm.isMovingDs = false;
-                    setTimeout(vm.focusOnNameInput, 1100);
                 });
         };
 
@@ -375,8 +301,16 @@
                 });
         };
 
+        /**
+         * @ngdoc method
+         * @name openFolderSelection
+         * @methodOf data-prep.dataset-list.controller:DatasetListCtrl
+         * @description Remove a folder
+         * @param {object} dataset The dataset to clone or copy
+         */
         vm.openFolderSelection = function openFolderSelection(dataset){
             vm.datasetCopyVisibility = true;
+            StateService.setDatasetToCopyClone(dataset);
         };
 
 

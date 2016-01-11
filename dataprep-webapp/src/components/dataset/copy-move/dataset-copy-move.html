@@ -1,13 +1,13 @@
 <talend-modal fullscreen="false"
               close-button="false"
               state="datasetCopyMoveCtrl.state"
-              ng-if="datasetCopyMoveCtrl.state"
               disable-close-on-background-click="true"
               disable-enter="true">
 
   <div class="folders-modal-content">
     <div class="modal-title" translate-once="CHOOSE_FOLDER_DESTINATION" translate-values="{type: 'dataset', name: dataset.name}">
     </div>
+
     <folder-selection ng-model="datasetCopyMoveCtrl.folderDestination"></folder-selection>
 
     <form name="datasetCopyMoveCtrl.cloneNameForm" ng-submit="datasetCopyMoveCtrl.cloneNameForm.$valid">
