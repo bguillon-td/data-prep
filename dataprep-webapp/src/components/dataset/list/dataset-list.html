@@ -48,7 +48,7 @@
         <div ng-repeat="dataset in datasetListCtrl.currentFolderContent.datasets track by $index" id="dataset_{{$index}}">
             <inventory-item
                     actions-enabled="true"
-                    copy="datasetListCtrl.openFolderChoice"
+                    copy="datasetListCtrl.openFolderSelection"
                     details="INVENTORY_DETAILS"
                     file-model="datasetListCtrl.updateDatasetFile"
                     item="dataset"
