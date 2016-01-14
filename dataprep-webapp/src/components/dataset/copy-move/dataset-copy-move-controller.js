@@ -27,8 +27,6 @@
         vm.isCloningDs = false;
         vm.isMovingDs = false;
 
-        vm.cloneName;
-
         /**
          * @ngdoc method
          * @name clone
@@ -48,7 +46,6 @@
                     // reset some values to initial values
                     vm.folderDestinationModal = false;
                     StateService.setDatasetToCopyClone(null);
-                    StateService.setChoosedFolder(null);
                     vm.cloneName = '';
                     vm.isCloningDs = false;
                     vm.state = false;
@@ -78,7 +75,6 @@
                     // reset some values to initial values
                     vm.folderDestinationModal = false;
                     StateService.setDatasetToCopyClone(null);
-                    StateService.setChoosedFolder(null);
                     vm.cloneName = '';
                     vm.isMovingDs = false;
                     vm.state = false;
