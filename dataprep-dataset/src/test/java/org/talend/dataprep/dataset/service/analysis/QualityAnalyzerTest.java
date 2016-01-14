@@ -27,6 +27,9 @@ public class QualityAnalyzerTest extends DataSetBaseTest {
     @Autowired
     SchemaAnalysis schemaAnalysis;
 
+    @Autowired
+    ContentAnalysis contentAnalysis;
+
     @Test
     public void testNoDataSetFound() throws Exception {
         qualityAnalysis.analyze("1234");
@@ -39,6 +42,7 @@ public class QualityAnalyzerTest extends DataSetBaseTest {
         dataSetMetadataRepository.add(metadata);
         contentStore.storeAsRaw(metadata, DataSetServiceTests.class.getResourceAsStream("../avengers.csv"));
         formatAnalysis.analyze("1234");
+        contentAnalysis.analyze("1234");
         schemaAnalysis.analyze("1234");
         // Analyze quality
         qualityAnalysis.analyze("1234");
@@ -60,6 +64,7 @@ public class QualityAnalyzerTest extends DataSetBaseTest {
         dataSetMetadataRepository.add(metadata);
         contentStore.storeAsRaw(metadata, DataSetServiceTests.class.getResourceAsStream("../dataset_with_invalid_records.csv"));
         formatAnalysis.analyze(dsId);
+        contentAnalysis.analyze(dsId);
         schemaAnalysis.analyze(dsId);
         // Analyze quality
         qualityAnalysis.analyze(dsId);

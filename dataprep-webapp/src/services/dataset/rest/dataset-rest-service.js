@@ -24,7 +24,6 @@
             updateMetadata: updateMetadata,
             getMetadata: getMetadata,
             getContent: getContent,
-            getContentFromUrl: getContentFromUrl,
             getSheetPreview: getSheetPreview,
 
             processCertification: processCertification,
@@ -258,20 +257,6 @@
                 });
         }
 
-        /**
-         * @ngdoc method
-         * @name getLookupActions
-         * @methodOf data-prep.services.dataset.service:DatasetRestService
-         * @description Get the dataset content from a complete URL
-         * @returns {Promise} The GET promise
-         */
-        function getContentFromUrl (url) {
-            return $http.get(url)
-                .then(function (res) {
-                    return res.data;
-                });
-        }
-
         //--------------------------------------------------------------------------------------------------------------
         //------------------------------------------------Sheet Preview-------------------------------------------------
         //--------------------------------------------------------------------------------------------------------------
@@ -300,9 +285,9 @@
         //--------------------------------------------------------------------------------------------------------------
         /**
          * @ngdoc method
-         * @name toogleFavorite
+         * @name toggleFavorite
          * @methodOf data-prep.services.dataset.service:DatasetRestService
-         * @description Toogle the Favorite flag for a dataset for the current user
+         * @description Toggle the Favorite flag for a dataset for the current user
          * @param {dataset} dataset The dataset to be toggled
          * @returns {Promise} The PUT promise
          */

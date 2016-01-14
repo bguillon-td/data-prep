@@ -27,7 +27,6 @@
             setNameEditionMode: setNameEditionMode,
             reset: reset,
             setData: setData,
-            setLookupData: setLookupData,
             updateColumnsStatistics: updateColumnsStatistics,
 
             //recipe
@@ -40,8 +39,9 @@
 
             //lookup
             setLookupActions: LookupStateService.setActions,
-            setLookupDataset: LookupStateService.setDataset,
+            setLookupAddMode: LookupStateService.setAddMode,
             setLookupSelectedColumn: LookupStateService.setSelectedColumn,
+            setLookupUpdateMode: LookupStateService.setUpdateMode,
             setLookupVisibility: LookupStateService.setVisibility,
             updateLookupColumnsToAdd: LookupStateService.updateColumnsToAdd,
 
@@ -78,11 +78,6 @@
             playgroundState.data = data;
             GridStateService.setData(data);
             GridStateService.setFilter(filterState.gridFilters, playgroundState.data);
-        }
-
-        function setLookupData(data) {
-            playgroundState.lookupData = data;
-            LookupStateService.setData(data);
         }
 
         function setPreparation(preparation) {

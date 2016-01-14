@@ -1716,7 +1716,7 @@
         "implicit": false,
         "canBeBlank": true,
         "description": "The new value to set",
-        "label": "Replace",
+        "label": "Replacement",
         "default": ""
       },
       {
@@ -1724,8 +1724,8 @@
         "type": "boolean",
         "implicit": false,
         "canBeBlank": true,
-        "description": "Defines greedy level. If checked, it will replace the entire cell, if not, it will only replace the part of the value that matches.",
-        "label": "Replace entire cell",
+        "description": "Defines greedy level. If checked, it will overwrite the entire cell, if not, it will only replace the part of the value that matches.",
+        "label": "Overwrite entire cell",
         "default": "false"
       }
     ],

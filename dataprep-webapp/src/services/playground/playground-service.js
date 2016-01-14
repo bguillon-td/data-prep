@@ -44,7 +44,10 @@
             appendStep: appendStep,
             updateStep: updateStep,
             removeStep: removeStep,
-            editCell: editCell
+            editCell: editCell,
+
+            //Preview
+            updatePreview: updatePreview
         };
         return service;
 
@@ -320,6 +323,14 @@
          * actions history
          */
         function updateStep(step, newParams) {
+
+            PreviewService.cancelPreview();
+            PreparationService.copyImplicitParameters(newParams, step.actionParameters.parameters);
+
+            if(! PreparationService.paramsHasChanged(step, newParams)) {
+                return;
+            }
+
             /*jshint camelcase: false */
             $rootScope.$emit('talend.loading.start');
 
@@ -443,6 +454,29 @@
                         setTimeout(OnboardingService.startTour.bind(null, 'recipe'), 300);
                     }
                 });
+        }
+
+
+        /**
+         * @ngdoc method
+         * @name updatePreview
+         * @methodOf data-prep.services.playground.service:PlaygroundService
+         * @param {string} updateStep The step position index to update for the preview
+         * @param {object} params The new step params
+         * @description [PRIVATE] Call the preview service to display the diff between the original steps and the updated steps
+         */
+        function updatePreview(updateStep, params) {
+            var originalParameters = updateStep.actionParameters.parameters;
+            PreparationService.copyImplicitParameters(params, originalParameters);
+
+            //Parameters has not changed
+            if(updateStep.inactive || ! PreparationService.paramsHasChanged(updateStep, params)) {
+                return $q.when();
+            }
+
+            var currentStep = RecipeService.getLastActiveStep();
+            var preparationId = state.playground.preparation.id;
+            PreviewService.getPreviewUpdateRecords(preparationId, currentStep, updateStep, params);
         }
     }
 

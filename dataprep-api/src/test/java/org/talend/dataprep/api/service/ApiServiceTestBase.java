@@ -33,8 +33,8 @@ import org.talend.dataprep.dataset.store.metadata.DataSetMetadataRepository;
 import org.talend.dataprep.folder.store.FolderRepository;
 import org.talend.dataprep.preparation.store.PreparationRepository;
 import org.talend.dataprep.transformation.aggregation.api.AggregationParameters;
+import org.talend.dataprep.transformation.test.TransformationServiceUrlRuntimeUpdater;
 
-import com.jayway.restassured.RestAssured;
 import com.jayway.restassured.http.ContentType;
 import com.jayway.restassured.response.Response;
 
@@ -47,6 +47,7 @@ import com.jayway.restassured.response.Response;
 public abstract class ApiServiceTestBase {
 
     public static final Logger LOGGER = LoggerFactory.getLogger(ApiServiceTestBase.class);
+
     @Value("${local.server.port}")
     protected int port;
 
@@ -72,16 +73,19 @@ public abstract class ApiServiceTestBase {
     @Autowired
     private FolderRepository folderRepository;
 
+    @Autowired
+    TransformationServiceUrlRuntimeUpdater transformationUrlUpdater;
+
     @Before
     public void setUp() {
-        RestAssured.port = port;
-
         // Overrides connection information with random port value
         MockPropertySource connectionInformation = new MockPropertySource()
                 .withProperty("dataset.service.url", "http://localhost:" + port)
                 .withProperty("transformation.service.url", "http://localhost:" + port)
                 .withProperty("preparation.service.url", "http://localhost:" + port);
         environment.getPropertySources().addFirst(connectionInformation);
+
+        transformationUrlUpdater.setUp();
     }
 
     @After

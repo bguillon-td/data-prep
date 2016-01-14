@@ -274,6 +274,16 @@ public class ReplaceOnValueTest extends AbstractMetadataBaseTest {
     }
 
     @Test
+    public void test_TDP_1227(){
+        assertEquals("India", action.computeNewValue(
+                buildPatternActionContext(generateJson("I(.*)", ReplaceOnValueHelper.REGEX_MODE), "J$2", true),
+                "India"));
+        assertEquals("India", action.computeNewValue(
+                buildPatternActionContext(generateJson("I(.*)", ReplaceOnValueHelper.REGEX_MODE), "J$2", false),
+                "India"));
+    }
+
+    @Test
     public void should_NOT_replace_the_value_because_the_column_DOES_NOT_exist() {
         // given
         final String columnId = "firstname";

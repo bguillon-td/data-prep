@@ -67,7 +67,11 @@ describe('Playground directive', function () {
             playground: {
                 visible: true,
                 filter: {gridFilters: []},
-                lookup: {visibility: false}
+                lookup: {visibility: false},
+                grid: {
+                    selectedColumn: {'id': '0001'},
+                    selectedLine: {'0001': '1'}
+                }
             }
         };
         $provide.constant('state', stateMock);

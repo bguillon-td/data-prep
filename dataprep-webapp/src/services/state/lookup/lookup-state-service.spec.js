@@ -39,7 +39,7 @@ describe('Lookup state service', function () {
         {'id': '0003', 'name': 'lastname', isAdded: true}
     ];
 
-    var lookupActions = [
+    var actions = [
         {
             'category': 'data_blending',
             'name': 'lookup',
@@ -87,7 +87,7 @@ describe('Lookup state service', function () {
             ]
         }
     ];
-    var lookupDataset = lookupActions[0];
+    var lookupAction = actions[0];
 
     beforeEach(module('data-prep.services.state'));
 
@@ -108,13 +108,75 @@ describe('Lookup state service', function () {
         }));
     });
 
-    describe('data', function () {
+    describe('reset', function () {
+        it('should reset state', inject(function (lookupState, LookupStateService) {
+            //given
+            lookupState.actions = [{}, {}];
+            lookupState.columnsToAdd = ['0000'];
+            lookupState.columnCheckboxes = [{id: '0001', isAdded: true, name: 'vfvf'}];
+            lookupState.dataset = {};
+            lookupState.data = {};
+            lookupState.selectedColumn = '0001';
+            lookupState.visibility = true;
+            lookupState.step = {};
+
+            //when
+            LookupStateService.reset();
+
+            //then
+            expect(lookupState.actions).toEqual([]);
+            expect(lookupState.columnsToAdd).toEqual([]);
+            expect(lookupState.columnCheckboxes).toEqual([]);
+            expect(lookupState.dataset).toBe(null);
+            expect(lookupState.data).toBe(null);
+            expect(lookupState.selectedColumn).toBe(null);
+            expect(lookupState.visibility).toBe(false);
+            expect(lookupState.step).toBe(null);
+        }));
+    });
+
+    describe('init actions', function () {
+        it('should set actions', inject(function (lookupState, LookupStateService) {
+            //given
+            lookupState.actions = [];
+
+            //when
+            LookupStateService.setActions(actions);
+
+            //then
+            expect(lookupState.actions).toBe(actions);
+        }));
+    });
+
+    describe('init add mode', function() {
+        it('should reset the step to update', inject(function(lookupState, LookupStateService) {
+            //given
+            lookupState.step = {};
+
+            //when
+            LookupStateService.setAddMode(lookupAction, data);
+
+            //then
+            expect(lookupState.step).toBeFalsy();
+        }));
+
+        it('should set the lookup action', inject(function(lookupState, LookupStateService) {
+            //given
+            lookupState.dataset = {};
+
+            //when
+            LookupStateService.setAddMode(lookupAction, data);
+
+            //then
+            expect(lookupState.dataset).toBe(lookupAction);
+        }));
+
         it('should set data to DataView', inject(function (lookupState, LookupStateService) {
             //given
             expect(lookupState.dataView.getItems()).not.toBe(data.records);
 
             //when
-            LookupStateService.setData(data);
+            LookupStateService.setAddMode(lookupAction, data);
 
             //then
             expect(lookupState.dataView.getItems()).toBe(data.records);
@@ -125,7 +187,7 @@ describe('Lookup state service', function () {
             lookupState.columnCheckboxes = [];
 
             //when
-            LookupStateService.setData(data);
+            LookupStateService.setAddMode(lookupAction, data);
 
             //then
             expect(lookupState.columnCheckboxes).toEqual(initialColumnCheckboxes);
@@ -136,51 +198,113 @@ describe('Lookup state service', function () {
             lookupState.columnsToAdd = [{}];
 
             //when
-            LookupStateService.setData(data);
+            LookupStateService.setAddMode(lookupAction, data);
 
             //then
             expect(lookupState.columnsToAdd).toEqual([]);
         }));
 
-        it('should update selected column to the 1st column', inject(function (lookupState, LookupStateService) {
+        it('should set lookup ds selected column to the 1st column', inject(function (lookupState, LookupStateService) {
             //given
             lookupState.selectedColumn = {id: '0001'};
 
             //when
-            LookupStateService.setData(data);
+            LookupStateService.setAddMode(lookupAction, data);
 
             //then
             expect(lookupState.selectedColumn).toBe(data.metadata.columns[0]);
         }));
     });
 
-    describe('dataset', function () {
-        it('should set dataset', inject(function (lookupState, LookupStateService) {
+    describe('init update mode', function() {
+        /*jshint camelcase: false */
+        var stepToUpdate = {
+            actionParameters: {
+                parameters: {
+                    lookup_join_on: '0001',
+                    lookup_selected_cols: [{id: '0002'}, {id: '0003'}]
+                }
+            }
+        };
+        var stepColumnCheckboxes = [
+            {'id': '0000', 'name': 'identif', isAdded: false},
+            {'id': '0001', 'name': 'code', isAdded: false},
+            {'id': '0002', 'name': 'firstname', isAdded: true},
+            {'id': '0003', 'name': 'lastname', isAdded: true}
+        ];
+        var stepColumnsToAdd = [
+            {'id': '0002', 'name': 'firstname'},
+            {'id': '0003', 'name': 'lastname'}
+        ];
+
+        it('should set the step to update', inject(function(lookupState, LookupStateService) {
             //given
-            lookupState.dataset = null;
+            lookupState.step = null;
 
             //when
-            LookupStateService.setDataset(lookupDataset);
+            LookupStateService.setUpdateMode(lookupAction, data, stepToUpdate);
 
             //then
-            expect(lookupState.dataset).toBe(lookupDataset);
+            expect(lookupState.step).toBe(stepToUpdate);
+        }));
+
+        it('should set the lookup action', inject(function(lookupState, LookupStateService) {
+            //given
+            lookupState.dataset = {};
+
+            //when
+            LookupStateService.setUpdateMode(lookupAction, data, stepToUpdate);
+
+            //then
+            expect(lookupState.dataset).toBe(lookupAction);
+        }));
+
+        it('should set data to DataView', inject(function (lookupState, LookupStateService) {
+            //given
+            expect(lookupState.dataView.getItems()).not.toBe(data.records);
+
+            //when
+            LookupStateService.setUpdateMode(lookupAction, data, stepToUpdate);
+
+            //then
+            expect(lookupState.dataView.getItems()).toBe(data.records);
+        }));
+
+        it('should initialize the column checkboxes', inject(function (lookupState, LookupStateService) {
+            //given
+            lookupState.columnCheckboxes = [];
+
+            //when
+            LookupStateService.setUpdateMode(lookupAction, data, stepToUpdate);
+
+            //then
+            expect(lookupState.columnCheckboxes).toEqual(stepColumnCheckboxes);
+        }));
+
+        it('should set columns to add', inject(function (lookupState, LookupStateService) {
+            //given
+            lookupState.columnsToAdd = [{}];
+
+            //when
+            LookupStateService.setUpdateMode(lookupAction, data, stepToUpdate);
+
+            //then
+            expect(lookupState.columnsToAdd).toEqual(stepColumnsToAdd);
+        }));
+
+        it('should set lookup ds selected column', inject(function (lookupState, LookupStateService) {
+            //given
+            lookupState.selectedColumn = {id: '0000'};
+
+            //when
+            LookupStateService.setUpdateMode(lookupAction, data, stepToUpdate);
+
+            //then
+            expect(lookupState.selectedColumn).toBe(data.metadata.columns[1]);
         }));
     });
 
-    describe('actions', function () {
-        it('should set actions', inject(function (lookupState, LookupStateService) {
-            //given
-            lookupState.actions = [];
-
-            //when
-            LookupStateService.setActions(lookupActions);
-
-            //then
-            expect(lookupState.actions).toBe(lookupActions);
-        }));
-    });
-
-    describe('grid event', function () {
+    describe('parameters update', function() {
         it('should update the columns to add corresponding to the checkboxes model', inject(function (lookupState, LookupStateService) {
             //given
             lookupState.columnCheckboxes = columnCheckboxesWithSelection;
@@ -234,29 +358,6 @@ describe('Lookup state service', function () {
 
             //then
             expect(lookupState.columnsToAdd).toBe(addedCols);
-        }));
-    });
-
-    describe('reset', function () {
-        it('should reset state', inject(function (lookupState, LookupStateService) {
-            //given
-            lookupState.actions = [{}, {}];
-            lookupState.columnsToAdd = ['0000'];
-            lookupState.columnCheckboxes = [{id: '0001', isAdded: true, name: 'vfvf'}];
-            lookupState.dataset = {};
-            lookupState.selectedColumn = '0001';
-            lookupState.visibility = true;
-
-            //when
-            LookupStateService.reset();
-
-            //then
-            expect(lookupState.actions).toEqual([]);
-            expect(lookupState.columnsToAdd).toEqual([]);
-            expect(lookupState.columnCheckboxes).toEqual([]);
-            expect(lookupState.dataset).toBe(null);
-            expect(lookupState.selectedColumn).toBe(null);
-            expect(lookupState.visibility).toBe(false);
         }));
     });
 

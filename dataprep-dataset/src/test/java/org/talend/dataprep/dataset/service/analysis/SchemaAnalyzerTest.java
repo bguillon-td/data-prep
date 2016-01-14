@@ -26,6 +26,9 @@ public class SchemaAnalyzerTest extends DataSetBaseTest {
     @Autowired
     SchemaAnalysis schemaAnalysis;
 
+    @Autowired
+    ContentAnalysis contentAnalysis;
+
     /** Random to generate random dataset id. */
     private Random random = new Random();
 
@@ -52,7 +55,7 @@ public class SchemaAnalyzerTest extends DataSetBaseTest {
 
     /**
      * See <a href="https://jira.talendforge.org/browse/TDP-224">https://jira.talendforge.org/browse/TDP-224</a>.
-     * 
+     *
      * @throws Exception
      */
     @Test
@@ -141,7 +144,7 @@ public class SchemaAnalyzerTest extends DataSetBaseTest {
 
     /**
      * See <a href="https://jira.talendforge.org/browse/TDP-226">https://jira.talendforge.org/browse/TDP-226</a>.
-     * 
+     *
      * @throws Exception
      */
     @Test
@@ -171,8 +174,10 @@ public class SchemaAnalyzerTest extends DataSetBaseTest {
         dataSetMetadataRepository.add(metadata);
         contentStore.storeAsRaw(metadata, content);
         formatAnalysis.analyze(id);
+        contentAnalysis.analyze(id);
         // Analyze schema
         schemaAnalysis.analyze(id);
+
         final DataSetMetadata analyzed = dataSetMetadataRepository.get(id);
         assertThat(analyzed.getLifecycle().schemaAnalyzed(), is(true));
         return analyzed;

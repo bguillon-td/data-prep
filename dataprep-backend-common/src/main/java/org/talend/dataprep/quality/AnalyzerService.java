@@ -8,11 +8,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import javax.annotation.PostConstruct;
+
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.talend.dataprep.api.dataset.ColumnMetadata;
 import org.talend.dataprep.api.dataset.statistics.PatternFrequency;
@@ -47,19 +50,37 @@ import org.talend.dataquality.statistics.type.DataTypeEnum;
 import org.talend.datascience.common.inference.Analyzer;
 import org.talend.datascience.common.inference.Analyzers;
 import org.talend.datascience.common.inference.ValueQualityStatistics;
+
 /**
  * Service in charge of analyzing dataset quality.
  */
 @Service
 public class AnalyzerService implements DisposableBean {
 
-    @Autowired
-    private DateParser dateParser;
-
     /**
      * This class' logger.
      */
-    public static final Logger LOGGER = LoggerFactory.getLogger(AnalyzerService.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(AnalyzerService.class);
+
+    @Autowired
+    private DateParser dateParser;
+
+    @Value("#{'${luceneIndexStrategy:basic}'}")
+    private String luceneIndexStrategy;
+
+    @PostConstruct
+    public void init() {
+        LOGGER.info("Analyzer service lucene index strategy set to '{}'", luceneIndexStrategy);
+        if ("basic".equals(luceneIndexStrategy)) {
+            ClassPathDirectory.setProvider(new ClassPathDirectory.BasicProvider());
+        } else if ("singleton".equals(luceneIndexStrategy)) {
+            ClassPathDirectory.setProvider(new ClassPathDirectory.SingletonProvider());
+        } else {
+            // Default
+            LOGGER.warn("Not a supported strategy for lucene indexes: '{}'", luceneIndexStrategy);
+            ClassPathDirectory.setProvider(new ClassPathDirectory.BasicProvider());
+        }
+    }
 
     private static CategoryRecognizerBuilder newCategoryRecognizer() {
         try {

@@ -361,7 +361,7 @@ public class PreparationServiceTest {
 
         //then
         response.then()//
-                .statusCode(400)//
+                .statusCode(404)//
                 .assertThat()//
                 .body("code", is("TDP_PS_PREPARATION_STEP_DOES_NOT_EXIST"));
     }
@@ -739,7 +739,7 @@ public class PreparationServiceTest {
 
         //then
         response.then()
-                .statusCode(400)
+.statusCode(404)
                 .assertThat()
                 .body("code", is("TDP_PS_PREPARATION_STEP_DOES_NOT_EXIST"));
     }

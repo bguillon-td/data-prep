@@ -3,6 +3,7 @@ package org.talend.dataprep.transformation.format;
 import java.util.Collections;
 
 import org.springframework.stereotype.Component;
+import org.talend.dataprep.format.export.ExportFormat;
 
 /**
  * Json format type.

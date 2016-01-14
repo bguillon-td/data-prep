@@ -17,7 +17,6 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.talend.dataprep.api.preparation.Preparation;
 import org.talend.dataprep.api.preparation.Step;
-import org.talend.dataprep.cache.ContentCacheKey;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -259,8 +258,8 @@ public class PreparationAPITest extends ApiServiceTestBase {
         final String firstStep = steps.get(1);
 
         // when
-        given().delete("/api/preparations/{preparation}/actions/{action}", preparationId, firstStep)
-                .then()
+        given().delete("/api/preparations/{preparation}/actions/{action}", preparationId, firstStep) //
+                .then() //
                 .statusCode(is(200));
 
         // then : Steps id should have changed due to update
@@ -276,9 +275,7 @@ public class PreparationAPITest extends ApiServiceTestBase {
         final Response response = given().delete("/api/preparations/{preparation}/actions/{action}", "unknown_prep", "unkown_step");
 
         //then : should have preparation service error
-        response.then()
-                .statusCode(is(400))
-                .body("code", is("TDP_PS_PREPARATION_DOES_NOT_EXIST"));
+        response.then().statusCode(is(404)).body("code", is("TDP_PS_PREPARATION_DOES_NOT_EXIST"));
     }
 
     @Test
@@ -312,7 +309,7 @@ public class PreparationAPITest extends ApiServiceTestBase {
 
         //then
         response.then()//
-                .statusCode(400)//
+                .statusCode(404)//
                 .assertThat()//
                 .body("code", is("TDP_PS_PREPARATION_STEP_DOES_NOT_EXIST"));
     }
@@ -324,16 +321,11 @@ public class PreparationAPITest extends ApiServiceTestBase {
     public void testPreparationInitialContent() throws Exception {
         // given
         final String preparationId = createPreparationFromFile("dataset/dataset.csv", "testPreparationContentGet", "text/csv");
-        String json = given().get("/api/preparations/{preparation}/details", preparationId).asString();
-        Preparation preparation = builder.build().readerFor(Preparation.class).readValue(json);
 
         final InputStream expected = PreparationAPITest.class.getResourceAsStream("dataset/expected_dataset_with_columns.json");
 
         // when
-        ContentCacheKey key = new ContentCacheKey(preparation, ROOT_STEP.id());
-        assertThat(cache.has(key), is(false));
         final String content = when().get("/api/preparations/{id}/content", preparationId).asString();
-        assertThat(cache.has(key), is(true));
 
         // then
         assertThat(content, sameJSONAsFile(expected));
@@ -358,14 +350,6 @@ public class PreparationAPITest extends ApiServiceTestBase {
         assertThat(steps.size(), is(2));
         assertThat(steps.get(0), is(ROOT_STEP.id()));
 
-        // Cache is lazily populated
-        ContentCacheKey rootKey = new ContentCacheKey(preparation, ROOT_STEP.id());
-        assertThat(cache.has(rootKey), is(false));
-        ContentCacheKey step0Key = new ContentCacheKey(preparation, steps.get(0));
-        assertThat(cache.has(step0Key), is(false));
-        ContentCacheKey step1Key = new ContentCacheKey(preparation, steps.get(1));
-        assertThat(cache.has(step1Key), is(false));
-
         // Request preparation content at different versions (preparation has 2 steps -> Root + Upper Case).
         assertThat(when().get("/api/preparations/{id}/content", preparationId).asString(),
                 sameJSONAsFile(PreparationAPITest.class.getResourceAsStream("dataset/expected_dataset_firstname_uppercase_with_column.json")));
@@ -379,11 +363,6 @@ public class PreparationAPITest extends ApiServiceTestBase {
                 sameJSONAsFile(PreparationAPITest.class.getResourceAsStream("dataset/expected_dataset_with_columns.json")));
         assertThat(when().get("/api/preparations/{id}/content?version=" + ROOT_STEP.id(), preparationId).asString(),
                 sameJSONAsFile(PreparationAPITest.class.getResourceAsStream("dataset/expected_dataset_with_columns.json")));
-
-        // After all these preparation get content, cache should be populated with content
-        assertThat(cache.has(rootKey), is(true));
-        assertThat(cache.has(step0Key), is(true));
-        assertThat(cache.has(step1Key), is(true));
     }
 
     @Test

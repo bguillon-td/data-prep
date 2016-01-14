@@ -95,7 +95,7 @@
                         iElement.find('.valid-partition .quality-bar-menu').eq(0).append(validMenuContent);
                         iElement.find('.empty-partition .quality-bar-menu').eq(0).append(emptyMenuContent);
                         iElement.find('.invalid-partition .quality-bar-menu').eq(0).append(invalidMenuContent);
-                    }, 0, false);
+                    }, 300, false);
                 }
             }
         };

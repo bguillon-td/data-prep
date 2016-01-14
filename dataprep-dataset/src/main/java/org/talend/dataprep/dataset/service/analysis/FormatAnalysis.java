@@ -122,7 +122,6 @@ public class FormatAnalysis implements SynchronousDataSetAnalyzer {
             if (guesser instanceof UnsupportedFormatGuesser) {
                 continue;
             }
-
             // Try to read content given certified encodings
             final Collection<Charset> availableCharsets = ListUtils.union(getCertifiedCharsets(), getSupportedCharsets());
             for (Charset charset : availableCharsets) {
@@ -192,7 +191,6 @@ public class FormatAnalysis implements SynchronousDataSetAnalyzer {
                 throw new IOException("Parser could not detect file format for " + metadata.getId());
             }
             metadata.getRowMetadata().setColumns(schemaParserResult.getSheetContents().get(0).getColumnMetadatas());
-
         } catch (IOException e) {
             throw new TDPException(DataSetErrorCodes.UNABLE_TO_READ_DATASET_CONTENT, e);
         }

@@ -21,7 +21,6 @@ describe('Playground state service', function () {
         spyOn(FilterStateService, 'removeGridFilter').and.returnValue();
         spyOn(FilterStateService, 'removeAllGridFilters').and.returnValue();
         spyOn(FilterStateService, 'reset').and.returnValue();
-        spyOn(LookupStateService, 'setData').and.returnValue();
         spyOn(LookupStateService, 'reset').and.returnValue();
         spyOn(SuggestionsStateService, 'reset').and.returnValue();
     }));
@@ -157,46 +156,6 @@ describe('Playground state service', function () {
             expect(playgroundState.data.metadata.columns[0].statistics).toBe(newColumns[0].statistics);
             expect(playgroundState.data.metadata.columns[1].statistics).toBe(newColumns[1].statistics);
             expect(playgroundState.data.metadata.columns[2].statistics).toBe(newColumns[2].statistics);
-        }));
-
-        it('should set lookup data in state', inject(function(playgroundState, PlaygroundStateService) {
-            //given
-            expect(playgroundState.lookupData).toBeFalsy();
-            var data = {
-                metadata: {
-                    columns: [
-                        {id: '0000', statistics: {frequencyTable: [{data: '5.0', occurrences: 98}]}},
-                        {id: '0001', statistics: {frequencyTable: [{data: 'Toto', occurrences: 5}]}},
-                        {id: '0002', statistics: {frequencyTable: [{data: '', occurrences: 66}]}}
-                    ]
-                }
-            };
-
-            //when
-            PlaygroundStateService.setLookupData(data);
-
-            //then
-            expect(playgroundState.lookupData).toBe(data);
-        }));
-
-        it('should set lookup data in lookup state', inject(function(PlaygroundStateService, LookupStateService) {
-            //given
-            expect(LookupStateService.setData).not.toHaveBeenCalled();
-            var data = {
-                metadata: {
-                    columns: [
-                        {id: '0000', statistics: {frequencyTable: [{data: '5.0', occurrences: 98}]}},
-                        {id: '0001', statistics: {frequencyTable: [{data: 'Toto', occurrences: 5}]}},
-                        {id: '0002', statistics: {frequencyTable: [{data: '', occurrences: 66}]}}
-                    ]
-                }
-            };
-
-            //when
-            PlaygroundStateService.setLookupData(data);
-
-            //then
-            expect(LookupStateService.setData).toHaveBeenCalledWith(data);
         }));
     });
 

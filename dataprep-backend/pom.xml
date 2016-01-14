@@ -21,10 +21,10 @@
         <jackson.version>2.6.4</jackson.version>
         <java.version>1.8</java.version>
         <junit.version>4.12</junit.version>
-        <org.talend.dataquality.version>1.4.0</org.talend.dataquality.version>
-        <org.talend.dataquality.common.version>1.4.0</org.talend.dataquality.common.version>
-        <org.talend.dataquality.semantic.version>1.4.0</org.talend.dataquality.semantic.version>
-        <org.talend.dataquality.statistics.version>1.4.0</org.talend.dataquality.statistics.version>
+        <org.talend.dataquality.version>1.4.1</org.talend.dataquality.version>
+        <org.talend.dataquality.common.version>1.4.1</org.talend.dataquality.common.version>
+        <org.talend.dataquality.semantic.version>1.4.1</org.talend.dataquality.semantic.version>
+        <org.talend.dataquality.statistics.version>1.4.1</org.talend.dataquality.statistics.version>
         <org.talend.dataquality.record.linkage.version>3.0.0</org.talend.dataquality.record.linkage.version>
         <project.inceptionYear>2015</project.inceptionYear>
         <project.organization>Talend</project.organization>
@@ -327,6 +327,12 @@
             </dependency>
             <dependency>
                 <groupId>org.apache.logging.log4j</groupId>
+                <artifactId>log4j-api</artifactId>
+                <version>${log4j.version}</version>
+                <scope>runtime</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.logging.log4j</groupId>
                 <artifactId>log4j-1.2-api</artifactId>
                 <version>${log4j.version}</version>
                 <scope>runtime</scope>
@@ -416,6 +422,13 @@
             <dependency>
                 <groupId>org.talend.dataprep</groupId>
                 <artifactId>dataprep-backend-common</artifactId>
+                <type>test-jar</type>
+                <version>${project.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.talend.dataprep</groupId>
+                <artifactId>dataprep-transformation</artifactId>
                 <type>test-jar</type>
                 <version>${project.version}</version>
                 <scope>test</scope>

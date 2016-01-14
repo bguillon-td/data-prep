@@ -26,7 +26,7 @@ import java.util.stream.Stream;
 @Component
 public class QualityAnalysis implements SynchronousDataSetAnalyzer {
 
-    @Value("max_records")
+    @Value("#{'${max_records:5000}'}")
     public static final int MAX_RECORD = 5000;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(QualityAnalysis.class);

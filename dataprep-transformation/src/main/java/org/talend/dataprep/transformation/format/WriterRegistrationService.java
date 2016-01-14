@@ -28,7 +28,7 @@ public class WriterRegistrationService {
      * @param output Where the writer should write.
      * @param parameters Optional writer parameters. @return the TransformWriter that match the given format.
      */
-    public TransformerWriter getWriter(String format, OutputStream output, Map<String, Object> parameters) {
+    public TransformerWriter getWriter(String format, OutputStream output, Map<String, String> parameters) {
         try {
             if (parameters.isEmpty()) {
                 return (TransformerWriter) context.getBean("writer#" + format, output);

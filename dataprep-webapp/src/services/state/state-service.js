@@ -28,7 +28,6 @@
             resetPlayground: PlaygroundStateService.reset,
             setCurrentDataset: PlaygroundStateService.setDataset,
             setCurrentData: PlaygroundStateService.setData,
-            setCurrentLookupData: PlaygroundStateService.setLookupData,
             setCurrentPreparation: PlaygroundStateService.setPreparation,
             setNameEditionMode: PlaygroundStateService.setNameEditionMode,
             updateColumnsStatistics: PlaygroundStateService.updateColumnsStatistics,
@@ -43,8 +42,9 @@
 
             //playground - lookup
             setLookupActions: PlaygroundStateService.setLookupActions,
-            setLookupDataset: PlaygroundStateService.setLookupDataset,
+            setLookupAddMode: PlaygroundStateService.setLookupAddMode,
             setLookupSelectedColumn: PlaygroundStateService.setLookupSelectedColumn,
+            setLookupUpdateMode: PlaygroundStateService.setLookupUpdateMode,
             setLookupVisibility: PlaygroundStateService.setLookupVisibility,
             updateLookupColumnsToAdd: PlaygroundStateService.updateLookupColumnsToAdd,
 

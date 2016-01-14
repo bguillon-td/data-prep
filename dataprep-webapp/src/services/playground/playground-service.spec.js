@@ -6,6 +6,7 @@ describe('Playground Service', function () {
     var datasetColumns = {columns: [{id: '0001', statistics: {frequencyTable: [{'toto': 2}]}}], records: [], data: []};
     var createdPreparation;
     var stateMock = {};
+    var lastActiveStep = {inactive: false};
 
     beforeEach(module('data-prep.services.playground', function ($provide) {
         $provide.constant('state', stateMock);
@@ -732,10 +733,22 @@ describe('Playground Service', function () {
                 });
             }));
 
-            it('should update preparation step', inject(function ($rootScope, PlaygroundService, PreparationService) {
+            it('should not update preparation step when parameters are not changed', inject(function ($rootScope, PlaygroundService, PreparationService) {
                 //given
                 stateMock.playground.preparation = {id: '456415ae348e6046dc'};
                 var parameters = {value: 'toto', column_id: '0001'};
+
+                //when
+                PlaygroundService.updateStep(stepToUpdate, parameters);
+
+                //then
+                expect(PreparationService.updateStep).not.toHaveBeenCalled();
+            }));
+
+            it('should update preparation step when parameters are different', inject(function ($rootScope, PlaygroundService, PreparationService) {
+                //given
+                stateMock.playground.preparation = {id: '456415ae348e6046dc'};
+                var parameters = {value: 'tata', column_id: '0001'};
 
                 //when
                 PlaygroundService.updateStep(stepToUpdate, parameters);
@@ -747,7 +760,7 @@ describe('Playground Service', function () {
             it('should show/hide loading', inject(function ($rootScope, PlaygroundService) {
                 //given
                 stateMock.playground.preparation = {id: '456415ae348e6046dc'};
-                var parameters = {value: 'toto', column_id: '0001'};
+                var parameters = {value: 'tata', column_id: '0001'};
 
                 //when
                 PlaygroundService.updateStep(stepToUpdate, parameters);
@@ -761,7 +774,7 @@ describe('Playground Service', function () {
             it('should refresh recipe', inject(function ($rootScope, PlaygroundService, RecipeService) {
                 //given
                 stateMock.playground.preparation = {id: '456415ae348e6046dc'};
-                var parameters = {value: 'toto', column_id: '0001'};
+                var parameters = {value: 'tata', column_id: '0001'};
 
                 //when
                 PlaygroundService.updateStep(stepToUpdate, parameters);
@@ -774,7 +787,7 @@ describe('Playground Service', function () {
             it('should load previous last active step', inject(function ($rootScope, PlaygroundService, PreparationService, DatagridService, PreviewService) {
                 //given
                 stateMock.playground.preparation = {id: '456415ae348e6046dc'};
-                var parameters = {value: 'toto', column_id: '0001'};
+                var parameters = {value: 'tata', column_id: '0001'};
 
                 //when
                 PlaygroundService.updateStep(stepToUpdate, parameters);
@@ -797,7 +810,7 @@ describe('Playground Service', function () {
                 beforeEach(inject(function ($rootScope, PlaygroundService, HistoryService) {
                     //given
                     stateMock.playground.preparation = {id: preparationId};
-                    var parameters = {value: 'toto', column_id: '0001'};
+                    var parameters = {value: 'tata', column_id: '0001'};
 
                     //when
                     PlaygroundService.updateStep(stepToUpdate, parameters);
@@ -1240,6 +1253,92 @@ describe('Playground Service', function () {
 
             //then
             expect(StateService.setNameEditionMode).toHaveBeenCalledWith(false);
+        }));
+    });
+
+    describe('update preview', function(){
+        beforeEach(inject(function ($injector, $q, StateService, DatasetService, RecipeService, DatagridService,
+                                    PreparationService, TransformationCacheService, SuggestionService,
+                                    HistoryService, StatisticsService, PreviewService) {
+            spyOn(PreviewService, 'getPreviewUpdateRecords').and.returnValue($q.when(true));
+            spyOn(RecipeService, 'getLastActiveStep').and.returnValue(lastActiveStep);
+            var preparationId = '64f3543cd466f545';
+            stateMock.playground.preparation = {id: preparationId};
+        }));
+
+
+        it('should call update preview', inject(function ($rootScope, PreviewService, RecipeService, PlaygroundService) {
+            //given
+            $rootScope.$digest();
+            var step = {
+                column: {id: '0', name: 'state'},
+                transformation: {
+                    stepId: 'a598bc83fc894578a8b823',
+                    name: 'cut'
+                },
+                actionParameters: {
+                    action: 'cut',
+                    parameters: {pattern: '.', column_id: '0', column_name: 'state', scope: 'column'}
+                }
+            };
+            var parameters = {pattern: '--'};
+            //when
+            PlaygroundService.updatePreview(step, parameters);
+            $rootScope.$digest();
+
+            //then
+            expect(PreviewService.getPreviewUpdateRecords).toHaveBeenCalledWith(
+                stateMock.playground.preparation.id,
+                lastActiveStep,
+                step,
+                {pattern: '--', column_id: '0', column_name: 'state', scope: 'column'});
+        }));
+
+        it('should do nothing on update preview if the step is inactive', inject(function ($rootScope, PreviewService, PlaygroundService) {
+            //given
+            var step = {
+                column: {id: 'state'},
+                transformation: {
+                    stepId: 'a598bc83fc894578a8b823',
+                    name: 'cut'
+                },
+                actionParameters: {
+                    action: 'cut',
+                    parameters: {pattern: '.', column_name: 'state'}
+                },
+                inactive: true
+            };
+            var parameters = {pattern: '--'};
+
+            //when
+            PlaygroundService.updatePreview(step, parameters);
+            $rootScope.$digest();
+
+            //then
+            expect(PreviewService.getPreviewUpdateRecords).not.toHaveBeenCalled();
+        }));
+
+        it('should do nothing on update preview if the params have not changed', inject(function ($rootScope, PreviewService, PlaygroundService) {
+            //given
+            var step = {
+                column: {id: '0', name: 'state'},
+                transformation: {
+                    stepId: 'a598bc83fc894578a8b823',
+                    name: 'cut'
+                },
+                actionParameters: {
+                    action: 'cut',
+                    parameters: {pattern: '.', column_id: '0', column_name: 'state'}
+                }
+            };
+            var parameters = {pattern: '.'};
+
+            //when
+            PlaygroundService.updatePreview(step, parameters);
+            $rootScope.$digest();
+
+            //then
+            expect(PreviewService.getPreviewUpdateRecords).not.toHaveBeenCalled();
         }));
     });
 });

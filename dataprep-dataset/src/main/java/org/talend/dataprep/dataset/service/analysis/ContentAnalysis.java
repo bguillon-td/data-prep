@@ -9,6 +9,9 @@ import org.talend.dataprep.api.dataset.DataSetContent;
 import org.talend.dataprep.api.dataset.DataSetMetadata;
 import org.talend.dataprep.dataset.store.metadata.DataSetMetadataRepository;
 import org.talend.dataprep.lock.DistributedLock;
+import org.talend.dataprep.schema.csv.CSVFormatGuess;
+
+import java.util.Map;
 
 /**
  * This analyzer means to index the content for search.
@@ -34,7 +37,17 @@ public class ContentAnalysis implements SynchronousDataSetAnalyzer {
             if (metadata != null) {
                 LOG.info("Indexing content of data set #{}...", dataSetId);
                 DataSetContent datasetContent = metadata.getContent();
-                datasetContent.setNbLinesInHeader(1);
+                // parameters
+                final Map<String, String> parameters = metadata.getContent().getParameters();
+                int headerNBLines = 1;
+                try {
+                    headerNBLines = Integer.parseInt(parameters.get(CSVFormatGuess.HEADER_NB_LINES_PARAMETER));
+                }
+                catch (NumberFormatException e){
+                    LOG.info("Header nb lines not found in dataset parameters.", dataSetId);
+                }
+
+                datasetContent.setNbLinesInHeader(headerNBLines);
                 datasetContent.setNbLinesInFooter(0);
                 metadata.getLifecycle().contentIndexed(true);
                 LOG.info("Indexed content of data set #{}.", dataSetId);

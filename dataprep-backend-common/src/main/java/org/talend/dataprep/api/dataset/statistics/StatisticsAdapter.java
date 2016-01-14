@@ -5,11 +5,11 @@ import static org.talend.dataprep.api.type.Type.*;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Predicate;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.math3.stat.descriptive.moment.StandardDeviation;
@@ -57,10 +57,25 @@ public class StatisticsAdapter {
      * Extract analysis result and inject them in columns metadata
      * @param columns The columns metadata
      * @param results The analysis results
+     * @see #adapt(List, List, Predicate) to filter out columns during extraction of results.
      */
     public void adapt(List<ColumnMetadata> columns, List<Analyzers.Result> results) {
+        adapt(columns, results, c -> true);
+    }
+
+    /**
+     * Extract analysis result and inject them in columns metadata
+     * @param columns The columns metadata
+     * @param results The analysis results
+     * @param filter A {@link Predicate predicate} to filter columns to adapt.
+     */
+    public void adapt(List<ColumnMetadata> columns, List<Analyzers.Result> results, Predicate<ColumnMetadata> filter) {
         for (int i = 0; i < results.size(); ++i) {
             final ColumnMetadata currentColumn = columns.get(i);
+            if(!filter.test(currentColumn)) {
+                // Column needs to be filtered out
+                continue;
+            }
             final Analyzers.Result result = results.get(i);
 
             injectDataType(currentColumn, result);

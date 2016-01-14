@@ -41,7 +41,10 @@ public class CSVSerializer implements Serializer {
                 final String separator = parameters.get(CSVFormatGuess.SEPARATOR_PARAMETER);
                 try (CSVReader reader = new CSVReader(new InputStreamReader(rawContent), separator.charAt(0))) {
                     JsonGenerator generator = new JsonFactory().createGenerator(jsonOutput);
-                    reader.readNext(); // Skip column names
+                    int i = 0;
+                    while (i++ < metadata.getContent().getNbLinesInHeader() ) {
+                        reader.readNext(); // Skip all header lines
+                    }
                     generator.writeStartArray();
                     writeLineContent(reader, metadata, generator, separator);
                     generator.writeEndArray();

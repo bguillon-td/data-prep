@@ -264,6 +264,7 @@
   "LOOKUP_STEPS_2": "2. In the lookup, check 'Add to Lookup' for the columns you want to add into the main dataset.",
   "LOOKUP_STEPS_3": "3. Mouse over Confirm button to preview.",
   "LOOKUP_DESC_TITLE": "ADD DATA FROM LOOKUP",
+  "LOOKUP_UPDATE_DESC_TITLE": "UPDATE LOOKUP",
   "RECIPE_LOOKUP_MADE_ON_COL":"made on the column",
   "RECIPE_LOOKUP_OF_DS":"done with dataset ",
   "RECIPE_LOOKUP_JOIN_COLS": "Join has been set between",

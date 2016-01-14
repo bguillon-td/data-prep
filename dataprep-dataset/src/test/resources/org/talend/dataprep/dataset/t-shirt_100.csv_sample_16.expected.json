@@ -407,6 +407,10 @@
           ],
           "patternFrequencyTable": [
             {
+              "pattern": "MM/dd/yyyy",
+              "occurrences": 16
+            },
+            {
               "pattern": "M/d/yyyy",
               "occurrences": 16
             },

@@ -28,103 +28,38 @@
 
     <div class="inventory-list" id="datasets-list">
         <div class="inventory-entry" ng-repeat="folder in datasetListCtrl.currentFolderContent.folders track by folder.id">
-          <div class="inventory-icon inventory-folder" ng-click="datasetListCtrl.goToFolder(folder)">
-              <img src="assets/images/folder/folder-icon.png"/>
-          </div>
-          <div class="inventory-text inventory-folder">
-              <talend-editable-text text="folder.name"
-                                    text-class="inventory-title"
-                                    on-text-click="datasetListCtrl.goToFolder(folder)"
-                                    on-validate="datasetListCtrl.renameFolder(folder, text)"></talend-editable-text>
-          </div>
-          <div class="inventory-actions">
-              <a data-icon="e"
-                 class="btn-icon btn-transparent"
-                 translate-once-title="DELETE_ACTION"
-                 translate-values="{type: 'folder', name: folder.name}"
-                 ng-click="datasetListCtrl.removeFolder(folder)"></a>
-          </div>
-        </div>
-
-        <div class="inventory-entry" ng-repeat="dataset in datasetListCtrl.currentFolderContent.datasets track by $index" ng-switch="dataset.draft" id="dataset_{{$index}}">
-
-            <div class="inventory-icon"
-                 translate-once-title="OPEN_ACTION"
-                 translate-values="{type: 'dataset', name: dataset.name}"
-                 ng-switch="dataset.type"
-                 ng-click="datasetListCtrl.uploadWorkflowService.openDataset(dataset)">
-                <img src="/assets/images/inventory/csv_file.png" ng-switch-when="text/csv"/>
-                <img src="/assets/images/inventory/xls_file.png" ng-switch-when="application/vnd.ms-excel"/>
-                <img src="/assets/images/inventory/generic_file.png" ng-switch-default/>
-                <img ng-src="/assets/images/certification-{{dataset.certificationStep | lowercase}}.png"
-                     class="pin"
-                     ng-if="dataset.certificationStep!='NONE'"/>
+            <div class="inventory-icon inventory-folder" ng-click="datasetListCtrl.goToFolder(folder)">
+                <img src="assets/images/folder/folder-icon.png"/>
             </div>
-
-            <div class="inventory-text">
-                <talend-editable-text text="dataset.name"
+            <div class="inventory-text inventory-folder">
+                <talend-editable-text text="folder.name"
                                       text-class="inventory-title"
-                                      text-title="{{ 'OPEN_ACTION' | translate: {type: 'dataset', name: dataset.name} }}"
-                                      on-text-click="datasetListCtrl.uploadWorkflowService.openDataset(dataset)"
-                                      on-validate="datasetListCtrl.rename(dataset, text)"></talend-editable-text>
-                <div class="inventory-description" translate-once="INVENTORY_DETAILS" translate-values="dataset"></div>
+                                      on-text-click="datasetListCtrl.goToFolder(folder)"
+                                      on-validate="datasetListCtrl.renameFolder(folder, text)"></talend-editable-text>
             </div>
-
-            <!-- Draft actions icons -->
-            <div ng-switch-when="true"
-                 class="inventory-actions">
+            <div class="inventory-actions">
                 <a data-icon="e"
                    class="btn-icon btn-transparent"
                    translate-once-title="DELETE_ACTION"
-                   translate-values="{type: 'dataset', name: dataset.name}"
-                   ng-click="datasetListCtrl.remove(dataset)"></a>
+                   translate-values="{type: 'folder', name: folder.name}"
+                   ng-click="datasetListCtrl.removeFolder(folder)"></a>
             </div>
-
-            <!-- Not draft actions icons -->
-            <div ng-switch-when="false" class="inventory-actions">
-                <a data-icon="c"
-                   class="btn-icon btn-transparent"
-                   ng-if="!!dataset.defaultPreparation"
-                   translate-once-title="OPEN_ACTION"
-                   translate-values="{type: 'preparation', name: dataset.defaultPreparation.name}"
-                   ui-sref="nav.home.preparations({prepid: dataset.defaultPreparation.id})"></a>
-
-                <talend-file-selector
-                        button-data-icon="E"
-                        button-title="REPLACE_FILE_CONTENT"
-                        file-model="datasetListCtrl.updateDatasetFile"
-                        on-file-change="datasetListCtrl.uploadUpdatedDatasetFile(dataset)">
-                </talend-file-selector>
-
-                <a data-icon="h" class="btn-icon btn-transparent"></a>
-
-                <div class="divider btn-transparent"></div>
-
-                <a data-icon="B"
-                   class="btn-icon btn-transparent"
-                   translate-once-title="COPY_TO_ACTION"
-                   translate-values="{type: 'dataset', name: dataset.name}"
-                   ng-click="datasetListCtrl.openFolderSelection(dataset)"></a>
-
-                <a data-icon="e"
-                   class="btn-icon btn-transparent"
-                   translate-once-title="DELETE_ACTION"
-                   translate-values="{type: 'dataset', name: dataset.name}"
-                   ng-click="datasetListCtrl.remove(dataset)"></a>
-
-                <div class="divider btn-transparent"></div>
-                <a data-icon="s"
-                   class="btn-icon btn-transparent"
-                   translate-once-title="CERTIFY_ACTION"
-                   translate-values="{type: 'dataset', name: dataset.name}"
-                   ng-click="datasetListCtrl.processCertification(dataset)"></a>
-                <a data-icon="f"
-                   class="btn-icon btn-transparent favorite"
-                   translate-once-title="FAVORITE_ACTION"
-                   translate-values="{type: 'dataset', name: dataset.name}"
-                   ng-class="{'favorite-true':dataset.favorite}"
-                   ng-click="datasetListCtrl.datasetService.toggleFavorite(dataset)"></a>
-            </div>
+        </div>
+        <div ng-repeat="dataset in datasetListCtrl.currentFolderContent.datasets track by $index" id="dataset_{{$index}}">
+            <inventory-item
+                    actions-enabled="true"
+                    copy="datasetListCtrl.openFolderChoice"
+                    details="INVENTORY_DETAILS"
+                    file-model="datasetListCtrl.updateDatasetFile"
+                    item="dataset"
+                    open="datasetListCtrl.uploadWorkflowService.openDataset"
+                    process-certification="datasetListCtrl.processCertification"
+                    remove="datasetListCtrl.remove"
+                    rename="datasetListCtrl.rename"
+                    toggle-favorite="datasetListCtrl.datasetService.toggleFavorite"
+                    type="dataset"
+                    update="datasetListCtrl.uploadUpdatedDatasetFile">
+            </inventory-item>
         </div>
     </div>
 

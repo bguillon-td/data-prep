@@ -4,6 +4,7 @@ import java.util.Collections;
 
 import org.apache.commons.lang.StringUtils;
 import org.springframework.stereotype.Component;
+import org.talend.dataprep.format.export.ExportFormat;
 
 /**
  * XLS format type.

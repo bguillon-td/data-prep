@@ -156,4 +156,19 @@ public class CSVGuesserTest extends AbstractSchemaTestUtils {
         }
     }
 
+    /**
+     * Have a look at https://jira.talendforge.org/browse/TDP-1060
+     */
+    @Test
+    public void consistency_test() throws IOException {
+        try (InputStream inputStream = this.getClass().getResourceAsStream("consistency_example.csv")) {
+            FormatGuesser.Result actual = guesser.guess(getRequest(inputStream, "#9"), "UTF-8");
+
+            Assert.assertNotNull(actual);
+            assertTrue(actual.getFormatGuess() instanceof CSVFormatGuess);
+            char separator = actual.getParameters().get(CSVFormatGuess.SEPARATOR_PARAMETER).charAt(0);
+            assertEquals(',', separator);
+        }
+    }
+
 }

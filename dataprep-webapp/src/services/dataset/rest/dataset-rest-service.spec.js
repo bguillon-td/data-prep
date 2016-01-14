@@ -323,26 +323,6 @@ describe('Dataset Rest Service', function () {
             expect(result).toEqual(data);
         }));
 
-        it('should call dataset get content from complete URL', inject(function ($rootScope, DatasetRestService, RestURLs) {
-            //given
-            var result = null;
-            var url = RestURLs.datasetUrl + '/e85afAa78556d5425bc2';
-            var data = [{column: [], records: []}];
-
-            $httpBackend
-                .expectGET(url)
-                .respond(200, data);
-
-            //when
-            DatasetRestService.getContentFromUrl(url).then(function (data) {
-                result = data;
-            });
-            $httpBackend.flush();
-            $rootScope.$digest();
-
-            //then
-            expect(result).toEqual(data);
-        }));
     });
 
     describe('certification', function() {
