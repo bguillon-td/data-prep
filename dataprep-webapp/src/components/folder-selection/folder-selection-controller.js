@@ -5,6 +5,7 @@
 	 * @ngdoc controller
 	 * @name data-prep.folder-selection.controller:FolderSelectionCtrl
 	 * @description Folder selection controller.
+	 * @requires data-prep.services.state.service:StateService
 	 * @requires data-prep.services.folder.service:FolderService
 	 * @requires data-prep.services.state.constant:state
 	 */

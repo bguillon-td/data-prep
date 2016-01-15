@@ -48,10 +48,11 @@
                     StateService.setDatasetToCopyClone(null);
                     vm.cloneName = '';
                     vm.isCloningDs = false;
-                    vm.state = false;
                 }, function () {
                     vm.isCloningDs = false;
                     setTimeout(vm.focusOnNameInput, 1100);
+                }).finally(function () {
+                    vm.state = false;
                 });
         };
 
@@ -77,10 +78,11 @@
                     StateService.setDatasetToCopyClone(null);
                     vm.cloneName = '';
                     vm.isMovingDs = false;
-                    vm.state = false;
                 }, function () {
                     vm.isMovingDs = false;
                     setTimeout(vm.focusOnNameInput, 1100);
+                }).finally(function () {
+                    vm.state = false;
                 });
         };
 
@@ -92,5 +94,5 @@
 
 
     angular.module('data-prep.dataset-copy-move')
-        .controller('datasetCopyMoveCtrl', DatasetCopyMoveCtrl);
+        .controller('DatasetCopyMoveCtrl', DatasetCopyMoveCtrl);
 })();

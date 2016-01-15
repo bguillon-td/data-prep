@@ -52,7 +52,7 @@ describe('DatasetList directive', function () {
         $translateProvider.preferredLanguage('en');
     }));
 
-    beforeEach(inject(function ($rootScope, $compile, $q, DatasetService) {
+    beforeEach(inject(function ($rootScope, $compile, $q, DatasetService, FolderService) {
         scope = $rootScope.$new();
         createElement = function () {
             element = angular.element('<dataset-list></dataset-list>');
@@ -66,6 +66,7 @@ describe('DatasetList directive', function () {
         spyOn(DatasetService, 'getDatasets').and.callFake(function () {
             return $q.when(datasets);
         });
+        spyOn(FolderService, 'children').and.returnValue($q.when(true));
     }));
 
     afterEach(function () {

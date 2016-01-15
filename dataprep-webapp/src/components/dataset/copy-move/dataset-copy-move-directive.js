@@ -18,7 +18,7 @@
                 state: '='
             },
             controllerAs: 'datasetCopyMoveCtrl',
-            controller: 'datasetCopyMoveCtrl',
+            controller: 'DatasetCopyMoveCtrl',
             link: function (scope, iElement, iAttrs, ctrl) {
                 scope.$watch(function () {
                     return ctrl.state;
