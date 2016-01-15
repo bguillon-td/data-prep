@@ -54,12 +54,6 @@ public class CSVFormatGuesser implements FormatGuesser {
      */
     private int SMALL_SAMPLE_LIMIT = 10;
 
-    /** Detectors used to check the encoding. */
-    private List<WrongEncodingDetector> detectors = Arrays.asList( //
-            new WrongEncodingDetector(65533), //
-            new WrongEncodingDetector(0) //
-    );
-
     /** The csv format guesser. */
     @Autowired
     private CSVFormatGuess csvFormatGuess;
@@ -119,6 +113,13 @@ public class CSVFormatGuesser implements FormatGuesser {
                 boolean inQuote = false;
                 String s;
                 List<String> sampleLines = new ArrayList<>();
+
+                // Detectors used to check the encoding.
+                List<WrongEncodingDetector> detectors = Arrays.asList( //
+                        new WrongEncodingDetector(65533), //
+                        new WrongEncodingDetector(0) //
+                );
+
                 while (totalChars < SIZE_LIMIT && lineCount < LINE_LIMIT && (s = lineNumberReader.readLine()) != null) {
                     totalChars += s.length() + 1; // count the new line character
                     if (s.isEmpty()) {
@@ -136,7 +137,7 @@ public class CSVFormatGuesser implements FormatGuesser {
 
                         // check the encoding
                         try {
-                            checkEncoding(c, totalChars);
+                            checkEncoding(c, totalChars, detectors);
                         } catch (IOException e) {
                             LOGGER.debug(encoding + " is assumed wrong" + e);
                             return null;
@@ -169,7 +170,7 @@ public class CSVFormatGuesser implements FormatGuesser {
      * @param totalChars the total number of chars so far.
      * @throws IOException if the encoding is assumed wrong.
      */
-    private void checkEncoding(char c, long totalChars) throws IOException {
+    private void checkEncoding(char c, long totalChars, List<WrongEncodingDetector> detectors) throws IOException {
         for (WrongEncodingDetector detector : detectors) {
             detector.checkChar(c, totalChars);
         }
@@ -240,6 +241,8 @@ public class CSVFormatGuesser implements FormatGuesser {
         /** Threshold to detect binary stream in percentage. */
         private static final int WRONG_ENCODING_THRESHOLD = 10;
 
+        private static final int WARM_UP_SAMPLE_SIZE = 50;
+
         /** Char informing that the encoding is supposed to be wrong. */
         private int informantChar;
 
@@ -270,10 +273,10 @@ public class CSVFormatGuesser implements FormatGuesser {
 
             count++;
             long percentage = count * 100 / totalChars;
-            if (percentage > WRONG_ENCODING_THRESHOLD) {
+            if (totalChars > WARM_UP_SAMPLE_SIZE && percentage > WRONG_ENCODING_THRESHOLD) {
                 LOGGER.debug("wrong encoding detected, hence cannot be a CSV");
-                throw new IOException(
-                        "'" + (char) informantChar + "' is found more than " + WRONG_ENCODING_THRESHOLD + " % in file.");
+                throw new IOException("'" + (char) informantChar + "' is found more than " + WRONG_ENCODING_THRESHOLD
+                        + " % in file after reading a reading " + WARM_UP_SAMPLE_SIZE + " characters.");
             }
         }
 

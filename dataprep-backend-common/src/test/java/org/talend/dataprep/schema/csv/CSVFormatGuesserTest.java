@@ -43,6 +43,7 @@ public class CSVFormatGuesserTest extends AbstractSchemaTestUtils {
         guesser.guess(null, "UTF-8").getFormatGuess();
     }
 
+
     /**
      * Standard csv file.
      */
@@ -172,20 +173,20 @@ public class CSVFormatGuesserTest extends AbstractSchemaTestUtils {
     }
 
     /**
-     * Have a look at https://jira.talendforge.org/browse/TDP-1240
-     * Randomly separators were not detected for files with wrong characters.
+     * Have a look at https://jira.talendforge.org/browse/TDP-1240 Randomly separators were not detected for files with
+     * wrong characters.
      *
      */
     @Test
     public void TDP_1240_should_detect_separator_if_wrong_characters_do_not_exceed_the_threshold() throws IOException {
 
         char[] chars = new char[50];
-        for (int i= 0; i < 48; i++){
+        for (int i = 0; i < 48; i++) {
             chars[i] = 0;
         }
         chars[48] = ';';
         chars[49] = '\n';
-        try ( InputStream inputStream = new StringInputStream(new String(chars))) {
+        try (InputStream inputStream = new StringInputStream(new String(chars))) {
             FormatGuesser.Result actual = guesser.guess(getRequest(inputStream, "#10"), "UTF-8");
 
             Assert.assertNotNull(actual);
@@ -195,13 +196,13 @@ public class CSVFormatGuesserTest extends AbstractSchemaTestUtils {
         }
 
         chars = new char[50];
-        for (int i= 0; i < 48; i++){
+        for (int i = 0; i < 48; i++) {
             chars[i] = 65533;
         }
         chars[48] = ';';
         chars[49] = '\n';
-        try ( InputStream inputStream = new StringInputStream(new String(chars))) {
-            FormatGuesser.Result actual = guesser.guess(getRequest(inputStream, "#10"), "UTF-8");
+        try (InputStream inputStream = new StringInputStream(new String(chars))) {
+            FormatGuesser.Result actual = guesser.guess(getRequest(inputStream, "#11"), "UTF-8");
 
             Assert.assertNotNull(actual);
             assertTrue(actual.getFormatGuess() instanceof CSVFormatGuess);
@@ -211,8 +212,8 @@ public class CSVFormatGuesserTest extends AbstractSchemaTestUtils {
     }
 
     /**
-     * Have a look at https://jira.talendforge.org/browse/TDP-1240
-     * Randomly separators were not detected for files with wrong characters.
+     * Have a look at https://jira.talendforge.org/browse/TDP-1240 Randomly separators were not detected for files with
+     * wrong characters.
      *
      */
     @Test
@@ -220,13 +221,13 @@ public class CSVFormatGuesserTest extends AbstractSchemaTestUtils {
 
         // null character
         char[] chars = new char[51];
-        for (int i= 0; i < 49; i++){
+        for (int i = 0; i < 49; i++) {
             chars[i] = 0;
         }
         chars[49] = ';';
         chars[50] = '\n';
-        try ( InputStream inputStream = new StringInputStream(new String(chars))) {
-            FormatGuesser.Result actual = guesser.guess(getRequest(inputStream, "#10"), "UTF-8");
+        try (InputStream inputStream = new StringInputStream(new String(chars))) {
+            FormatGuesser.Result actual = guesser.guess(getRequest(inputStream, "#12"), "UTF-8");
 
             Assert.assertNotNull(actual);
             assertTrue(actual.getFormatGuess() instanceof UnsupportedFormatGuess);
@@ -234,16 +235,38 @@ public class CSVFormatGuesserTest extends AbstractSchemaTestUtils {
 
         // wrong character
         chars = new char[51];
-        for (int i= 0; i < 49; i++){
+        for (int i = 0; i < 49; i++) {
             chars[i] = 65533;
         }
         chars[49] = ';';
         chars[50] = '\n';
-        try ( InputStream inputStream = new StringInputStream(new String(chars))) {
-            FormatGuesser.Result actual = guesser.guess(getRequest(inputStream, "#10"), "UTF-8");
+        try (InputStream inputStream = new StringInputStream(new String(chars))) {
+            FormatGuesser.Result actual = guesser.guess(getRequest(inputStream, "#13"), "UTF-8");
 
             Assert.assertNotNull(actual);
             assertTrue(actual.getFormatGuess() instanceof UnsupportedFormatGuess);
+        }
+    }
+
+    /**
+     * Have a look at https://jira.talendforge.org/browse/TDP-1240 Randomly separators were not detected for files with
+     * wrong characters.
+     *
+     */
+    @Test
+    public void should_detect_comma_separator_when_no_separator_detected() throws IOException {
+
+        char[] chars = new char[5];
+        for (int i = 0; i < 5; i++) {
+            chars[i] = 'A';
+        }
+        try (InputStream inputStream = new StringInputStream(new String(chars))) {
+            FormatGuesser.Result actual = guesser.guess(getRequest(inputStream, "#13"), "UTF-8");
+
+            Assert.assertNotNull(actual);
+            assertTrue(actual.getFormatGuess() instanceof CSVFormatGuess);
+            char separator = actual.getParameters().get(CSVFormatGuess.SEPARATOR_PARAMETER).charAt(0);
+            assertEquals(',', separator);
         }
     }
 
