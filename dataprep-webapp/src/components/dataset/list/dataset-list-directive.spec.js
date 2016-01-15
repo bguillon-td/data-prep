@@ -111,7 +111,6 @@ describe('DatasetList directive', function () {
         //given
         createElement();
         var ctrl = element.controller('datasetList');
-        ctrl.folderDestinationModal = true;
         $rootScope.$digest();
 
         //when

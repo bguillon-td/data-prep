@@ -51,7 +51,6 @@
 								vm.chooseFolder(folder);
 							}
 						});
-						vm.folderDestinationModal = true;
 					});
 		};
 

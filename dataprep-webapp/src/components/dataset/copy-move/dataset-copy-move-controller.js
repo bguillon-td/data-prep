@@ -44,7 +44,6 @@
                     // force going to current folder to refresh the content
                     FolderService.getContent(state.folder.currentFolder);
                     // reset some values to initial values
-                    vm.folderDestinationModal = false;
                     StateService.setDatasetToCopyClone(null);
                     vm.cloneName = '';
                     vm.isCloningDs = false;
@@ -74,7 +73,6 @@
                     FolderService.getContent(state.folder.currentFolder);
 
                     // reset some values to initial values
-                    vm.folderDestinationModal = false;
                     StateService.setDatasetToCopyClone(null);
                     vm.cloneName = '';
                     vm.isMovingDs = false;
