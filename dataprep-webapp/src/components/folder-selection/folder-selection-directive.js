@@ -15,13 +15,13 @@
 			restrict: 'E',
 			bindToController: true,
 			scope: {
-				state: '='
+				visible: '='
 			},
 			controllerAs: 'folderSelectionCtrl',
 			controller: 'FolderSelectionCtrl',
 			link: function(scope, iElement, iAttrs, ctrl) {
 				scope.$watch(function () {
-					return ctrl.state;
+					return ctrl.visible;
 				}, function (newValue) {
 					if(newValue && newValue === true){
 						ctrl.initFolders();

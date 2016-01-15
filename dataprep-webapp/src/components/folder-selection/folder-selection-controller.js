@@ -12,6 +12,7 @@
 	function FolderSelectionCtrl(FolderService, state, StateService, $translate) {
 		var vm = this;
 		vm.state = state;
+		vm.visible = false;
 
 		/**
 		 * @type {Array} folder found after a search
