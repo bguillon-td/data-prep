@@ -24,7 +24,6 @@
                     return ctrl.state;
                 }, function (newValue) {
                     ctrl.state = newValue;
-
                 });
             }
         };

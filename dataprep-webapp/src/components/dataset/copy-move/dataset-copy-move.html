@@ -8,7 +8,7 @@
     <div class="modal-title" translate-once="CHOOSE_FOLDER_DESTINATION" translate-values="{type: 'dataset', name: dataset.name}">
     </div>
 
-    <folder-selection></folder-selection>
+    <folder-selection state="datasetCopyMoveCtrl.state"></folder-selection>
 
     <form name="datasetCopyMoveCtrl.cloneNameForm" ng-submit="datasetCopyMoveCtrl.cloneNameForm.$valid">
       <div class="clone-name">

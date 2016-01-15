@@ -14,10 +14,19 @@
 			templateUrl: 'components/folder-selection/folder-selection.html',
 			restrict: 'E',
 			bindToController: true,
+			scope: {
+				state: '='
+			},
 			controllerAs: 'folderSelectionCtrl',
 			controller: 'FolderSelectionCtrl',
 			link: function(scope, iElement, iAttrs, ctrl) {
-				ctrl.initFolders();
+				scope.$watch(function () {
+					return ctrl.state;
+				}, function (newValue) {
+					if(newValue && newValue === true){
+						ctrl.initFolders();
+					}
+				});
 			}
 		};
 	}
