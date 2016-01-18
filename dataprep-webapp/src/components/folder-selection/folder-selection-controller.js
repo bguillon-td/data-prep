@@ -40,6 +40,7 @@
 
 			FolderService.children()
 					.then(function (res) {
+						console.log('res.data:'+res.data);
 						rootFolder.nodes = res.data;
 						vm.chooseFolder(rootFolder);
 
