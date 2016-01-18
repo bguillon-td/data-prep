@@ -3,6 +3,11 @@ describe('Folder Selection directive', function() {
 
     var scope, createElement;
 
+    var folders = [
+        {"id":"folder-1","path":"folder-1","name":"folder-1"},
+        {"id":"folder-2","path":"folder-2","name":"folder-2"}
+    ];
+
     beforeEach(module('data-prep.folder-selection'));
     beforeEach(module('htmlTemplates'));
 
@@ -16,14 +21,16 @@ describe('Folder Selection directive', function() {
             return element;
         };
 
-        var folders = [
-            {"id":"folder-1","path":"folder-1","name":"folder-1"},
-            {"id":"folder-2","path":"folder-2","name":"folder-2"}
-        ];
-
         spyOn(FolderService, 'children').and.returnValue($q.when(folders));
 
     }));
+
+    /*
+    beforeEach(inject(function($controllerProvider) {
+        $controllerProvider.register('FolderSelectionCtrl', function($scope) {
+            // Controller Mock
+        });
+    }));*/
 
     it('should render empty folders', inject(function($q, FolderService) {
         //given

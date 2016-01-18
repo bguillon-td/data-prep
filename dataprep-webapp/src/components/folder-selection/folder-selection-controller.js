@@ -38,7 +38,8 @@
 
 			var rootFolder = {id: '', path: '', collapsed: false, name: $translate.instant('HOME_FOLDER')};
 
-			FolderService.children()
+			//FolderService.children()
+			vm.children()
 					.then(function (res) {
 						console.log('res.data:'+res.data);
 						rootFolder.nodes = res.data;
@@ -54,6 +55,10 @@
 							}
 						});
 					});
+		};
+
+		vm.children = function(){
+			return FolderService.children();
 		};
 
 		/**
