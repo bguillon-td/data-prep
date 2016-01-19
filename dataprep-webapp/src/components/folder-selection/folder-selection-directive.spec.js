@@ -21,7 +21,12 @@ describe('Folder Selection directive', function() {
             return element;
         };
 
-        spyOn(FolderService, 'children').and.returnValue($q.when(folders));
+        //spyOn(FolderService, 'children').and.returnValue($q.when(folders));
+
+        spyOn(FolderService, 'children').and.callFake(function() {
+            console.log('callFake');
+            return $q.when(folders);
+        });
 
     }));
 
