@@ -15,6 +15,7 @@ import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 import org.springframework.test.context.TestPropertySource;
 import org.talend.dataprep.api.dataset.DataSetMetadata;
 import org.talend.dataprep.dataset.DataSetBaseTest;
+import org.talend.dataprep.dataset.store.metadata.DataSetMetadataRepositoryTestUtils;
 
 /**
  * Unit/integration test for the file system dataset metadata repository.
@@ -213,6 +214,11 @@ public class FileSystemDataSetMetadataRepositoryTest extends DataSetBaseTest {
         DataSetMetadata original = builder.build().readerFor(DataSetMetadata.class)
                 .readValue(this.getClass().getResourceAsStream("dataset.json"));
         return DataSetMetadata.Builder.metadata().copy(original).id(id).build();
+    }
+
+    @Test
+    public void shouldOnlyReturnDataSetWithSimilarSchema() {
+        DataSetMetadataRepositoryTestUtils.ensureThatOnlyCompatibleDataSetsAreReturned(repository);
     }
 
 }

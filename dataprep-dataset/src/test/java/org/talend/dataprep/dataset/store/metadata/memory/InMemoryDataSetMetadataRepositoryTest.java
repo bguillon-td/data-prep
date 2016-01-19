@@ -15,19 +15,12 @@ package org.talend.dataprep.dataset.store.metadata.memory;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
+import org.talend.dataprep.dataset.store.metadata.DataSetMetadataRepositoryTestUtils;
 
 import com.google.common.base.Defaults;
 
-/**
- * created by sgandon on 17 juin 2015 Detailled comment
- *
- */
 public class InMemoryDataSetMetadataRepositoryTest {
 
-    /**
-     * created by sgandon on 17 juin 2015 Detailled comment
-     *
-     */
     private static final class TransientTestObject {
 
         transient boolean zeBoolean = true;
@@ -67,5 +60,11 @@ public class InMemoryDataSetMetadataRepositoryTest {
         assertTrue(Defaults.defaultValue(double.class).equals(obj.zeDouble));
         assertTrue(obj.zeObject == Defaults.defaultValue(Object.class));// cause it is null
         assertTrue(Defaults.defaultValue(boolean.class).equals(obj.zeStaticBoolean));
+    }
+
+    @Test
+    public void shouldOnlyReturnCompatibleDataSets() {
+        InMemoryDataSetMetadataRepository inMemoryDataSetMetadataRepository = new InMemoryDataSetMetadataRepository();
+        DataSetMetadataRepositoryTestUtils.ensureThatOnlyCompatibleDataSetsAreReturned(inMemoryDataSetMetadataRepository);
     }
 }

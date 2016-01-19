@@ -183,6 +183,19 @@ public class ColumnMetadata implements Serializable {
         this.typeForced = typeForced;
     }
 
+    /**
+     * Returns true if this column metadata is compatible (has same type) with <tt>columnMetadata</tt> and false otherwise.
+     *
+     * @param columnMetadata the specified row metadata
+     * @return  true if this column metadata is compatible <tt>columnMetadata</tt> and false otherwise
+     */
+    public boolean compatible(ColumnMetadata columnMetadata){
+        if (columnMetadata != null){
+            return (StringUtils.equals(typeName, columnMetadata.getType()));
+        }
+        return false;
+    }
+
     @Override
     public boolean equals(Object obj) {
         return Optional.ofNullable(obj) //

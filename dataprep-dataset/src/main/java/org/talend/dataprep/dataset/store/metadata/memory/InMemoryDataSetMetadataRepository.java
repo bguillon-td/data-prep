@@ -2,10 +2,9 @@ package org.talend.dataprep.dataset.store.metadata.memory;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
@@ -32,7 +31,7 @@ public class InMemoryDataSetMetadataRepository extends DataSetMetadataRepository
     private static final Logger LOG = LoggerFactory.getLogger(InMemoryDataSetMetadataRepository.class);
 
     /** Where the DatasetMetadata is actually stored. */
-    private final Map<String, DataSetMetadata> store = new HashMap<>();
+    private final Map<String, DataSetMetadata> store = new ConcurrentHashMap<>();
 
     /**
      * @see DataSetMetadataRepository#list()
@@ -44,11 +43,26 @@ public class InMemoryDataSetMetadataRepository extends DataSetMetadataRepository
         return values;
     }
 
+    @Override
+    public Iterable<DataSetMetadata> listCompatible(String id) {
+        LOG.info("Looking for data set #{} in the system", id);
+        final DataSetMetadata metadata = get(id);
+
+        if (metadata == null) {
+            LOG.info("Similar schemas could not be found for data set #{}", id);
+            return Collections.emptyList();
+        }
+        final Collection<DataSetMetadata> values = store.values().stream()
+                .filter(m -> (m != null && !metadata.equals(m) && metadata.compatible(m))).collect(Collectors.toList());
+        LOG.debug("list similar {} data set metadata", values.size());
+        return values;
+    }
+
     /**
      * @see DataSetMetadataRepository#add(DataSetMetadata)
      */
     @Override
-    public synchronized void add(DataSetMetadata dataSetMetadata) {
+    public void add(DataSetMetadata dataSetMetadata) {
         store.put(dataSetMetadata.getId(), dataSetMetadata);
     }
 
@@ -72,7 +86,7 @@ public class InMemoryDataSetMetadataRepository extends DataSetMetadataRepository
                     }
                 }
             }
-        }// else null so do nothing
+        } // else null so do nothing
     }
 
     /**
@@ -108,6 +122,7 @@ public class InMemoryDataSetMetadataRepository extends DataSetMetadataRepository
     public DataSetMetadata get(String id) {
         DataSetMetadata dataSetMetadata = store.get(id);
         if (dataSetMetadata == null) {
+            LOG.info("data set metadata #{} not found in the system", id);
             return null;
         }
         resetTransientValues(dataSetMetadata);

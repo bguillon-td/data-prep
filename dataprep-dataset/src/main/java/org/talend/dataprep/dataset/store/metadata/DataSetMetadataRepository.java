@@ -17,6 +17,13 @@ public interface DataSetMetadataRepository {
     Iterable<DataSetMetadata> list();
 
     /**
+     * Returns data set that are in this repository which are compatible with the data set of the specified id.
+     * @param id the id of a data set
+     * @return A {@link java.lang.Iterable iterable} of {@link DataSetMetadata data set}.
+     */
+    Iterable<DataSetMetadata> listCompatible(String id);
+
+    /**
      * <p>
      * Creates a new {@link DataSetMetadata data set}. If a previous one already exists, it will be updated by this
      * operation.

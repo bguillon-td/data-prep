@@ -174,6 +174,53 @@ public class RowMetadataTest {
         assertEquals(row.getColumns().get(0).getName(), "toto");
     }
 
+    @Test
+    public void should_be_compatible() {
+        // given
+        List<ColumnMetadata> columns1 = new ArrayList<>();
+        List<ColumnMetadata> columns2 = new ArrayList<>();
+        ColumnMetadata metadata1 = getColumnMetadata("first", 1, Type.STRING);
+        ColumnMetadata metadata2 = getColumnMetadata("last", 2, Type.STRING);
+        columns1.add(metadata1);
+        columns1.add(metadata2);
+        columns2.add(metadata2);
+        columns2.add(metadata1);
+        RowMetadata row1 = new RowMetadata(columns1);
+        RowMetadata row2 = new RowMetadata(columns2);
+
+        // when
+        RowMetadata clone = row1.clone();
+
+        // then
+        assertTrue(row1.compatible(row2));
+        assertTrue(row2.compatible(row1));
+        assertTrue(row1.compatible(clone));
+    }
+
+    @Test
+    public void should_be_incompatible() {
+        // given
+        List<ColumnMetadata> columns1 = new ArrayList<>();
+        List<ColumnMetadata> columns2 = new ArrayList<>();
+        ColumnMetadata metadata1 = getColumnMetadata("first", 1, Type.STRING);
+        ColumnMetadata metadata2 = getColumnMetadata("last", 2, Type.STRING);
+        ColumnMetadata metadata3 = getColumnMetadata("last", 2, Type.INTEGER);
+        columns1.add(metadata1);
+        columns1.add(metadata2);
+        columns2.add(metadata1);
+        columns2.add(metadata3);
+
+        // when
+        RowMetadata row1 = new RowMetadata(columns1);
+        RowMetadata row2 = new RowMetadata(columns2);
+        RowMetadata row3 = null;
+
+        // then
+        assertFalse(row1.compatible(row2));
+        assertFalse(row2.compatible(row1));
+        assertFalse(row2.compatible(row3));
+    }
+
     /**
      * @param name the column name.
      * @return a new column.
@@ -189,6 +236,15 @@ public class RowMetadataTest {
      */
     private ColumnMetadata getColumnMetadata(String name, int id) {
         return ColumnMetadata.Builder.column().name(name).type(Type.STRING).id(id).build();
+    }
+
+    /**
+     * @param name the column name.
+     * @param id the column id.
+     * @return a new column.
+     */
+    private ColumnMetadata getColumnMetadata(String name, int id, Type type) {
+        return ColumnMetadata.Builder.column().name(name).type(Type.STRING).id(id).type(type).build();
     }
 
 }

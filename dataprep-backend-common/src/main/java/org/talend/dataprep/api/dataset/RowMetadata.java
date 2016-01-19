@@ -50,6 +50,27 @@ public class RowMetadata implements Serializable {
     }
 
     /**
+     * Returns true if this data set metadata is compatible with <tt>rowMetadata</tt> (they have same types and in
+     * the same order) and false otherwise.
+     * 
+     * @param other the specified row metadata
+     * @return true if this row metadata is compatible with the specified one and false otherwise
+     */
+    public boolean compatible(RowMetadata other) {
+        if (other == null || columns.size() != other.getColumns().size()) {
+            return false;
+        }
+        int size = columns.size();
+        List<ColumnMetadata> otherColumns = other.getColumns();
+        for (int i = 0; i < size; i++) {
+            if (!columns.get(i).compatible(otherColumns.get(i))) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
      * @param columnMetadata the metadata to set.
      */
     public void setColumns(List<ColumnMetadata> columnMetadata) {

@@ -91,6 +91,7 @@ public class DataSetMetadata implements Serializable {
     /**
      * indicates what encoding should be used to read raw content. Defaults to UTF-8 but may be changed depending on
      * content.
+     * 
      * @see CSVSerializer#serialize(java.io.InputStream, org.talend.dataprep.api.dataset.DataSetMetadata)
      */
     @JsonProperty("encoding")
@@ -265,6 +266,7 @@ public class DataSetMetadata implements Serializable {
 
     /**
      * Changes the encoding of the data set content.
+     * 
      * @param encoding The new encoding. Must be supported by current JVM.
      */
     public void setEncoding(String encoding) {
@@ -280,23 +282,28 @@ public class DataSetMetadata implements Serializable {
         this.favorite = favorite;
     }
 
+    /**
+     * Returns true if this data set metadata is compatible with <tt>rowMetadata</tt> (they have same columns names and
+     * same types and in the same order) and false otherwise.
+     *
+     * @param other the specified data set metadata
+     * @return true if this data set metadata is similar with the specified one and false otherwise
+     */
+    public boolean compatible(DataSetMetadata other) {
+        if (other == null) {
+            return false;
+        }
+        boolean result = rowMetadata != null ? rowMetadata.compatible(other.getRowMetadata())
+                : rowMetadata == other.getRowMetadata();
+        return result;
+    }
+
     @Override
-    public String toString()
-    {
-        return "DataSetMetadata{" +
-            "id='" + id + '\'' +
-            ", rowMetadata=" + rowMetadata +
-            ", lifecycle=" + lifecycle +
-            ", content=" + content +
-            ", governance=" + governance +
-            ", name='" + name + '\'' +
-            ", author='" + author + '\'' +
-            ", creationDate=" + creationDate +
-            ", sheetName='" + sheetName + '\'' +
-            ", draft=" + draft +
-            ", schemaParserResult=" + schemaParserResult +
-            ", favorite=" + favorite +
-            '}';
+    public String toString() {
+        return "DataSetMetadata{" + "id='" + id + '\'' + ", rowMetadata=" + rowMetadata + ", lifecycle=" + lifecycle
+                + ", content=" + content + ", governance=" + governance + ", name='" + name + '\'' + ", author='" + author + '\''
+                + ", creationDate=" + creationDate + ", sheetName='" + sheetName + '\'' + ", draft=" + draft
+                + ", schemaParserResult=" + schemaParserResult + ", favorite=" + favorite + '}';
     }
 
     @Override
@@ -341,37 +348,75 @@ public class DataSetMetadata implements Serializable {
      */
     public static class Builder {
 
-        /** @see org.talend.dataprep.api.dataset.DataSetMetadata#id */
+        /**
+         * @see org.talend.dataprep.api.dataset.DataSetMetadata#id
+         */
         private String id;
-        /** @see org.talend.dataprep.api.dataset.DataSetMetadata#author */
+
+        /**
+         * @see org.talend.dataprep.api.dataset.DataSetMetadata#author
+         */
         private String author = "anonymous";
-        /** @see org.talend.dataprep.api.dataset.DataSetMetadata#name */
+
+        /**
+         * @see org.talend.dataprep.api.dataset.DataSetMetadata#name
+         */
         private String name = "";
-        /** @see org.talend.dataprep.api.dataset.DataSetMetadata#creationDate */
+
+        /**
+         * @see org.talend.dataprep.api.dataset.DataSetMetadata#creationDate
+         */
         private long createdDate = System.currentTimeMillis();
-        /** @see org.talend.dataprep.api.dataset.DataSetMetadata#sheetName */
+
+        /**
+         * @see org.talend.dataprep.api.dataset.DataSetMetadata#sheetName
+         */
         private String sheetName;
-        /** @see org.talend.dataprep.api.dataset.DataSetMetadata#draft */
+
+        /**
+         * @see org.talend.dataprep.api.dataset.DataSetMetadata#draft
+         */
         private boolean draft = true;
-        /** @see org.talend.dataprep.api.dataset.DataSetMetadata#favorite */
+
+        /**
+         * @see org.talend.dataprep.api.dataset.DataSetMetadata#favorite
+         */
         private boolean isFavorite;
-        /** @see org.talend.dataprep.api.dataset.DataSetMetadata#location */
+
+        /**
+         * @see org.talend.dataprep.api.dataset.DataSetMetadata#location
+         */
         private DataSetLocation location = new LocalStoreLocation();
 
-        /** @see org.talend.dataprep.api.dataset.DataSetContent#nbRecords */
+        /**
+         * @see org.talend.dataprep.api.dataset.DataSetContent#nbRecords
+         */
         private long size;
 
         /**
          * @see org.talend.dataprep.api.dataset.DataSetContent#limit
          */
         private Long limit = null;
-        /** @see org.talend.dataprep.api.dataset.DataSetContent#nbLinesInHeader */
+
+        /**
+         * @see org.talend.dataprep.api.dataset.DataSetContent#nbLinesInHeader
+         */
+
         private int headerSize;
-        /** @see org.talend.dataprep.api.dataset.DataSetContent#nbLinesInFooter */
+
+        /**
+         * @see org.talend.dataprep.api.dataset.DataSetContent#nbLinesInFooter
+         */
         private int footerSize;
-        /** @see org.talend.dataprep.api.dataset.DataSetContent#formatGuessId */
+
+        /**
+         * @see org.talend.dataprep.api.dataset.DataSetContent#formatGuessId
+         */
         private String formatGuessId;
-        /** @see org.talend.dataprep.api.dataset.DataSetContent#mediaType */
+
+        /**
+         * @see org.talend.dataprep.api.dataset.DataSetContent#mediaType
+         */
         private String mediaType;
 
         /**
@@ -379,9 +424,14 @@ public class DataSetMetadata implements Serializable {
          */
         private Map<String, String> parameters = new HashMap<>();
 
-        /** @see org.talend.dataprep.api.dataset.DataSetLifecycle#contentAnalyzed */
+        /**
+         * @see org.talend.dataprep.api.dataset.DataSetLifecycle#contentAnalyzed
+         */
         private boolean contentAnalyzed;
-        /** @see org.talend.dataprep.api.dataset.DataSetLifecycle#schemaAnalyzed */
+
+        /**
+         * @see org.talend.dataprep.api.dataset.DataSetLifecycle#schemaAnalyzed
+         */
         private boolean schemaAnalyzed;
 
         /**
@@ -393,7 +443,10 @@ public class DataSetMetadata implements Serializable {
          * @see org.talend.dataprep.api.dataset.DataSetLifecycle#inProgress
          */
         private boolean inProgress = true;
-        /** @see org.talend.dataprep.api.dataset.DataSetLifecycle#qualityAnalyzed */
+
+        /**
+         * @see org.talend.dataprep.api.dataset.DataSetLifecycle#qualityAnalyzed
+         */
         private boolean qualityAnalyzed;
 
         /**
