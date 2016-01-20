@@ -11,7 +11,7 @@
      * @requires data-prep.lookup.service:LookupDatagridColumnService
      * @requires data-prep.lookup.service:LookupDatagridTooltipService
      */
-    function LookupDatagridGridService($window, state, StateService, LookupDatagridStyleService,
+    function LookupDatagridGridService($timeout, $window, state, StateService, LookupDatagridStyleService,
                                        LookupDatagridColumnService, LookupDatagridTooltipService) {
         var grid = null;
         var lastSelectedColumn;
@@ -55,7 +55,10 @@
                 return;
             }
             lastSelectedColumn = column.tdpColMetadata;
-            StateService.setLookupSelectedColumn(column.tdpColMetadata);
+            $timeout(function () {
+                //if the selected column is the index col: column.tdpColMetadata === undefined
+                StateService.setLookupSelectedColumn(column.tdpColMetadata);
+            });
         }
 
         /**

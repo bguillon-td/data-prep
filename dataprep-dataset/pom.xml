@@ -9,7 +9,7 @@
     <parent>
         <groupId>org.talend.dataprep</groupId>
         <artifactId>dataprep-backend</artifactId>
-        <version>1.0.RC2-SNAPSHOT</version>
+        <version>1.0.0-SNAPSHOT</version>
         <relativePath>../dataprep-backend/pom.xml</relativePath>
     </parent>
     <properties>
@@ -192,6 +192,11 @@
                                 <exclude>*.properties</exclude>
                             </excludes>
                         </configuration>
+                    </execution>
+                    <execution>
+                        <goals>
+                            <goal>test-jar</goal>
+                        </goals>
                     </execution>
                 </executions>
             </plugin>

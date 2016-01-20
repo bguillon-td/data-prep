@@ -137,11 +137,7 @@ public class CopyColumnTest {
         ActionTestWorkbench.test(rowMetadata, action.create(parameters).getRowAction());
 
         // then
-
         final List<ColumnMetadata> columns = rowMetadata.getColumns();
-        for(ColumnMetadata cm:columns){
-            System.out.println(cm.getName() + "-" + cm.getId());
-        }
         assertEquals(expected, columns);
     }
 

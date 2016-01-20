@@ -13,7 +13,7 @@ public class ShannonEntropy {
 
     /**
      * Computes the Shannon entropy according to the frequencies of values specified in <tt>frequencies</tt>.
-     * 
+     *
      * @param frequencies the collection containing the frequencies of values
      * @return the shannon compute
      */
@@ -28,12 +28,12 @@ public class ShannonEntropy {
         double entropy = frequencies.stream().mapToDouble(d -> d).map(s -> s * Math.log(s)).sum();
         entropy = (-entropy / Math.log(2));
 
-        return entropy;
+        return Math.abs(entropy);
     }
 
     /**
      * Computes the Shannon entropy of values specified in <tt>values</tt>.
-     * 
+     *
      * @param values the list of occurring values
      * @param <T> the types of values specified in <tt>values</tt>
      * @return

@@ -134,6 +134,10 @@
                             DatagridStyleService.updateColumnClass(selectedColumnId);
                             grid.invalidate();
                         }, 0);
+
+                        //focus specific column
+                        clearTimeout(focusTimeout);
+                        focusTimeout = setTimeout(DatagridGridService.navigateToFocusedColumn, 300);
                     }
                 };
 
@@ -177,10 +181,6 @@
                         if (!getData().preview) {
                             externalTimeout = setTimeout(DatagridExternalService.updateSuggestionPanel.bind(null, true), 300);
                         }
-
-                        //focus specific column
-                        clearTimeout(focusTimeout);
-                        focusTimeout = setTimeout(DatagridGridService.navigateToFocusedColumn, 300);
                     }
                 };
 

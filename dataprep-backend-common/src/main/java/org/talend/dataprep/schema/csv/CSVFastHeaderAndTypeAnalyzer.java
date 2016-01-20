@@ -2,6 +2,7 @@ package org.talend.dataprep.schema.csv;
 
 import java.util.*;
 
+import org.apache.commons.lang.StringUtils;
 import org.talend.dataprep.api.type.Type;
 
 /**
@@ -74,6 +75,7 @@ public class CSVFastHeaderAndTypeAnalyzer {
      */
     private boolean headerInfoReliable = false;
 
+    /** The CSV header &lt;ColName, Type&gt;. */
     private Map<String, Type> headers = Collections.emptyMap();
 
     private final String DEFAULT_HEADER_PREFIX = "COL";
@@ -296,7 +298,7 @@ public class CSVFastHeaderAndTypeAnalyzer {
                 scanner.useDelimiter(separator.getSeparator() + "");
                 int i = 0;
                 while (scanner.hasNext()) {
-                    String col = scanner.next();
+                    String col = stripQuotes(scanner.next());
                     headers.put(col, columnTypes.get(i++));
                 }
             } else {
@@ -309,6 +311,16 @@ public class CSVFastHeaderAndTypeAnalyzer {
 
         }
         analysisPerformed = true;
+    }
+
+    /**
+     * Remove the "quotes" around the given string if any.
+     * 
+     * @param input the string to strip.
+     * @return the stripped input string.
+     */
+    private String stripQuotes(String input) {
+        return StringUtils.strip(input, "\"");
     }
 
     /**

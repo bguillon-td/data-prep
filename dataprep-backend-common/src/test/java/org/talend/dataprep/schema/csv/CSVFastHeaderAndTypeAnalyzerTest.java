@@ -142,4 +142,23 @@ public class CSVFastHeaderAndTypeAnalyzerTest {
         Assert.assertArrayEquals(expectedTypes.toArray(), analysis.getHeaders().values().toArray());
         Assert.assertFalse(analysis.isFirstLineAHeader());
     }
+
+    /**
+     * see https://jira.talendforge.org/browse/TDP-1249
+     */
+    @Test
+    public void should_strip_quotes_in_header() {
+        // given
+        List<String> list = Arrays.asList("\"user_id\";birth\";\"country;page_visited;first_item",
+                "4dc1548af;11/9/1970;France;6.0;22.0");
+        Separator separator = new Separator(';');
+        separator.incrementCount(1);
+
+        // when
+        CSVFastHeaderAndTypeAnalyzer analysis = new CSVFastHeaderAndTypeAnalyzer(list, separator);
+
+        // then
+        List<String> expectedHeaders = Arrays.asList("user_id", "birth", "country", "page_visited", "first_item");
+        Assert.assertArrayEquals(expectedHeaders.toArray(), analysis.getHeaders().keySet().toArray());
+    }
 }

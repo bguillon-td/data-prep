@@ -4,7 +4,6 @@ import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-import org.talend.dataprep.api.type.Type;
 import org.talend.dataprep.util.ShannonEntropy;
 
 /**
@@ -16,17 +15,22 @@ import org.talend.dataprep.util.ShannonEntropy;
 public class SeparatorAnalyzer implements Consumer<Separator> {
 
     /** Number of lines read in the dataset. */
-    private int numberOfLines;
+    private final int numberOfLines;
 
     /**
      * Some sample lines used to make the score more accurate.
      */
-    private List<String> sampleLines;
+    private final List<String> sampleLines;
 
     /**
      * Internal comparator used to compare separators between them
      */
     private final SeparatorComparator comparator;
+
+    /**
+     * Priority of valid separators
+     */
+    private final List<Character> priority = Arrays.asList(';', ',', '\t', ' ');
 
     /**
      * Constructor.
@@ -42,41 +46,38 @@ public class SeparatorAnalyzer implements Consumer<Separator> {
         this.comparator = new SeparatorComparator();
     }
 
-    /**
-     * Priority of valid separators
-     */
-    private List<Character> priority = Arrays.asList(';', ',', '\t', ' ');
-
     private int prio(char c1, char c2) {
         int c1Priority = priority.indexOf(c1);
+        c1Priority = c1Priority == -1 ? Integer.MAX_VALUE : c1Priority;
         int c2Priority = priority.indexOf(c2);
+        c2Priority = c2Priority == -1 ? Integer.MAX_VALUE : c2Priority;
         return Integer.compare(c1Priority, c2Priority);
     }
 
     /**
-     * Returns a positive integer indicating the confidence about the specified separator.
-     * {@code 0} is returned if <tt>s</tt>is frequent ( more than half of the number of lines) and is present in the first line.
-     * {@code 1} is returned if <tt>s</tt> is frequent and is not present in the first line.
-     * {@code 2} is returned if <tt>s</tt> is infrequent and is present in the first line.
-     * {@code 3} is returned if the separator is infrequent and is not present in the first line.
+     * Returns a positive integer indicating the confidence about the specified separator. {@code 0} is returned if
+     * <tt>s</tt>is frequent ( more than half of the number of lines) and is present in the first line. {@code 1} is
+     * returned if <tt>s</tt> is frequent and is not present in the first line. {@code 2} is returned if <tt>s</tt> is
+     * infrequent and is present in the first line. {@code 3} is returned if the separator is infrequent and is not
+     * present in the first line.
      *
      * @param s the specified separator
-     * @return  a positive integer indicating the confidence about the specified separator
+     * @return a positive integer indicating the confidence about the specified separator
      */
     private int consistencyLevel(Separator s) {
         int result = (s.getCountPerLine().size() > (numberOfLines / 2)) ? 0 : 2;
-        result += (s.getCountPerLine().containsKey(1) ? 0: 1 );
+        result += (s.getCountPerLine().containsKey(1) ? 0 : 1);
         return result;
     }
 
     /**
      * Returns the frequency of each count (per line) of the separator.
-     * 
+     *
      * @param separator
      * @return
      */
     private Collection<Double> countFrequency(Separator separator) {
-        HashMap<Long, Long> countOccurrences = new HashMap<>();
+        Map<Long, Long> countOccurrences = new HashMap<>();
 
         if (separator.getCountPerLine().isEmpty()) {
             separator.setScore(Double.MAX_VALUE);
@@ -99,7 +100,7 @@ public class SeparatorAnalyzer implements Consumer<Separator> {
 
     /**
      * Computes the entropy of a separator.
-     * 
+     *
      * The lower the entropy, the better, i.e, the number of occurrence of the separator remains stable while processing
      * the lines, which means that the separator has a huge probability of being the wanted one.
      */
@@ -125,7 +126,7 @@ public class SeparatorAnalyzer implements Consumer<Separator> {
 
     /**
      * Compares two separator in order to choose the best one.
-     * 
+     *
      * @param s1 the first specified separator
      * @param s2 the second specified separator
      * @return the value {@code 0} if {@code s1} is equal to {@code s2}; a value less than {@code 0} if {@code s1} is
@@ -153,7 +154,8 @@ public class SeparatorAnalyzer implements Consumer<Separator> {
             // if both score are zero or both score are positive and close enough to be compared according to a
             // criterion
             // other than score
-            if (s1Score == 0 && s2Score == 0 || (s1Score != 0 && s2Score != 0
+            if (Double.compare(0.0, s1Score) == 0 && Double.compare(0.0, s2Score) == 0
+                    || (Double.compare(0.0, s1Score) != 0 && Double.compare(0.0, s2Score) != 0
                     && Math.abs(s1Score - s2Score) < (ShannonEntropy.maxEntropy(numberOfLines) / 2))) {
                 // choose according to consistency
                 result = Integer.compare(consistencyLevel(s1), consistencyLevel(s2));
@@ -166,9 +168,7 @@ public class SeparatorAnalyzer implements Consumer<Separator> {
                         result = Boolean.compare(s2.isFirstLineAHeader(), s1.isFirstLineAHeader());
                         // if both separators have or do not have first line as header then choose the one with more
                         // columns
-                        if (result == 0) {
-                            result = Integer.compare(s1.getHeaders().size(), s2.getHeaders().size());
-                        }
+                        result = result != 0 ? result : Integer.compare(s2.getHeaders().size(), s1.getHeaders().size());
                     }
                 }
             }
@@ -186,11 +186,6 @@ public class SeparatorAnalyzer implements Consumer<Separator> {
             }
 
             return result;
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            return (obj instanceof SeparatorComparator);
         }
     }
 }

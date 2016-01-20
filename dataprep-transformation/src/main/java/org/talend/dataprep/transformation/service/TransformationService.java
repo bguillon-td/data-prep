@@ -17,7 +17,6 @@ import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import javax.annotation.Resource;
-import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.TeeOutputStream;
@@ -227,19 +226,18 @@ public class TransformationService extends BaseTransformationService {
      * Compute the given aggregation.
      *
      * @param rawParams the aggregation rawParams as body rawParams.
-     * @param output the where to write the response.
      */
     // @formatter:off
     @RequestMapping(value = "/aggregate", method = POST, produces = APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     @ApiOperation(value = "Compute the aggregation according to the request body rawParams", consumes = MediaType.APPLICATION_JSON_VALUE)
     @VolumeMetered
-    public void aggregate(@ApiParam(value = "The aggregation rawParams in json") @RequestBody final String rawParams, final OutputStream output) {
+    public AggregationResult aggregate(@ApiParam(value = "The aggregation rawParams in json") @RequestBody final String rawParams) {
         // @formatter:on
 
         final ObjectMapper mapper = builder.build();
 
         // parse the aggregation parameters
-        AggregationParameters parameters;
+        final AggregationParameters parameters;
         try {
             parameters = mapper.readerFor(AggregationParameters.class).readValue(rawParams);
             LOG.debug("Aggregation requested {}", parameters);
@@ -271,9 +269,8 @@ public class TransformationService extends BaseTransformationService {
             } catch (IOException e) {
                 throw new TDPException(CommonErrorCodes.UNABLE_TO_AGGREGATE, e);
             }
-        }
-        // or from the dataset
-        else {
+        } else {
+            // or from the dataset
             getContentRequest = getDataSetRequest(parameters.getDatasetId(), parameters.getSampleSize());
             contentToAggregate = getDataSetContent(getContentRequest);
         }
@@ -281,15 +278,11 @@ public class TransformationService extends BaseTransformationService {
         // apply the aggregation
         try (JsonParser parser = mapper.getFactory().createParser(contentToAggregate)) {
             final DataSet dataSet = mapper.readerFor(DataSet.class).readValue(parser);
-
-            AggregationResult result = aggregationService.aggregate(parameters, dataSet);
-            mapper.writer().writeValue(output, result);
-
+            return aggregationService.aggregate(parameters, dataSet);
         } catch (IOException e) {
             throw new TDPException(CommonErrorCodes.UNABLE_TO_PARSE_JSON, e);
-        }
-        // don't forget to release the connection
-        finally {
+        } finally {
+            // don't forget to release the connection
             if (getContentRequest != null) {
                 getContentRequest.releaseConnection();
             }
@@ -534,17 +527,13 @@ public class TransformationService extends BaseTransformationService {
     @RequestMapping(value = "/transform/errors", method = RequestMethod.GET, produces = APPLICATION_JSON_VALUE)
     @ApiOperation(value = "Get all transformation related error codes.", notes = "Returns the list of all transformation related error codes.")
     @Timed
-    public void listErrors(HttpServletResponse response) {
-        try {
-            // need to cast the typed dataset errors into mock ones to use json parsing
-            List<JsonErrorCodeDescription> errors = new ArrayList<>(TransformationErrorCodes.values().length);
-            for (TransformationErrorCodes code : TransformationErrorCodes.values()) {
-                errors.add(new JsonErrorCodeDescription(code));
-            }
-            builder.build().writer().writeValue(response.getOutputStream(), errors);
-        } catch (IOException e) {
-            throw new TDPException(CommonErrorCodes.UNEXPECTED_EXCEPTION, e);
+    public Iterable<JsonErrorCodeDescription> listErrors() {
+        // need to cast the typed dataset errors into mock ones to use json parsing
+        List<JsonErrorCodeDescription> errors = new ArrayList<>(TransformationErrorCodes.values().length);
+        for (TransformationErrorCodes code : TransformationErrorCodes.values()) {
+            errors.add(new JsonErrorCodeDescription(code));
         }
+        return errors;
     }
 
     /**
@@ -553,15 +542,8 @@ public class TransformationService extends BaseTransformationService {
     @RequestMapping(value = "/export/formats", method = GET)
     @ApiOperation(value = "Get the available format types")
     @Timed
-    public void exportTypes(final HttpServletResponse response) {
-        final List<ExportFormat> types = formatRegistrationService.getExternalFormats();
-        try {
-            builder.build() //
-                    .writer() //
-                    .writeValue(response.getOutputStream(), types);
-        } catch (IOException e) {
-            throw new TDPException(CommonErrorCodes.UNEXPECTED_EXCEPTION, e);
-        }
+    public List<ExportFormat> exportTypes() {
+        return formatRegistrationService.getExternalFormats();
     }
 
     /**

@@ -147,6 +147,20 @@ describe('Datagrid directive', function () {
                 //then
                 expect(DatagridColumnService.createColumns.calls.count()).toBe(2);
             }));
+
+            it('should focus on wanted column (not necessarily the selected column) in async mode with a 300ms delay', inject(function(DatagridGridService) {
+                //given
+                createElement();
+
+                //when
+                stateMock.playground.data = data;
+                scope.$digest();
+                expect(DatagridGridService.navigateToFocusedColumn).not.toHaveBeenCalled();
+                jasmine.clock().tick(300);
+
+                //then
+                expect(DatagridGridService.navigateToFocusedColumn).toHaveBeenCalled();
+            }));
         });
     });
 
@@ -283,22 +297,6 @@ describe('Datagrid directive', function () {
 
             //then
             expect(DatagridExternalService.updateSuggestionPanel).not.toHaveBeenCalled();
-        }));
-
-        it('should focus on wanted column (not necessarily the selected column) in async mode with a 300ms delay', inject(function(DatagridGridService) {
-            //given
-            createElement();
-            stateMock.playground.data = data;
-            expect(DatagridGridService.navigateToFocusedColumn).not.toHaveBeenCalled();
-
-            //when
-            stateMock.playground.grid.selectedColumn = {id: '0001'};
-            scope.$digest();
-            expect(DatagridGridService.navigateToFocusedColumn).not.toHaveBeenCalled();
-            jasmine.clock().tick(300);
-
-            //then
-            expect(DatagridGridService.navigateToFocusedColumn).toHaveBeenCalled();
         }));
 
         it('should highlight cells containing the same value as selected cell in async mode with a 500ms delay when there is a selected line', inject(function(DatagridStyleService) {

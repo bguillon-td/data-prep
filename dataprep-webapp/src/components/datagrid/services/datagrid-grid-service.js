@@ -128,7 +128,9 @@
                 enableCellNavigation: true,
                 enableTextSelectionOnCells: false,
                 syncColumnCellResize: false,
-                frozenColumn: 0
+				frozenColumn: 0,
+				asyncEditorLoading: true,
+				asyncEditorLoadDelay: 150
             };
             grid = new Slick.Grid(elementId, state.playground.grid.dataView, [{id: 'tdpId'}], options);
 
