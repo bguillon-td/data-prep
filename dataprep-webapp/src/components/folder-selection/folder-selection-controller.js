@@ -99,6 +99,7 @@
 		 * @param {object} folder - the folder to use for cloning the data
 		 */
 		vm.chooseFolder = function (folder) {
+			console.log('chooseFolder:'+folder.id);
 			var previousSelected = state.folder.choosedFolder;
 			if (previousSelected) {
 				previousSelected.selected = false;

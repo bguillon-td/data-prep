@@ -13,7 +13,7 @@
     <div ng-if="folderSelectionCtrl.searchFolderQuery">
       <ul class="folders-list">
         <li ng-repeat="node in folderSelectionCtrl.foldersFound"
-            ng-class="{folderselected: node.selected}"
+            ng-class="{'folder-selected': node.selected}"
             ng-click="folderSelectionCtrl.chooseFolder(node)">
           <img class="icon-img" src="assets/images/folder/folder_close_small-icon.png"/>
           <span class="folder-name" ng-if="!node.path" translate-once="HOME_FOLDER"></span>
@@ -23,7 +23,7 @@
     </div>
 
     <script type="text/ng-template" id="folder_node_render.html">
-      <div class="folder-node" ng-class="{folderselected: node.selected}">
+      <div class="folder-node" ng-class="{'folder-selected': node.selected}">
         <a class="inventory-icon inventory-folder">
           <i data-icon="J" ng-if="!node.collapsed" class="dropdown-button-right" ng-click="folderSelectionCtrl.toggle(node)"></i>
           <img class="icon-img" ng-click="folderSelectionCtrl.chooseFolder(node)" ng-if="!node.collapsed" src="assets/images/folder/folder_open_small-icon.png"/>
