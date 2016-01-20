@@ -30,7 +30,7 @@
           <i data-icon="I" ng-if="node.collapsed" class="dropdown-button-down" ng-click="folderSelectionCtrl.toggle(node)"></i>
           <img class="icon-img" ng-click="folderSelectionCtrl.chooseFolder(node)" ng-if="node.collapsed" src="assets/images/folder/folder_close_small-icon.png"/>
         </a>
-        <span ng-click="folderSelectionCtrl.chooseFolder(node)" class="folder-name">{{node.name}}</span>
+        <span ng-click="folderSelectionCtrl.chooseFolder(node)" id="{{node.id}}" class="folder-name">{{node.name}}</span>
       </div>
       <ol class="folder-nodes" ng-model="node.nodes" ng-class="{hidden: node.collapsed}">
         <li ng-repeat="node in node.nodes" class="folder-node" ng-include="'folder_node_render.html'"></li>
