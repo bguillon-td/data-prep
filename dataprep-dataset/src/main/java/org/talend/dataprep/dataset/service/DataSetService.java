@@ -228,6 +228,16 @@ public class DataSetService {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Returns a list containing all data sets that are compatible with the data set with id <tt>dataSetId</tt>.
+     * If no compatible data set is found an empty list is returned.
+     * The data set with id <tt>dataSetId</tt> is never returned in the list.
+     * @param dataSetId the specified data set id
+     * @param sort the sort criterion: either name or date.
+     * @param order the sorting order: either asc or desc
+     * @return a list containing all data sets that are compatible with the data set with id <tt>dataSetId</tt>
+     * and empty list if no data set is compatible.
+     */
     @RequestMapping(value = "/datasets/{id}/compatibledatasets", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     @ApiOperation(value = "List all compatible data sets", notes = "Returns the list of data sets the current user is allowed to see and which are compatible with the specified data set id.")
     @Timed

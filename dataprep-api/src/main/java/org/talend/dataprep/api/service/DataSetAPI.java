@@ -283,6 +283,16 @@ public class DataSetAPI extends APIService {
         }
     }
 
+    /**
+     * Returns a list containing all data sets that are compatible with the data set with id <tt>id</tt>.
+     * If no compatible data set is found an empty list is returned.
+     * The data set with id <tt>dataSetId</tt> is never returned in the list.
+     * @param id the specified data set id
+     * @param sort the sort criterion: either name or date.
+     * @param order the sorting order: either asc or desc
+     * @return a list containing all data sets that are compatible with the data set with id <tt>id</tt>
+     * and empty list if no data set is compatible.
+     */
     @RequestMapping(value = "/api/datasets/{id}/compatibledatasets", method = GET, consumes = ALL_VALUE, produces = APPLICATION_JSON_VALUE)
     @ApiOperation(value = "List compatible data sets.", produces = APPLICATION_JSON_VALUE, notes = "Returns a list of data sets that are compatible with the specified one.")
     public void listCompatibleDatasets(@ApiParam(value = "Id of the data set to get") @PathVariable(value = "id") String id,

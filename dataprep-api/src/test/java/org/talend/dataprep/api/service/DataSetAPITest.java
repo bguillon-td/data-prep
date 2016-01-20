@@ -85,6 +85,33 @@ public class DataSetAPITest extends ApiServiceTestBase {
     }
 
     @Test
+    public void testListCompatibleDataSets() throws Exception {
+        // given
+        final String dataSetId = createDataset( "dataset/dataset.csv", "compatible1", "text/csv" );
+        final String dataSetId2 = createDataset( "dataset/dataset.csv", "compatible2", "text/csv" );
+        final String dataSetId3 = createDataset("t-shirt_100.csv", "incompatible", "text/csv");
+
+        // when
+        final String compatibleDatasetList = when().get("/api/datasets/{id}/compatibledatasets", dataSetId).asString();
+
+        // then
+        assertTrue( compatibleDatasetList.contains( dataSetId2 ) );
+        assertFalse( compatibleDatasetList.contains( dataSetId3 ) );
+    }
+
+    @Test
+    public void testListCompatibleDataSetsWhenUniqueDatasetInRepository() throws Exception {
+        // given
+        final String dataSetId = createDataset( "dataset/dataset.csv", "unique", "text/csv" );
+
+        // when
+        final String compatibleDatasetList = when().get("/api/datasets/{id}/compatibledatasets", dataSetId).asString();
+
+        // then
+        assertFalse( compatibleDatasetList.contains( dataSetId ) );
+    }
+
+    @Test
     public void testDataSetListWithDateOrder() throws Exception {
         final ObjectMapper mapper = new ObjectMapper();
         // given

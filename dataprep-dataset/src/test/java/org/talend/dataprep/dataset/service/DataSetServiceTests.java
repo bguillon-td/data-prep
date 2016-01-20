@@ -76,6 +76,153 @@ public class DataSetServiceTests extends DataSetBaseTest {
                 .get("/datasets").then().header("Access-Control-Allow-Origin", "fake.host.to.trigger.cors");
     }
 
+
+    @Test
+    public void compatibleDatasetsList() throws Exception {
+        when().get("/datasets/{id}/compatibledatasets", "1").then().statusCode(HttpStatus.OK.value()).body(equalTo("[]"));
+
+        String dataSetId = createCSVDataSet(this.getClass().getResourceAsStream(T_SHIRT_100_CSV));
+        String dataSetId2 = createCSVDataSet(this.getClass().getResourceAsStream(T_SHIRT_100_CSV));
+        String dataSetId3 = createCSVDataSet(this.getClass().getResourceAsStream(TAGADA_CSV));
+
+        // when
+        final String compatibleDatasetList = when().get("/datasets/{id}/compatibledatasets", dataSetId).asString();
+
+        // then
+        Assert.assertTrue( compatibleDatasetList.contains( dataSetId2 ) );
+        assertFalse( compatibleDatasetList.contains( dataSetId3 ) );
+    }
+
+    @Test
+    public void compatibleDatasetsListNameSort() throws Exception {
+        String dataSetId = createCSVDataSet(this.getClass().getResourceAsStream(TAGADA_CSV));
+        String dataSetId2 = createCSVDataSet(this.getClass().getResourceAsStream(TAGADA_CSV));
+        String dataSetId3 = createCSVDataSet(this.getClass().getResourceAsStream(TAGADA_CSV));
+
+        DataSetMetadata metadata1 = dataSetMetadataRepository.get(dataSetId);
+        metadata1.setName("CCCC");
+        dataSetMetadataRepository.add(metadata1);
+        DataSetMetadata metadata2 = dataSetMetadataRepository.get(dataSetId2);
+        metadata2.setName("BBBB");
+        dataSetMetadataRepository.add(metadata2);
+        DataSetMetadata metadata3 = dataSetMetadataRepository.get(dataSetId3);
+        metadata3.setName("AAAA");
+        dataSetMetadataRepository.add(metadata3);
+
+        // when
+        final String actual = when().get("/datasets/{id}/compatibledatasets?sort=name", dataSetId).asString();
+
+        // Ensure order by name (most recent first)
+        final Iterator<JsonNode> elements = builder.build().readTree(actual).elements();
+        String[] expectedNames = new String[]{"BBBB", "AAAA"};
+        int i = 0;
+        while (elements.hasNext()) {
+            assertThat(elements.next().get("name").asText(), is(expectedNames[i++]));
+        }
+    }
+
+    @Test
+    public void compatibleDatasetsListDateSort() throws Exception {
+        String dataSetId = createCSVDataSet(this.getClass().getResourceAsStream(TAGADA_CSV));
+        String dataSetId2 = createCSVDataSet(this.getClass().getResourceAsStream(TAGADA_CSV));
+        String dataSetId3 = createCSVDataSet(this.getClass().getResourceAsStream(TAGADA_CSV));
+
+        DataSetMetadata metadata1 = dataSetMetadataRepository.get(dataSetId);
+        metadata1.setName("CCCC");
+        dataSetMetadataRepository.add(metadata1);
+        DataSetMetadata metadata2 = dataSetMetadataRepository.get(dataSetId2);
+        metadata2.setName("BBBB");
+        dataSetMetadataRepository.add(metadata2);
+        DataSetMetadata metadata3 = dataSetMetadataRepository.get(dataSetId3);
+        metadata3.setName("AAAA");
+        dataSetMetadataRepository.add(metadata3);
+
+        // when
+        final String actual = when().get("/datasets/{id}/compatibledatasets?sort=date", dataSetId).asString();
+
+        // Ensure order by name (most recent first)
+        final Iterator<JsonNode> elements = builder.build().readTree(actual).elements();
+        String[] expectedNames = new String[]{"AAAA", "BBBB"};
+        int i = 0;
+        while (elements.hasNext()) {
+            assertThat(elements.next().get("name").asText(), is(expectedNames[i++]));
+        }
+    }
+
+    @Test
+    public void compatibleDatasetsListDateOrder() throws Exception {
+        String dataSetId = createCSVDataSet(this.getClass().getResourceAsStream(TAGADA_CSV));
+        String dataSetId2 = createCSVDataSet(this.getClass().getResourceAsStream(TAGADA_CSV));
+        String dataSetId3 = createCSVDataSet(this.getClass().getResourceAsStream(TAGADA_CSV));
+
+        DataSetMetadata metadata1 = dataSetMetadataRepository.get(dataSetId);
+        metadata1.setName("CCCC");
+        dataSetMetadataRepository.add(metadata1);
+        DataSetMetadata metadata2 = dataSetMetadataRepository.get(dataSetId2);
+        metadata2.setName("BBBB");
+        dataSetMetadataRepository.add(metadata2);
+        DataSetMetadata metadata3 = dataSetMetadataRepository.get(dataSetId3);
+        metadata3.setName("AAAA");
+        dataSetMetadataRepository.add(metadata3);
+
+        // when
+        final String actual = when().get("/datasets/{id}/compatibledatasets?sort=date&order=asc", dataSetId).asString();
+
+        // Ensure order by name (most recent first)
+        final Iterator<JsonNode> elements = builder.build().readTree(actual).elements();
+        String[] expectedNames = new String[]{"BBBB", "AAAA"};
+        int i = 0;
+        while (elements.hasNext()) {
+            assertThat(elements.next().get("name").asText(), is(expectedNames[i++]));
+        }
+    }
+
+    @Test
+    public void compatibleDatasetsListNameOrder() throws Exception {
+        String dataSetId = createCSVDataSet(this.getClass().getResourceAsStream(TAGADA_CSV));
+        String dataSetId2 = createCSVDataSet(this.getClass().getResourceAsStream(TAGADA_CSV));
+        String dataSetId3 = createCSVDataSet(this.getClass().getResourceAsStream(TAGADA_CSV));
+
+        DataSetMetadata metadata1 = dataSetMetadataRepository.get(dataSetId);
+        metadata1.setName("CCCC");
+        dataSetMetadataRepository.add(metadata1);
+        DataSetMetadata metadata2 = dataSetMetadataRepository.get(dataSetId2);
+        metadata2.setName("BBBB");
+        dataSetMetadataRepository.add(metadata2);
+        DataSetMetadata metadata3 = dataSetMetadataRepository.get(dataSetId3);
+        metadata3.setName("AAAA");
+        dataSetMetadataRepository.add(metadata3);
+
+        // when
+        final String actualASC = when().get("/datasets/{id}/compatibledatasets?sort=name&order=asc", dataSetId).asString();
+        final String actualDESC = when().get("/datasets/{id}/compatibledatasets?sort=name&order=desc", dataSetId).asString();
+
+        // Ensure order by name (most recent first)
+        final Iterator<JsonNode> elements = builder.build().readTree(actualASC).elements();
+        String[] expectedNames = new String[]{"AAAA", "BBBB"};
+        int i = 0;
+        while (elements.hasNext()) {
+            assertThat(elements.next().get("name").asText(), is(expectedNames[i++]));
+        }
+
+        builder.build().readTree(actualDESC).elements();
+        expectedNames = new String[]{"BBBB", "AAAA"};
+        i = 0;
+        while (elements.hasNext()) {
+            assertThat(elements.next().get("name").asText(), is(expectedNames[i++]));
+        }
+    }
+
+    @Test
+    public void compatibleDatasetsListIllegalSort() throws Exception {
+        when().get("/datasets/{id}/compatibledatasets?sort=aaaa", "0000").then().statusCode(HttpStatus.BAD_REQUEST.value());
+    }
+
+    @Test
+    public void compatibleDatasetsListIllegalOrder() throws Exception {
+        when().get("/datasets/{id}/compatibledatasets?order=aaaa","0000").then().statusCode(HttpStatus.BAD_REQUEST.value());
+    }
+
     @Test
     public void list() throws Exception {
         when().get("/datasets").then().statusCode(HttpStatus.OK.value()).body(equalTo("[]"));
