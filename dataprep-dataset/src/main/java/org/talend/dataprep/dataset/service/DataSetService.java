@@ -228,6 +228,52 @@ public class DataSetService {
                 .collect(Collectors.toList());
     }
 
+    @RequestMapping(value = "/datasets/{id}/compatibledatasets", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    @ApiOperation(value = "List all compatible data sets", notes = "Returns the list of data sets the current user is allowed to see and which are compatible with the specified data set id.")
+    @Timed
+    public Iterable<DataSetMetadata> listCompatibleDatasets(@PathVariable(value = "id") @ApiParam(name = "id", value = "Id of the data set metadata") String dataSetId,
+            @ApiParam(value = "Sort key (by name or date).") @RequestParam(defaultValue = "DATE", required = false) String sort,
+            @ApiParam(value = "Order for sort key (desc or asc).") @RequestParam(defaultValue = "DESC", required = false) String order) {
+
+
+        Spliterator<DataSetMetadata> iterator = dataSetMetadataRepository.listCompatible(dataSetId).spliterator();
+
+        Stream<DataSetMetadata> stream = StreamSupport.stream(iterator, false);
+        // Select order (asc or desc)
+        final Comparator<String> comparisonOrder;
+        switch (order.toUpperCase()) {
+        case "ASC":
+            comparisonOrder = Comparator.naturalOrder();
+            break;
+        case "DESC":
+            comparisonOrder = Comparator.reverseOrder();
+            break;
+        default:
+            throw new TDPException(DataSetErrorCodes.ILLEGAL_ORDER_FOR_LIST, ExceptionContext.build().put("order", order));
+        }
+        // Select comparator for sort (either by name or date)
+        final Comparator<DataSetMetadata> comparator;
+        switch (sort.toUpperCase()) {
+        case "NAME":
+            comparator = Comparator.comparing(dataSetMetadata -> dataSetMetadata.getName().toUpperCase(), comparisonOrder);
+            break;
+        case "DATE":
+            comparator = Comparator.comparing(dataSetMetadata -> String.valueOf(dataSetMetadata.getCreationDate()),
+                    comparisonOrder);
+            break;
+        default:
+            throw new TDPException(DataSetErrorCodes.ILLEGAL_SORT_FOR_LIST, ExceptionContext.build().put("sort", order));
+        }
+        // Return sorted results
+        return stream.filter(metadata -> !metadata.getLifecycle().importing()) //
+                .map(metadata -> {
+                    completeWithUserData(metadata);
+                    return metadata;
+                }) //
+                .sorted(comparator) //
+                .collect(Collectors.toList());
+    }
+
     /**
      * Creates a new data set and returns the new data set id as text in the response.
      *

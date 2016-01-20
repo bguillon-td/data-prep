@@ -6,7 +6,6 @@ import static org.talend.dataprep.api.service.command.common.Defaults.pipeStream
 import java.io.InputStream;
 import java.net.URISyntaxException;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpRequestBase;
@@ -23,36 +22,31 @@ import org.talend.dataprep.exception.error.CommonErrorCodes;
 
 @Component
 @Scope("request")
-public class DataSetList extends GenericCommand<InputStream> {
+public class CompatibleDataSetList extends GenericCommand<InputStream> {
 
-    private DataSetList(HttpClient client, String sort, String order) {
-        this(client, sort, order, null);
-    }
-
-    private DataSetList(HttpClient client, String sort, String order, String folder) {
+    private CompatibleDataSetList(HttpClient client, String dataSetId, String sort, String order) {
         super(DataSetAPI.DATASET_GROUP, client);
 
         try {
-            execute(() -> onExecute( sort, order, folder));
+            execute(() -> onExecute(dataSetId, sort, order));
             onError(e -> new TDPException(APIErrorCodes.UNABLE_TO_LIST_DATASETS, e));
             on(HttpStatus.NO_CONTENT, HttpStatus.ACCEPTED).then(emptyStream());
             on(HttpStatus.OK).then(pipeStream());
 
         } catch (Exception e) {
-            throw new TDPException( CommonErrorCodes.UNEXPECTED_EXCEPTION, e);
+            throw new TDPException(CommonErrorCodes.UNEXPECTED_EXCEPTION, e);
         }
     }
 
-    private HttpRequestBase onExecute(String sort, String order, String folder) {
+    private HttpRequestBase onExecute(String dataSetId, String sort, String order) {
         try {
 
-            URIBuilder uriBuilder = new URIBuilder(datasetServiceUrl + "/datasets");
-            uriBuilder.addParameter( "sort", sort );
-            uriBuilder.addParameter( "order", order );
-            if  ( StringUtils.isNotEmpty( folder )) {
-                uriBuilder.addParameter( "folder", folder );
-            }
-            return new HttpGet( uriBuilder.build() );
+            URIBuilder uriBuilder = new URIBuilder(datasetServiceUrl + "/datasets/" + dataSetId + "/compatibledatasets");
+            uriBuilder.addParameter("dataSetId", dataSetId);
+            uriBuilder.addParameter("sort", sort);
+            uriBuilder.addParameter("order", order);
+
+            return new HttpGet(uriBuilder.build());
         } catch (URISyntaxException e) {
             throw new TDPException(CommonErrorCodes.UNEXPECTED_EXCEPTION, e);
         }

@@ -20,19 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.talend.dataprep.api.dataset.DataSetMetadata;
 import org.talend.dataprep.api.dataset.DataSetMoveRequest;
 import org.talend.dataprep.api.service.command.common.HttpResponse;
-import org.talend.dataprep.api.service.command.dataset.CloneDataSet;
-import org.talend.dataprep.api.service.command.dataset.CreateDataSet;
-import org.talend.dataprep.api.service.command.dataset.CreateOrUpdateDataSet;
-import org.talend.dataprep.api.service.command.dataset.DataSetDelete;
-import org.talend.dataprep.api.service.command.dataset.DataSetGet;
-import org.talend.dataprep.api.service.command.dataset.DataSetGetMetadata;
-import org.talend.dataprep.api.service.command.dataset.DataSetList;
-import org.talend.dataprep.api.service.command.dataset.DataSetPreview;
-import org.talend.dataprep.api.service.command.dataset.DatasetCertification;
-import org.talend.dataprep.api.service.command.dataset.MoveDataSet;
-import org.talend.dataprep.api.service.command.dataset.SetFavorite;
-import org.talend.dataprep.api.service.command.dataset.UpdateColumn;
-import org.talend.dataprep.api.service.command.dataset.UpdateDataSet;
+import org.talend.dataprep.api.service.command.dataset.*;
 import org.talend.dataprep.api.service.command.transformation.SuggestDataSetActions;
 import org.talend.dataprep.api.service.command.transformation.SuggestLookupActions;
 import org.talend.dataprep.exception.TDPException;
@@ -289,6 +277,29 @@ public class DataSetAPI extends APIService {
             output.flush();
             if (LOG.isDebugEnabled()) {
                 LOG.debug("Listing datasets (pool: {}) done.", getConnectionStats());
+            }
+        } catch (IOException e) {
+            throw new TDPException(CommonErrorCodes.UNEXPECTED_EXCEPTION, e);
+        }
+    }
+
+    @RequestMapping(value = "/api/datasets/{id}/compatibledatasets", method = GET, consumes = ALL_VALUE, produces = APPLICATION_JSON_VALUE)
+    @ApiOperation(value = "List compatible data sets.", produces = APPLICATION_JSON_VALUE, notes = "Returns a list of data sets that are compatible with the specified one.")
+    public void listCompatibleDatasets(@ApiParam(value = "Id of the data set to get") @PathVariable(value = "id") String id,
+            @ApiParam(value = "Sort key (by name or date), defaults to 'date'.") @RequestParam(defaultValue = "DATE", required = false) String sort,
+            @ApiParam(value = "Order for sort key (desc or asc), defaults to 'desc'.") @RequestParam(defaultValue = "DESC", required = false) String order,
+            final OutputStream output) {
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Listing compatible datasets (pool: {})...", getConnectionStats());
+        }
+        HttpResponseContext.header("Content-Type", APPLICATION_JSON_VALUE); //$NON-NLS-1$
+        HttpClient client = getClient();
+        HystrixCommand<InputStream> listCommand = getCommand(CompatibleDataSetList.class, client, id, sort, order);
+        try (InputStream content = listCommand.execute()) {
+            IOUtils.copyLarge(content, output);
+            output.flush();
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Listing compatible datasets (pool: {}) done.", getConnectionStats());
             }
         } catch (IOException e) {
             throw new TDPException(CommonErrorCodes.UNEXPECTED_EXCEPTION, e);
