@@ -6,11 +6,14 @@ import static org.springframework.web.bind.annotation.RequestMethod.*;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.StringWriter;
 
 import javax.validation.Valid;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.http.client.HttpClient;
+import org.apache.tools.ant.taskdefs.Input;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.talend.dataprep.api.preparation.AppendStep;
@@ -18,6 +21,7 @@ import org.talend.dataprep.api.preparation.Preparation;
 import org.talend.dataprep.api.service.api.PreviewAddInput;
 import org.talend.dataprep.api.service.api.PreviewDiffInput;
 import org.talend.dataprep.api.service.api.PreviewUpdateInput;
+import org.talend.dataprep.api.service.command.dataset.CompatibleDataSetList;
 import org.talend.dataprep.api.service.command.preparation.*;
 import org.talend.dataprep.exception.TDPException;
 import org.talend.dataprep.exception.error.APIErrorCodes;
@@ -54,6 +58,58 @@ public class PreparationAPI extends APIService {
             }
         } catch (IOException e) {
             throw new TDPException(CommonErrorCodes.UNEXPECTED_EXCEPTION, e);
+        }
+    }
+
+    /**
+     * Returns a list containing all data sets that are compatible with a preparation identified by <tt>preparationId</tt>: its id.
+     * If no compatible data set is found an empty list is returned.
+     * The base data set of the preparation with id <tt>preparationId</tt> is never returned in the list.
+     * @param preparationId the specified preparation id
+     * @param sort the sort criterion: either name or date.
+     * @param order the sorting order: either asc or desc
+     * @return a list containing all data sets that are compatible with the base data set of the preparation identified by <tt>preparationId</tt>
+     * and empty list if no data set is compatible.
+     */
+    @RequestMapping(value = "/api/preparations/{id}/basedatasets", method = RequestMethod.GET, produces = APPLICATION_JSON_VALUE)
+    @ApiOperation(value = "Get all data sets that are compatible with a preparation.", notes = "Returns the list of data sets the current user is allowed to see and that are compatible with the preparation.")
+    @Timed
+    public void listCompatibleDatasets(@PathVariable(value = "id") @ApiParam(name = "id", value = "Preparation id.") String preparationId,
+            @ApiParam(value = "Sort key (by name or date), defaults to 'date'.") @RequestParam(defaultValue = "DATE", required = false) String sort,
+            @ApiParam(value = "Order for sort key (desc or asc), defaults to 'desc'.") @RequestParam(defaultValue = "DESC", required = false) String order,
+            final OutputStream output) {
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Looking for base data set Id (pool: {} )...", getConnectionStats());
+        }
+        HttpClient client = getClient();
+        HystrixCommand<InputStream> baseDatasetIdCommand = getCommand(PreparationBaseDatasetId.class, client, preparationId);
+        try {
+            HttpResponseContext.header("Content-Type", APPLICATION_JSON_VALUE); //$NON-NLS-1$
+            InputStream stream = baseDatasetIdCommand.execute();
+            if (baseDatasetIdCommand.isFailedExecution()){
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("Unable to retrieve base data set id for preparation:"+preparationId, getConnectionStats());
+                }
+                IOUtils.copyLarge(stream, output);
+                output.flush();
+            }
+            else {
+                String dataSetId = IOUtils.toString(stream);
+                if (StringUtils.isEmpty(dataSetId)){
+                    throw new TDPException(APIErrorCodes.UNABLE_TO_RETRIEVE_PREPARATION_CONTENT);
+                }
+                else{
+                    HystrixCommand<InputStream> listCommand = getCommand(CompatibleDataSetList.class, client, dataSetId, sort, order);
+                    InputStream content = listCommand.execute();
+                    IOUtils.copyLarge(content, output);
+                    output.flush();
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug("Listing compatible datasets (pool: {}) done.", getConnectionStats());
+                    }
+                }
+            }
+        } catch (IOException e) {
+            throw new TDPException(APIErrorCodes.UNABLE_TO_LIST_COMPATIBLE_DATASETS, e);
         }
     }
 
