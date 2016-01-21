@@ -96,7 +96,7 @@ public class PreparationAPI extends APIService {
             else {
                 String dataSetId = IOUtils.toString(stream);
                 if (StringUtils.isEmpty(dataSetId)){
-                    throw new TDPException(APIErrorCodes.UNABLE_TO_RETRIEVE_PREPARATION_CONTENT);
+                    throw new TDPException(APIErrorCodes.UNABLE_TO_RETRIEVE_PREPARATION);
                 }
                 else{
                     HystrixCommand<InputStream> listCommand = getCommand(CompatibleDataSetList.class, client, dataSetId, sort, order);

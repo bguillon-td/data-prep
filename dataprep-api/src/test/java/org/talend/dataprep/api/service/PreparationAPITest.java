@@ -10,6 +10,7 @@ import static uk.co.datumedge.hamcrest.json.SameJSONAs.sameJSONAs;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Collections;
 import java.util.List;
 
 import org.apache.commons.io.IOUtils;
@@ -77,6 +78,36 @@ public class PreparationAPITest extends ApiServiceTestBase {
         assertThat(longFormat.getString("author"), is(security.getUserId()));
         assertThat(longFormat.getString("id"), is(preparationId));
         assertThat(longFormat.getList("actions").size(), is(0));
+    }
+
+    @Test
+    public void testListCompatibleDataSets() throws Exception {
+        // given
+        final String dataSetId = createDataset( "dataset/dataset.csv", "compatible1", "text/csv" );
+        final String dataSetId2 = createDataset( "dataset/dataset.csv", "compatible2", "text/csv" );
+        final String dataSetId3 = createDataset("t-shirt_100.csv", "incompatible", "text/csv");
+        final String preparationId = createPreparationFromDataset(dataSetId, "testPreparation");
+
+
+        // when
+        final String compatibleDatasetList = when().get("/api/preparations/{id}/basedatasets", preparationId).asString();
+
+        // then
+        assertTrue( compatibleDatasetList.contains( dataSetId2 ) );
+        assertFalse( compatibleDatasetList.contains( dataSetId3 ) );
+    }
+
+    @Test
+    public void testListCompatibleDataSetsWhenUniqueDatasetInRepository() throws Exception {
+        // given
+        final String dataSetId = createDataset( "dataset/dataset.csv", "unique", "text/csv" );
+        final String preparationId = createPreparationFromDataset(dataSetId, "testPreparation");
+
+        // when
+        final String compatibleDatasetList = when().get("/api/preparations/{id}/basedatasets", preparationId).asString();
+
+        // then
+        assertFalse( compatibleDatasetList.contains( dataSetId ) );
     }
 
     //------------------------------------------------------------------------------------------------------------------
