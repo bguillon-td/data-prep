@@ -204,6 +204,23 @@ describe('Editable Text widget directive', function () {
             expect(ctrl.cancel).toHaveBeenCalled();
         });
 
+        it('should cancel on blur', function() {
+            //given
+            scope.editionMode = true;
+            createElement();
+
+            var ctrl = element.controller('talendEditableText');
+            ctrl.cancel = jasmine.createSpy('onCancel');
+
+            var event = angular.element.Event('blur');
+            //when
+            element.find('input.edition-text-input').eq(0).trigger(event);
+            scope.$digest();
+
+            //then
+            expect(ctrl.cancel).toHaveBeenCalled();
+        });
+
         it('should NOT execute cancel on input not ESC keydown', function() {
             //given
             scope.editionMode = true;

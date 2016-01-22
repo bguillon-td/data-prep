@@ -21,6 +21,9 @@
             link: function(scope, iElement, iAttrs, ctrl) {
                 $timeout(function() {
                     var inputElement = iElement.find('.edition-text-input').eq(0);
+                    var editButton =  iElement.find('.edit-btn').eq(0);
+                    var validButton =  iElement.find('.valid-btn').eq(0);
+                    var isOverValidButton = false;
 
                     inputElement.keydown(function(e) {
                         if (e.keyCode === 27) {
@@ -30,7 +33,20 @@
                         }
                     });
 
-                    iElement.find('.edit-btn').eq(0).click(function() {
+                    inputElement.on('blur', function () {
+                        if (!isOverValidButton) {
+                            ctrl.cancel();
+                            scope.$digest();
+                        }
+                    });
+
+                    validButton.hover(function() {
+                        isOverValidButton = true;
+                    }, function() {
+                        isOverValidButton = false;
+                    });
+
+                    editButton.click(function() {
                         inputElement.focus();
                         inputElement.select();
                     });
