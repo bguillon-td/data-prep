@@ -46,7 +46,7 @@
             </div>
         </div>
 
-        <div ng-repeat="dataset in datasetListCtrl.currentFolderContent.datasets track by dataset.id" id="dataset_{{dataset.id}}">
+        <div ng-repeat="dataset in datasetListCtrl.currentFolderContent.datasets track by dataset.id" id="dataset_{{$index}}">
             <inventory-item
                     class="inventory-entry"
                     type="dataset"
