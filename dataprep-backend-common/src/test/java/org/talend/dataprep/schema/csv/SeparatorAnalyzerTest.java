@@ -158,8 +158,8 @@ public class SeparatorAnalyzerTest {
         semiColonSeparator.setHeaders(semiColonHeader);
         final Separator commaSeparator = new Separator(',');
         List<Pair<String, Type>> commaHeader = new ArrayList<>();
-        semiColonHeader.add(new Pair<>("First", Type.STRING));
-        semiColonHeader.add(new Pair<>("Last", Type.STRING));
+        commaHeader.add(new Pair<>("First", Type.STRING));
+        commaHeader.add(new Pair<>("Last", Type.STRING));
         commaSeparator.setHeaders(commaHeader);
 
         // when
