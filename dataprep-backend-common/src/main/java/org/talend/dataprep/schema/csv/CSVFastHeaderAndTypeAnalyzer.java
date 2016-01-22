@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 import au.com.bytecode.opencsv.CSVReader;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.math3.util.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.talend.dataprep.api.type.Type;
@@ -85,7 +86,7 @@ public class CSVFastHeaderAndTypeAnalyzer {
     private boolean headerInfoReliable = false;
 
     /** The CSV header &lt;ColName, Type&gt;. */
-    private Map<String, Type> headers = Collections.emptyMap();
+    private List<Pair<String, Type>> headers = Collections.emptyList();
 
     private final String DEFAULT_HEADER_PREFIX = "COL";
 
@@ -333,20 +334,20 @@ public class CSVFastHeaderAndTypeAnalyzer {
             }
             // type analysis: if there is a header the first line is excluded from type analysis, otherwise it is
             // included
-            headers = new LinkedHashMap<>();
+            headers = new ArrayList<>();
             if (firstLineAHeader) {
                 List<Type> columnTypes = columnTypingWithoutFirstRecord();
 
                 List<String> firstLine = readLine(sampleLines.get(0));
                 int i = 0;
                 for(String field: firstLine) {
-                    headers.put(field, columnTypes.get(i++));
+                    headers.add(new Pair<>(field, columnTypes.get(i++)));
                 }
             } else {
                 List<Type> columnTypes = allRecordsColumnTyping();
                 int i = 1;
                 for (Type type : columnTypes) {
-                    headers.put(DEFAULT_HEADER_PREFIX + (i++), type);
+                    headers.add(new Pair<>(DEFAULT_HEADER_PREFIX + (i++), type));
                 }
             }
 
@@ -371,7 +372,7 @@ public class CSVFastHeaderAndTypeAnalyzer {
      *
      * @return a map associating to each column of the header its type
      */
-    public Map<String, Type> getHeaders() {
+    public List<Pair<String, Type>> getHeaders() {
         if (!analysisPerformed) {
             analyze();
         }

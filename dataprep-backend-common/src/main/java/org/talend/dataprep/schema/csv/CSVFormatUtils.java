@@ -32,7 +32,7 @@ public class CSVFormatUtils {
         // separator
         parameters.put(CSVFormatGuess.SEPARATOR_PARAMETER, String.valueOf(separator.getSeparator()));
         // header
-        List<String> columns = separator.getHeaders().keySet().stream().collect(Collectors.toList());
+        List<String> columns = separator.getHeaders().stream().map(p -> p.getKey()).collect(Collectors.toList());
         String header = null;
         try {
             header = builder.build().writeValueAsString(columns);

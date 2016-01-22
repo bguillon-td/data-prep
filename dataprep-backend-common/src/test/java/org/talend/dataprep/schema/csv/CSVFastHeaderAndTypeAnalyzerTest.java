@@ -48,7 +48,7 @@ public class CSVFastHeaderAndTypeAnalyzerTest {
 
         // then
         List<Type> expectedTypes = Collections.emptyList();
-        Assert.assertArrayEquals(expectedTypes.toArray(), analysis.getHeaders().values().toArray());
+        Assert.assertArrayEquals(expectedTypes.toArray(), analysis.getHeaders().stream().map( p -> p.getValue()).toArray());
         Assert.assertFalse(analysis.isFirstLineAHeader());
     }
 
@@ -65,7 +65,7 @@ public class CSVFastHeaderAndTypeAnalyzerTest {
         // then
         List<Type> expectedTypes = Arrays.asList(Type.INTEGER, Type.STRING, Type.STRING, Type.DOUBLE, Type.BOOLEAN, Type.STRING);
         Assert.assertFalse(analysis.isFirstLineAHeader());
-        Assert.assertArrayEquals(expectedTypes.toArray(), analysis.getHeaders().values().toArray());
+        Assert.assertArrayEquals(expectedTypes.toArray(), analysis.getHeaders().stream().map( p -> p.getValue()).toArray());
 
     }
 
@@ -83,7 +83,7 @@ public class CSVFastHeaderAndTypeAnalyzerTest {
         // then
         List<Type> expectedTypes = Arrays.asList(Type.INTEGER, Type.STRING, Type.STRING, Type.DOUBLE);
         Assert.assertFalse(analysis.isFirstLineAHeader());
-        Assert.assertArrayEquals(expectedTypes.toArray(), analysis.getHeaders().values().toArray());
+        Assert.assertArrayEquals(expectedTypes.toArray(), analysis.getHeaders().stream().map( p -> p.getValue()).toArray());
         Assert.assertTrue(analysis.isHeaderInfoReliable());
 
     }
@@ -114,7 +114,7 @@ public class CSVFastHeaderAndTypeAnalyzerTest {
         // then
         // List<Type> expectedTypes = Arrays.asList(Type.STRING, Type.STRING, Type.INTEGER, Type.STRING);
         List<Type> expectedTypes = Arrays.asList(Type.STRING, Type.STRING);
-        Assert.assertArrayEquals(expectedTypes.toArray(), analysis.getHeaders().values().toArray());
+        Assert.assertArrayEquals(expectedTypes.toArray(), analysis.getHeaders().stream().map( p -> p.getValue()).toArray());
         Assert.assertTrue(analysis.isFirstLineAHeader());
     }
 
@@ -132,7 +132,7 @@ public class CSVFastHeaderAndTypeAnalyzerTest {
 
         // then
         List<Type> expectedTypes = Arrays.asList(Type.INTEGER, Type.STRING, Type.STRING, Type.DOUBLE);
-        Assert.assertArrayEquals(expectedTypes.toArray(), analysis.getHeaders().values().toArray());
+        Assert.assertArrayEquals(expectedTypes.toArray(), analysis.getHeaders().stream().map( p -> p.getValue()).toArray());
         Assert.assertTrue(analysis.isFirstLineAHeader());
     }
 
@@ -151,8 +151,8 @@ public class CSVFastHeaderAndTypeAnalyzerTest {
         // then
         List<String> expectedHeaders = Arrays.asList("COL1", "COL2", "COL3");
         List<Type> expectedTypes = Arrays.asList(Type.INTEGER, Type.STRING, Type.STRING);
-        Assert.assertArrayEquals(expectedHeaders.toArray(), analysis.getHeaders().keySet().toArray());
-        Assert.assertArrayEquals(expectedTypes.toArray(), analysis.getHeaders().values().toArray());
+        Assert.assertArrayEquals(expectedHeaders.toArray(), analysis.getHeaders().stream().map( p -> p.getKey()).toArray());
+        Assert.assertArrayEquals(expectedTypes.toArray(), analysis.getHeaders().stream().map( p -> p.getValue()).toArray());
         Assert.assertFalse(analysis.isFirstLineAHeader());
     }
 
@@ -172,7 +172,7 @@ public class CSVFastHeaderAndTypeAnalyzerTest {
 
         // then
         List<String> expectedHeaders = Arrays.asList("user_id", "birth", "country", "page_visited", "first_item");
-        Assert.assertArrayEquals(expectedHeaders.toArray(), analysis.getHeaders().keySet().toArray());
+        Assert.assertArrayEquals(expectedHeaders.toArray(), analysis.getHeaders().stream().map( p -> p.getKey()).toArray());
     }
 
     @Test
@@ -190,6 +190,6 @@ public class CSVFastHeaderAndTypeAnalyzerTest {
 
         // then
         List<String> expectedHeaders = Arrays.asList("COL1", "COL2");
-        Assert.assertArrayEquals(expectedHeaders.toArray(), analysis.getHeaders().keySet().toArray());
+        Assert.assertArrayEquals(expectedHeaders.toArray(), analysis.getHeaders().stream().map( p -> p.getKey()).toArray());
     }
 }

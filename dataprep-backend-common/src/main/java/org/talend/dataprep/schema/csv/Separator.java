@@ -2,8 +2,10 @@ package org.talend.dataprep.schema.csv;
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.math3.util.Pair;
 import org.talend.dataprep.api.type.Type;
 
 /**
@@ -36,13 +38,13 @@ public class Separator {
     /**
      * A map associating to each column of the header a type.
      */
-    private Map<String, Type> headers = Collections.emptyMap();
+    private List<Pair<String, Type>> headers = Collections.emptyList();
 
-    public Map<String, Type> getHeaders() {
+    public List<Pair<String, Type>> getHeaders() {
         return headers;
     }
 
-    public void setHeaders(Map<String, Type> headers) {
+    public void setHeaders(List<Pair<String, Type>> headers) {
         this.headers = headers;
     }
 

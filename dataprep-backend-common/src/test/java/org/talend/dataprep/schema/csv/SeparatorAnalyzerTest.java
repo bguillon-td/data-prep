@@ -2,11 +2,10 @@ package org.talend.dataprep.schema.csv;
 
 import static org.junit.Assert.*;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
+import org.apache.commons.math3.util.Pair;
 import org.junit.Test;
 import org.talend.dataprep.api.type.Type;
 
@@ -90,7 +89,7 @@ public class SeparatorAnalyzerTest {
         assertTrue(semiColonSeparator.isFirstLineAHeader());
         assertTrue(semiColonSeparator.isHeaderInfoReliable());
         String[] expectedHeaders = new String[] { "ID", "Name" };
-        Object[] header = semiColonSeparator.getHeaders().keySet().toArray();
+        Object[] header = semiColonSeparator.getHeaders().stream().map( p -> p.getKey()).toArray();
         assertArrayEquals(expectedHeaders, header);
 
     }
@@ -154,12 +153,13 @@ public class SeparatorAnalyzerTest {
     public void should_return_separator_with_first_more_columns() {
         // given
         final Separator semiColonSeparator = new Separator(';');
-        Map<String, Type> semiColonHeader = Arrays.asList("First").stream()
-                .collect(Collectors.toMap(String::toString, s -> Type.STRING));
+        List<Pair<String, Type>> semiColonHeader = new ArrayList<>();
+        semiColonHeader.add(new Pair<>("First", Type.STRING));
         semiColonSeparator.setHeaders(semiColonHeader);
         final Separator commaSeparator = new Separator(',');
-        Map<String, Type> commaHeader = Arrays.asList("First", "Last").stream()
-                .collect(Collectors.toMap(String::toString, s -> Type.STRING));
+        List<Pair<String, Type>> commaHeader = new ArrayList<>();
+        semiColonHeader.add(new Pair<>("First", Type.STRING));
+        semiColonHeader.add(new Pair<>("Last", Type.STRING));
         commaSeparator.setHeaders(commaHeader);
 
         // when
