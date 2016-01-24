@@ -72,7 +72,9 @@
 
   "_comment": "Datagrid",
   "ENTER_PREPARATION_NAME": "Enter a name for your preparation",
-  "FILE_DETAILS": "File: {{name}} ({{records}} lines)",
+  "FILE_DETAILS_NAME": "File: {{name}} ",
+  "FILE_DETAILS_LINES": "{{records}} lines",
+  "FILE_DETAILS_LIMIT": "cut at {{records}} lines",
   "FILTER": "Search and Filter",
   "NB_LINES_MATCHING_FILTERS": "{{percentage}}% of lines are matching your filter(s)",
   "NEW_FILTER": "New filter...",
@@ -272,8 +274,10 @@
   "OTHER": "other",
   "RECIPE_LOOKUP_FOLLOWING_COLS_ADDED_PLURAL":"column(s) have been added.",
   "RECIPE_LOOKUP_FOLLOWING_COLS_ADDED_SINGULAR":"column has been added.",
-  "ADD_TO_LOOKUP":"Add to Lookup",
+  "ADD_TO_LOOKUP":"Add to Dataset",
 
   "_comment": "Folders",
-  "FIND_FOLDER": "Find a Folder"
+  "FIND_FOLDER": "Find a Folder",
+
+  "ACTION_HELP": "More details"
 }

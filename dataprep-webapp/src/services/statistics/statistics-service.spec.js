@@ -864,15 +864,27 @@ describe('Statistics service', function () {
                 });
             }));
 
-            it('should remove saved aggregation on current column/preparation/dataset from storage', inject(function ($q, $rootScope, StatisticsService, StatisticsRestService, StorageService) {
+            it('should remove saved aggregation on current column/preparation/dataset from storage when the aggregation related falsy', inject(function ($q, $rootScope, StatisticsService, StatisticsRestService, StorageService) {
                 //given
                 stateMock.playground.grid.selectedColumn = barChartStrCol;
                 stateMock.playground.grid.filteredOccurences = {'   toto': 3, 'titi': 2};
-                spyOn(StatisticsRestService, 'getAggregations').and.returnValue($q.when());
                 expect(StorageService.removeAggregation).not.toHaveBeenCalled();
 
                 //when
-                StatisticsService.processAggregation();
+                StatisticsService.processAggregation(undefined, 'MAX');
+
+                //then
+                expect(StorageService.removeAggregation).toHaveBeenCalledWith(datasetId, preparationId, barChartStrCol.id);
+            }));
+
+            it('should remove saved aggregation on current column/preparation/dataset from storage when the aggregation name is falsy', inject(function ($q, $rootScope, StatisticsService, StatisticsRestService, StorageService) {
+                //given
+                stateMock.playground.grid.selectedColumn = barChartStrCol;
+                stateMock.playground.grid.filteredOccurences = {'   toto': 3, 'titi': 2};
+                expect(StorageService.removeAggregation).not.toHaveBeenCalled();
+
+                //when
+                StatisticsService.processAggregation({}, undefined);
 
                 //then
                 expect(StorageService.removeAggregation).toHaveBeenCalledWith(datasetId, preparationId, barChartStrCol.id);

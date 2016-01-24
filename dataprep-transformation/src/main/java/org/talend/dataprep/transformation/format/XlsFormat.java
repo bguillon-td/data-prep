@@ -30,4 +30,9 @@ public class XlsFormat extends ExportFormat {
                 )));
     }
     //@formatter:on
+
+    @Override
+    public int getOrder() {
+        return 1;
+    }
 }

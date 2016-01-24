@@ -1,14 +1,11 @@
 package org.talend.dataprep.number;
 
-import org.junit.Test;
+import static org.junit.Assert.assertEquals;
 
 import java.math.BigDecimal;
 
-import static org.junit.Assert.*;
+import org.junit.Test;
 
-/**
- * Created by stef on 19/01/16.
- */
 public class BigDecimalFormatterTest {
 
     @Test
@@ -46,8 +43,13 @@ public class BigDecimalFormatterTest {
     }
 
     @Test
-    public void testToBigDecimal_scientific() throws Exception {
-        assertEquals("1.216E3", BigDecimalFormatter.format(new BigDecimal(1215.50), BigDecimalParser.SCIENTIFIC_DECIMAL_PATTERN));
+    public void testToBigDecimal_US_scientific() throws Exception {
+        assertEquals("1.216E3", BigDecimalFormatter.format(new BigDecimal(1215.50), BigDecimalParser.US_SCIENTIFIC_DECIMAL_PATTERN));
+    }
+
+    @Test
+    public void testToBigDecimal_EU_scientific() throws Exception {
+        assertEquals("1,216E3", BigDecimalFormatter.format(new BigDecimal(1215.50), BigDecimalParser.EU_SCIENTIFIC_DECIMAL_PATTERN));
     }
 
 }

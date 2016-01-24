@@ -1,4 +1,4 @@
-package org.talend.dataprep.dataset.service.analysis;
+package org.talend.dataprep.dataset.service.analysis.synchronous;
 
 import java.util.stream.Stream;
 
@@ -19,6 +19,16 @@ import org.talend.dataprep.quality.AnalyzerService;
 import org.talend.datascience.common.inference.Analyzer;
 import org.talend.datascience.common.inference.Analyzers;
 
+/**
+ * <p>
+ * Schema analysis use the first 20 rows of the dataset content to find out columns' :
+ * <ul>
+ * <li>data type</li>
+ * <li>semantic</li>
+ * <li>quality (valid, invalid and empty)</li>
+ * </ul>
+ * </p>
+ */
 @Component
 public class SchemaAnalysis implements SynchronousDataSetAnalyzer {
 
@@ -57,6 +67,7 @@ public class SchemaAnalysis implements SynchronousDataSetAnalyzer {
                         .schemaAnalysis(metadata.getRowMetadata().getColumns());
                 // Determine schema for the content (on the 20 first rows).
                 stream.limit(20).map(row -> row.toArray(DataSetRow.SKIP_TDP_ID)).forEach(analyzer::analyze);
+
                 // Find the best suitable type
                 adapter.adapt(metadata.getRowMetadata().getColumns(), analyzer.getResult());
                 LOGGER.info("Analyzed schema in dataset #{}.", dataSetId);

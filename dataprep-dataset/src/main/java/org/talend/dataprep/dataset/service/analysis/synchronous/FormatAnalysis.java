@@ -1,4 +1,4 @@
-package org.talend.dataprep.dataset.service.analysis;
+package org.talend.dataprep.dataset.service.analysis.synchronous;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -15,7 +15,6 @@ import org.springframework.stereotype.Component;
 import org.talend.dataprep.api.dataset.DataSetContent;
 import org.talend.dataprep.api.dataset.DataSetMetadata;
 import org.talend.dataprep.dataset.store.content.ContentStoreRouter;
-import org.talend.dataprep.dataset.store.content.DataSetContentStore;
 import org.talend.dataprep.dataset.store.metadata.DataSetMetadataRepository;
 import org.talend.dataprep.exception.TDPException;
 import org.talend.dataprep.exception.error.DataSetErrorCodes;
@@ -29,10 +28,13 @@ import org.talend.dataprep.schema.unsupported.UnsupportedFormatGuess;
 import org.talend.dataprep.schema.unsupported.UnsupportedFormatGuesser;
 
 /**
- * Analyzes the raw content of a dataset and determine the best format (XLS, CSV...) for the data set raw content. It
- * also parses column name information. Once analyzed, data prep would know how to access content.
- * 
- * @see DataSetContentStore#get(DataSetMetadata)
+ * <p>
+ * Analyzes the raw content of a dataset and determine its format (XLS, CSV...).
+ * </p>
+ *
+ * <p>
+ * It also parses column name information. Once analyzed, data prep would know how to access content.
+ * </p>
  */
 @Component
 public class FormatAnalysis implements SynchronousDataSetAnalyzer {

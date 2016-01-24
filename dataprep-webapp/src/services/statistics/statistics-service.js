@@ -910,7 +910,7 @@
         function processAggregation(column, aggregationName) {
             resetCharts();
 
-            if (!aggregationName) {
+            if (!column || !aggregationName) {
                 removeSavedColumnAggregation();
                 return processData();
             }

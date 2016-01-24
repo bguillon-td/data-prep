@@ -212,7 +212,8 @@ public class FileSystemContentCache implements ContentCache {
                         } catch (NoSuchFileException e) {
                             LOGGER.debug("Ignored delete issue for '{}'.", file.getFileName(), e);
                         } catch (IOException e) {
-                            LOGGER.error("Unable to delete '{}'.", file.getFileName(), e);
+                            LOGGER.warn("Unable to delete '{}'.", file.getFileName());
+                            LOGGER.debug("Unable to delete '{}'.", file.getFileName(), e);
                         }
                     }
                     totalCount.incrementAndGet();

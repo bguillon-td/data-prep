@@ -1,4 +1,4 @@
-package org.talend.dataprep.dataset.service.analysis;
+package org.talend.dataprep.dataset.service.analysis.synchronous;
 
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.assertThat;
@@ -16,7 +16,7 @@ import org.talend.dataprep.schema.csv.CSVFormatGuess;
 import org.talend.dataprep.schema.xls.XlsFormatGuess;
 
 
-public class FormatAnalyzerTest extends DataSetBaseTest {
+public class FormatAnalysisTest extends DataSetBaseTest {
 
     @Autowired
     FormatAnalysis formatAnalysis;

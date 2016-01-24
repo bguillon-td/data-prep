@@ -138,6 +138,22 @@ public class AnalyzerService implements DisposableBean {
         return analyzer;
     }
 
+    /**
+     * <p>
+     * Return analyzers for a "baseline" analysis of a dataset.
+     * </p>
+     * <ul>
+     * <li>Value Quality (invalid, valid, empty)</li>
+     * <li>Data Type</li>
+     * <li>Cardinality (distinct & duplicates)</li>
+     * <li>Frequency</li>
+     * <li>Pattern frequency</li>
+     * <li>Semantic</li>
+     * </ul>
+     *
+     * @param columns the columns to analyze.
+     * @return Return analyzers for a "baseline" analysis of a dataset.
+     */
     public Analyzer<Analyzers.Result> baselineAnalysis(final List<ColumnMetadata> columns) {
         // Configure value quality analysis
         final Analyzer<Analyzers.Result> analyzer = Analyzers.with(getQualityAnalyzer(columns), // Value quality
@@ -151,6 +167,21 @@ public class AnalyzerService implements DisposableBean {
         return analyzer;
     }
 
+    /**
+     * <p>
+     * Return analyzers for an "advanced" analysis of a dataset.
+     * </p>
+     * <ul>
+     * <li>Text length</li>
+     * <li>Quantile</li>
+     * <li>Summary (min, max, mean, variance)</li>
+     * <li>Number Histogram</li>
+     * <li>Date Histogram</li>
+     * </ul>
+     *
+     * @param columns the columns to analyze.
+     * @return Return analyzers for a "advanced" analysis of a dataset.
+     */
     public Analyzer<Analyzers.Result> advancedAnalysis(final List<ColumnMetadata> columns) {
         // Configure quality & semantic analysis (if column metadata information is present in stream).
         final DataTypeEnum[] types = TypeUtils.convert(columns);

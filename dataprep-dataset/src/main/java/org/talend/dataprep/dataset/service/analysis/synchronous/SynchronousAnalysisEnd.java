@@ -1,4 +1,4 @@
-package org.talend.dataprep.dataset.service.analysis;
+package org.talend.dataprep.dataset.service.analysis.synchronous;
 
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;

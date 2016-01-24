@@ -1,7 +1,7 @@
 (function () {
     'use strict';
 
-    function FeedbackCtrl(state, $translate, FeedbackRestService, MessageService, StateService) {
+    function FeedbackCtrl(state, $translate, FeedbackRestService, MessageService, StateService, StorageService) {
         var vm = this;
         vm.isSendingFeedback = false;
         vm.state = state;
@@ -29,7 +29,7 @@
         function resetForm() {
             vm.feedback = {
                 title: '',
-                mail: '',
+                mail: StorageService.getFeedbackUserMail(),
                 severity: 'MINOR',
                 type: 'BUG',
                 description: ''
@@ -41,6 +41,7 @@
             vm.isSendingFeedback = true;
             FeedbackRestService.sendFeedback(vm.feedback)
                 .then (function () {
+                    StorageService.saveFeedbackUserMail(vm.feedback.mail);
                     resetForm();
                     StateService.hideFeedback();
                     MessageService.success('FEEDBACK_SENT_TITLE', 'FEEDBACK_SENT_CONTENT');

@@ -1893,7 +1893,7 @@
             },
             {
               "value": "custom",
-              "label": "other (design your custom pattern)",
+              "label": "other",
               "parameters": [
                 {
                   "name": "manual_pattern",
@@ -3018,5 +3018,12 @@
         }
       }
     ]
+  },
+  {
+    "category": "math",
+    "name": "change_number_format"
+  },
+  {
+    "name": "testfailedaction"
   }
 ]

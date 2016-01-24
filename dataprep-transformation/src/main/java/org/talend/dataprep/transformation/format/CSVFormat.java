@@ -44,4 +44,9 @@ public class CSVFormat extends ExportFormat {
                 ));
         //@formatter:on
     }
+
+    @Override
+    public int getOrder() {
+        return 0;
+    }
 }

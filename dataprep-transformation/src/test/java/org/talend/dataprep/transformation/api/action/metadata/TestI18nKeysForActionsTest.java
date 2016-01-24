@@ -8,6 +8,7 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.talend.dataprep.transformation.FailedAction;
 import org.talend.dataprep.transformation.TransformationBaseTest;
 import org.talend.dataprep.transformation.api.action.metadata.common.ActionMetadata;
 import org.talend.dataprep.transformation.api.action.parameters.Parameter;
@@ -24,7 +25,7 @@ public class TestI18nKeysForActionsTest extends TransformationBaseTest {
     private ActionMetadata[] allActions;
 
     private void assertI18nKeyExists(final String label) {
-        if(label.startsWith("action.")) {
+        if(label.startsWith("action.") && !label.contains(FailedAction.FAILED_ACTION)) {
             fail("missing key <" + label + ">");
         }
     }

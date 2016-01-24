@@ -1,4 +1,6 @@
-package org.talend.dataprep.dataset.service.analysis;
+package org.talend.dataprep.dataset.service.analysis.asynchronous;
+
+import org.talend.dataprep.dataset.service.analysis.DataSetAnalyzer;
 
 public interface AsynchronousDataSetAnalyzer extends DataSetAnalyzer {
 

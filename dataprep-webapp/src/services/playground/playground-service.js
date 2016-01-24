@@ -180,27 +180,14 @@
          * @returns {Promise} The process promise
          */
         function updateStatistics() {
-            var getMetadata;
-            if (state.playground.preparation) {
-                var lastActiveStep = RecipeService.getLastActiveStep();
-                var preparationId = state.playground.preparation.id;
-                var stepId = lastActiveStep ? lastActiveStep.transformation.stepId : 'head';
-                getMetadata = PreparationService.getContent.bind(null, preparationId, stepId);
-            }
-            else {
-                getMetadata = DatasetService.getMetadata.bind(null, state.playground.dataset.id);
-            }
-
-            return getMetadata()
+            return DatasetService.getMetadata(state.playground.dataset.id)
                 .then(function (response) {
                     if (!response.columns[0].statistics.frequencyTable.length) {
                         return $q.reject();
                     }
                     return response;
                 })
-                .then(function (response) {
-                    StateService.updateColumnsStatistics(response.columns);
-                })
+                .then(StateService.updateDatasetStatistics)
                 .then(StatisticsService.updateStatistics);
         }
 

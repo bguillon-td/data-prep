@@ -37,13 +37,20 @@ public class ExportFormatSerializerTest {
     public void csv() throws IOException {
         StringWriter writer = new StringWriter();
 
+        //@formatter:off
         ExportFormat format = new ExportFormat("TOTO", "text/toto", ".toto", true, false,
-                Collections.singletonList(new ExportFormat.Parameter("totoSeparator", "CHOOSE_SEPARATOR", "radio",
+                Collections.singletonList(
+                        new ExportFormat.Parameter("totoSeparator", "CHOOSE_SEPARATOR", "radio",
                         new ExportFormat.ParameterValue("|", "SEPARATOR_PIPE"),
                         Arrays.asList(new ExportFormat.ParameterValue("\u0009", "SEPARATOR_TAB"), // &#09;
                                 new ExportFormat.ParameterValue(":", "SEPARATOR_COLUMN"),
-                                new ExportFormat.ParameterValue(".", "SEPARATOR_DOT")))));
-
+                                new ExportFormat.ParameterValue(".", "SEPARATOR_DOT"))))) {
+                                    @Override
+                                    public int getOrder() {
+                                        return 0;
+                                    }
+                                };
+        //@formatter:on
         builder.build().writer().writeValue(writer, format);
         assertThat(writer.toString(), sameJSONAsFile(ExportFormatSerializerTest.class.getResourceAsStream("toto.json")));
     }

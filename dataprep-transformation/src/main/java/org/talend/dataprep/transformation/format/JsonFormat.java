@@ -21,4 +21,8 @@ public class JsonFormat extends ExportFormat {
         super(JSON, "application/json", ".json", false, false, Collections.<Parameter> emptyList());
     }
 
+    @Override
+    public int getOrder() {
+        return -1;
+    }
 }

@@ -108,7 +108,7 @@ public abstract class ActionMetadata {
     public abstract boolean acceptColumn(final ColumnMetadata column);
 
     /**
-     * @return The label of the parameter, translated in the user locale.
+     * @return The label of the action, translated in the user locale.
      * @see MessagesBundle
      */
     public String getLabel() {
@@ -116,11 +116,19 @@ public abstract class ActionMetadata {
     }
 
     /**
-     * @return The description of the parameter, translated in the user locale.
+     * @return The description of the action, translated in the user locale.
      * @see MessagesBundle
      */
     public String getDescription() {
         return MessagesBundle.getString("action." + getName() + ".desc");
+    }
+
+    /**
+     * @return The url of the optionnal help page.
+     * @see MessagesBundle
+     */
+    public String getDocUrl() {
+        return MessagesBundle.getString("action." + getName() + ".url", StringUtils.EMPTY);
     }
 
     /**

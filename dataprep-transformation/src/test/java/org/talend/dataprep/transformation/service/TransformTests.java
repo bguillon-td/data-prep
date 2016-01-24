@@ -72,7 +72,6 @@ public class TransformTests extends TransformationServiceBaseTests {
         assertTrue(response.asString().contains("OUTPUT_TYPE_NOT_SUPPORTED"));
     }
 
-
     @Test
     public void testUnknownDataSet() throws Exception {
         // when
@@ -212,6 +211,25 @@ public class TransformTests extends TransformationServiceBaseTests {
         // then
         String expectedContent = IOUtils.toString(this.getClass().getResourceAsStream("no_action_expected.json"));
         assertEquals(expectedContent, exportContent, false);
+    }
+
+    @Test
+    public void actionFailure() throws Exception {
+        // given
+        String dataSetId = createDataset("input_dataset.csv", "uppercase", "text/csv");
+        String preparationId = createEmptyPreparationFromDataset(dataSetId, "uppercase prep");
+        applyActionFromFile(preparationId, "failed_action.json");
+
+        // when
+        String transformedContent = given() //
+                .when() //
+                .get("/apply/preparation/{preparationId}/dataset/{datasetId}/{format}", preparationId, dataSetId, "JSON") //
+                .asString();
+
+        // then
+        // Action failure
+        String expectedContent = IOUtils.toString(this.getClass().getResourceAsStream("no_action_expected.json"));
+        assertEquals(expectedContent, transformedContent, false);
     }
 
 }

@@ -1,4 +1,4 @@
-package org.talend.dataprep.dataset.service.analysis;
+package org.talend.dataprep.dataset.service.analysis.synchronous;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
@@ -16,7 +16,7 @@ import org.talend.dataprep.api.dataset.Quality;
 import org.talend.dataprep.dataset.DataSetBaseTest;
 import org.talend.dataprep.dataset.service.DataSetServiceTests;
 
-public class QualityAnalyzerTest extends DataSetBaseTest {
+public class QualityAnalysisTest extends DataSetBaseTest {
 
     @Autowired
     FormatAnalysis formatAnalysis;
@@ -48,7 +48,7 @@ public class QualityAnalyzerTest extends DataSetBaseTest {
         qualityAnalysis.analyze("1234");
         final DataSetMetadata actual = dataSetMetadataRepository.get("1234");
         assertThat(actual.getLifecycle().qualityAnalyzed(), is(true));
-        assertThat(actual.getContent().getNbRecords(), is(5));
+        assertThat(actual.getContent().getNbRecords(), is(5L));
         for (ColumnMetadata column : actual.getRowMetadata().getColumns()) {
             final Quality quality = column.getQuality();
             assertThat(quality.getValid(), is(5));
@@ -70,7 +70,7 @@ public class QualityAnalyzerTest extends DataSetBaseTest {
         qualityAnalysis.analyze(dsId);
         final DataSetMetadata actual = dataSetMetadataRepository.get(dsId);
         assertThat(actual.getLifecycle().qualityAnalyzed(), is(true));
-        assertThat(actual.getContent().getNbRecords(), is(9));
+        assertThat(actual.getContent().getNbRecords(), is(9L));
         assertThat(actual.getRowMetadata().getColumns().size(), is(2));
         ColumnMetadata secondColumn = actual.getRowMetadata().getColumns().get(1);
         Quality quality = secondColumn.getQuality();

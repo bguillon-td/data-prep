@@ -543,7 +543,9 @@ public class TransformationService extends BaseTransformationService {
     @ApiOperation(value = "Get the available format types")
     @Timed
     public List<ExportFormat> exportTypes() {
-        return formatRegistrationService.getExternalFormats();
+        return formatRegistrationService.getExternalFormats().stream() //
+                .sorted((f1, f2) -> f1.getOrder() - f2.getOrder()) // Enforce strict order.
+                .collect(Collectors.toList());
     }
 
     /**

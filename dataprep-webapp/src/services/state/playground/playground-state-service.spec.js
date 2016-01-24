@@ -143,19 +143,51 @@ describe('Playground state service', function () {
                 }
             };
 
-            var newColumns = [
-                {id: '0000', statistics: {frequencyTable: [{data: '5.0', occurrences: 98}]}},
-                {id: '0001', statistics: {frequencyTable: [{data: 'Toto', occurrences: 5}]}},
-                {id: '0002', statistics: {frequencyTable: [{data: '', occurrences: 66}]}}
-            ];
+            var newMetadata = {
+                columns: [
+                    {id: '0000', statistics: {frequencyTable: [{data: '5.0', occurrences: 98}]}},
+                    {id: '0001', statistics: {frequencyTable: [{data: 'Toto', occurrences: 5}]}},
+                    {id: '0002', statistics: {frequencyTable: [{data: '', occurrences: 66}]}}
+                ],
+                records: 256
+            };
 
             //when
-            PlaygroundStateService.updateColumnsStatistics(newColumns);
+            PlaygroundStateService.updateDatasetStatistics(newMetadata);
 
             //then
-            expect(playgroundState.data.metadata.columns[0].statistics).toBe(newColumns[0].statistics);
-            expect(playgroundState.data.metadata.columns[1].statistics).toBe(newColumns[1].statistics);
-            expect(playgroundState.data.metadata.columns[2].statistics).toBe(newColumns[2].statistics);
+            expect(playgroundState.data.metadata.columns[0].statistics).toBe(newMetadata.columns[0].statistics);
+            expect(playgroundState.data.metadata.columns[1].statistics).toBe(newMetadata.columns[1].statistics);
+            expect(playgroundState.data.metadata.columns[2].statistics).toBe(newMetadata.columns[2].statistics);
+        }));
+
+        it('should update dataset metadata line number statistics', inject(function (playgroundState, PlaygroundStateService) {
+            //given
+            playgroundState.dataset = {records: 0};
+            playgroundState.data = {
+                metadata: {
+                    columns: [
+                        {id: '0000', statistics: {}},
+                        {id: '0001', statistics: {}},
+                        {id: '0002', statistics: {}}
+                    ]
+                }
+            };
+
+            var newMetadata = {
+                columns: [
+                    {id: '0000', statistics: {frequencyTable: [{data: '5.0', occurrences: 98}]}},
+                    {id: '0001', statistics: {frequencyTable: [{data: 'Toto', occurrences: 5}]}},
+                    {id: '0002', statistics: {frequencyTable: [{data: '', occurrences: 66}]}}
+                ],
+                records: 256
+            };
+
+            //when
+            PlaygroundStateService.updateDatasetStatistics(newMetadata);
+
+            //then
+            expect(playgroundState.dataset.records).toBe(256);
         }));
     });
 

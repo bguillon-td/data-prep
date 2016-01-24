@@ -53,7 +53,7 @@ public class CSVSerializer implements Serializer {
                     // Consumer may very well interrupt consumption of stream (in case of limit(n) use for sampling).
                     // This is not an issue as consumer is allowed to partially consumes results, it's up to the
                     // consumer to ensure data it consumed is consistent.
-                    LOGGER.debug("Unable to continue serialization. Skipping remaining content.", e);
+                    LOGGER.debug("Unable to continue serialization for {}. Skipping remaining content.", metadata.getId(), e);
                 } finally {
                     try {
                         jsonOutput.close();

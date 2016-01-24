@@ -1,4 +1,4 @@
-package org.talend.dataprep.dataset.service.analysis;
+package org.talend.dataprep.dataset.service.analysis.synchronous;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.is;
@@ -18,7 +18,7 @@ import org.talend.dataprep.api.type.Type;
 import org.talend.dataprep.dataset.DataSetBaseTest;
 import org.talend.dataprep.dataset.service.DataSetServiceTests;
 
-public class SchemaAnalyzerTest extends DataSetBaseTest {
+public class SchemaAnalysisTest extends DataSetBaseTest {
 
     @Autowired
     FormatAnalysis formatAnalysis;

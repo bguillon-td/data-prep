@@ -23,10 +23,19 @@ describe('Feedback controller', function () {
     });
 
     describe('feedback ', function() {
-        beforeEach(inject(function($q, FeedbackRestService, MessageService) {
+        beforeEach(inject(function($q, FeedbackRestService, MessageService, StorageService) {
             spyOn(FeedbackRestService, 'sendFeedback').and.returnValue($q.when(true));
             spyOn(MessageService, 'success').and.returnValue(false);
+            spyOn(StorageService, 'saveFeedbackUserMail');
+            spyOn(StorageService, 'getFeedbackUserMail').and.returnValue('test mail');
 
+        }));
+
+        it('should initialize feedback', inject(function () {
+            //given
+            var ctrl = createController();
+            //then
+            expect(ctrl.feedback.mail).toBe('test mail');
         }));
 
         it('should send feedback', inject(function (FeedbackRestService) {
@@ -116,6 +125,27 @@ describe('Feedback controller', function () {
             expect(MessageService.success).toHaveBeenCalledWith('FEEDBACK_SENT_TITLE', 'FEEDBACK_SENT_CONTENT');
         }));
 
+        it('should save user mail', inject(function (StorageService) {
+            //given
+            var feedback = {
+                title : 'test',
+                mail : 'test mail',
+                severity : 'test',
+                type : 'test',
+                description: 'test'
+            };
+            var ctrl = createController();
+            ctrl.feedbackForm = {$commitViewValue: jasmine.createSpy('$commitViewValue').and.returnValue()};
+            ctrl.feedback = feedback;
+
+            //given
+            ctrl.sendFeedback();
+            scope.$digest();
+
+            //then
+            expect(StorageService.saveFeedbackUserMail).toHaveBeenCalledWith('test mail');
+        }));
+
         it('should reset form on send success', function () {
             //given
             var feedback = {
@@ -137,7 +167,7 @@ describe('Feedback controller', function () {
             //then
             expect(ctrl.feedback).toEqual({
                 title: '',
-                mail: '',
+                mail: 'test mail',
                 severity: 'MINOR',
                 type: 'BUG',
                 description: ''

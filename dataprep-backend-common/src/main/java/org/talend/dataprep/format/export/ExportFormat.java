@@ -3,6 +3,7 @@ package org.talend.dataprep.format.export;
 import java.io.Serializable;
 import java.util.List;
 
+import org.apache.commons.lang.StringUtils;
 import org.talend.dataprep.format.export.json.ExportFormatSerializer;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
@@ -11,15 +12,17 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
  * Models a type of format.
  */
 @JsonSerialize(using = ExportFormatSerializer.class)
-public class ExportFormat {
+public abstract class ExportFormat {
 
     /** Prefix that must be used for all export parameters. */
     public static final String PREFIX = "exportParameters.";
 
     /** The format type human readable name. */
     private final String name;
+
     /** The mime type. */
     private final String mimeType;
+
     /** The file extension. */
     private final String extension;
 
@@ -31,6 +34,12 @@ public class ExportFormat {
 
     /** List of extra parameters needed for this format (i.e separator for csv files etc...). */
     private final List<Parameter> parameters;
+
+    /** Whether export is enabled or not (enabled by default). */
+    private boolean enabled;
+
+    /** An optional message used to explain why {@link #isEnabled()} returned false */
+    private String disableReason;
 
     /**
      * Default protected constructor.
@@ -50,6 +59,56 @@ public class ExportFormat {
         this.needParameters = needParameters;
         this.defaultExport = defaultExport;
         this.parameters = parameters;
+        this.enabled = true;
+    }
+
+    /**
+     * @return A indicative order to order different {@link ExportFormat} instances.
+     */
+    public abstract int getOrder();
+
+    /**
+     * Although ExportFormat may be created, various external factors (OS, licencing...) may disable the export.
+     * 
+     * @return <code>true</code> if export format is 'enabled' (i.e. usable), <code>false</code> otherwise.
+     */
+    public boolean isEnabled() {
+        return enabled;
+    }
+
+    /**
+     * Sets whether export format is enabled or not. Intentionally left protected as only subclasses needs this at
+     * the moment.
+     * @param enabled <code>true</code> enable export, <code>false</code> to disable it.
+     */
+    protected void setEnabled(boolean enabled) {
+        this.enabled = enabled;
+    }
+
+    /**
+     * In case of {@link #isEnabled()} returning <code>false</code>, this method may return additional information to
+     * indicate to UI why export was disabled.
+     * @return A message that explains why export is disabled, if {@link #isEnabled()} returns empty string.
+     */
+    public String getDisableReason() {
+        if (isEnabled()) {
+            return StringUtils.EMPTY;
+        }
+        return disableReason;
+    }
+
+    /**
+     * Sets the reason why this export was disabled.
+     * 
+     * @param disableReason A string to indicate why this export format was disabled, <code>null</code> is treated same
+     * as empty string.
+     */
+    protected void setDisableReason(String disableReason) {
+        if (disableReason == null) {
+            this.disableReason = StringUtils.EMPTY;
+        } else {
+            this.disableReason = disableReason;
+        }
     }
 
     /**

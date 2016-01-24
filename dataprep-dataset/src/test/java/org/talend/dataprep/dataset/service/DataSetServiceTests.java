@@ -4,9 +4,6 @@ import static com.jayway.restassured.RestAssured.given;
 import static com.jayway.restassured.RestAssured.when;
 import static com.jayway.restassured.http.ContentType.JSON;
 import static com.jayway.restassured.path.json.JsonPath.from;
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertNotNull;
-import static junit.framework.TestCase.assertTrue;
 import static org.hamcrest.Matchers.*;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.*;
@@ -40,10 +37,10 @@ import org.talend.dataprep.dataset.DataSetBaseTest;
 import org.talend.dataprep.lock.DistributedLock;
 import org.talend.dataprep.schema.csv.CSVFormatGuess;
 import org.talend.dataprep.schema.csv.CSVFormatGuesser;
+import org.talend.dataprep.security.Security;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.jayway.restassured.response.Response;
-import org.talend.dataprep.security.Security;
 
 public class DataSetServiceTests extends DataSetBaseTest {
 
@@ -827,7 +824,7 @@ public class DataSetServiceTests extends DataSetBaseTest {
 
         DataSetMetadata dataSetMetadata = dataSetMetadataRepository.get(dataSetId);
         assertThat(dataSetMetadata, notNullValue());
-        int originalNbLines = dataSetMetadata.getContent().getNbRecords(); // to check later if no modified
+        long originalNbLines = dataSetMetadata.getContent().getNbRecords(); // to check later if no modified
         assertEquals(Certification.NONE, dataSetMetadata.getGovernance().getCertificationStep());
 
         // NONE -> PENDING

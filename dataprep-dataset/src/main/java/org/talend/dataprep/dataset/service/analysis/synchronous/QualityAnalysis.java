@@ -1,4 +1,7 @@
-package org.talend.dataprep.dataset.service.analysis;
+package org.talend.dataprep.dataset.service.analysis.synchronous;
+
+import java.util.List;
+import java.util.stream.Stream;
 
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -19,9 +22,6 @@ import org.talend.dataprep.quality.AnalyzerService;
 import org.talend.datascience.common.inference.Analyzer;
 import org.talend.datascience.common.inference.Analyzers;
 import org.talend.datascience.common.inference.ValueQualityStatistics;
-
-import java.util.List;
-import java.util.stream.Stream;
 
 @Component
 public class QualityAnalysis implements SynchronousDataSetAnalyzer {
@@ -61,6 +61,7 @@ public class QualityAnalysis implements SynchronousDataSetAnalyzer {
                 LOGGER.info("Unable to analyze quality of data set #{}: seems to be removed.", dataSetId);
                 return;
             }
+            // e.g. excel multi sheet dataset when user has not choose the sheet yet
             if (!metadata.getLifecycle().inProgress()) {
                 LOGGER.debug("No need to recompute quality of data set #{} (statistics are completed).", dataSetId);
                 return;
@@ -73,7 +74,7 @@ public class QualityAnalysis implements SynchronousDataSetAnalyzer {
                 LOGGER.debug("Analyzing quality of dataset #{}...", metadata.getId());
                 // New data set, or reached the max limit of records for synchronous analysis, trigger a full scan (but
                 // async).
-                final int dataSetSize = metadata.getContent().getNbRecords();
+                final long dataSetSize = metadata.getContent().getNbRecords();
                 final boolean isNewDataSet = dataSetSize == 0;
                 if (isNewDataSet || dataSetSize == MAX_RECORD) {
                     // If data set size is MAX_RECORD, performs a full scan, otherwise only take first MAX_RECORD
