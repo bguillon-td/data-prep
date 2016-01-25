@@ -3110,5 +3110,9 @@
   },
   {
     "name": "testfailedaction"
+  },
+  {
+    "category": "math",
+    "name": "compare_numbers"
   }
 ]

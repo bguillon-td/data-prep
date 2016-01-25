@@ -3110,5 +3110,9 @@
   {
     "category": "math",
     "name": "change_number_format"
+  },
+  {
+    "category": "math",
+    "name": "compare_numbers"
   }
 ]
