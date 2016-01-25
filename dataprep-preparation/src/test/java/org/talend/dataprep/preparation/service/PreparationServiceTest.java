@@ -16,7 +16,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringUtils;
 import org.assertj.core.api.Assertions;
 import org.junit.After;
 import org.junit.Before;
@@ -160,18 +159,6 @@ public class PreparationServiceTest {
         String preparationDetails = when().get("/preparations/{id}", preparation.id()).asString();
         InputStream expected = PreparationServiceTest.class.getResourceAsStream( "preparation_1234.json" );
         assertThat(preparationDetails, sameJSONAsFile( expected ));
-    }
-
-    @Test
-    public void baseDataset() throws Exception {
-        Preparation preparation = new Preparation("1234", ROOT_STEP.id());
-        preparation.setCreationDate( 0 );
-        preparation.setLastModificationDate( 12345 );
-        repository.add(preparation);
-        String baseDatasetId = when().get("/preparations/{id}/basedataset", preparation.id()).asString();
-        String mustBeNull = when().get("/preparations/{id}/basedataset", "0000").asString();
-        assertTrue(StringUtils.equals("1234", baseDatasetId));
-        assertTrue(StringUtils.equals("", mustBeNull));
     }
 
     @Test

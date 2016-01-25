@@ -12,8 +12,8 @@ import org.talend.daikon.exception.error.ErrorCode;
 public enum PreparationErrorCodes implements ErrorCode {
                                                         PREPARATION_DOES_NOT_EXIST(404, "id"),
                                                         PREPARATION_STEP_DOES_NOT_EXIST(404, "id", "stepId"),
-    PREPARATION_STEP_CANNOT_BE_DELETED_IN_SINGLE_MODE(403, "id", "stepId"),
-    PREPARATION_ROOT_STEP_CANNOT_BE_DELETED(403, "id", "stepId"),
+                                                        PREPARATION_STEP_CANNOT_BE_DELETED_IN_SINGLE_MODE(403, "id", "stepId"),
+                                                        PREPARATION_ROOT_STEP_CANNOT_BE_DELETED(403, "id", "stepId"),
                                                         UNABLE_TO_SERVE_PREPARATION_CONTENT(400, "id", "version"),
                                                         UNABLE_TO_READ_PREPARATION(500, "id", "version");
 

@@ -11,12 +11,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.http.client.HttpClient;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.talend.dataprep.api.dataset.DataSetMetadata;
 import org.talend.dataprep.api.dataset.DataSetMoveRequest;
 import org.talend.dataprep.api.service.command.common.HttpResponse;
@@ -284,14 +279,15 @@ public class DataSetAPI extends APIService {
     }
 
     /**
-     * Returns a list containing all data sets that are compatible with the data set with id <tt>id</tt>.
-     * If no compatible data set is found an empty list is returned.
-     * The data set with id <tt>dataSetId</tt> is never returned in the list.
+     * Returns a list containing all data sets metadata that are compatible with the data set with id <tt>id</tt>. If no
+     * compatible data set is found an empty list is returned. The data set with id <tt>dataSetId</tt> is never returned
+     * in the list.
+     * 
      * @param id the specified data set id
      * @param sort the sort criterion: either name or date.
      * @param order the sorting order: either asc or desc
-     * @return a list containing all data sets that are compatible with the data set with id <tt>id</tt>
-     * and empty list if no data set is compatible.
+     * @return a list containing all data sets metadata that are compatible with the data set with id <tt>id</tt> and
+     * empty list if no data set is compatible.
      */
     @RequestMapping(value = "/api/datasets/{id}/compatibledatasets", method = GET, consumes = ALL_VALUE, produces = APPLICATION_JSON_VALUE)
     @ApiOperation(value = "List compatible data sets.", produces = APPLICATION_JSON_VALUE, notes = "Returns a list of data sets that are compatible with the specified one.")
