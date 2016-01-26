@@ -1,22 +1,14 @@
 package org.talend.dataprep.schema.xls;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Locale;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.poi.hssf.usermodel.HSSFDataFormatter;
 import org.apache.poi.hssf.usermodel.HSSFDateUtil;
-import org.apache.poi.hssf.usermodel.HSSFWorkbook;
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.CellValue;
-import org.apache.poi.ss.usermodel.DataFormatter;
-import org.apache.poi.ss.usermodel.FormulaEvaluator;
-import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.apache.poi.ss.usermodel.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.Marker;
@@ -125,30 +117,16 @@ public class XlsUtils {
         final Marker marker = Markers.dataset(request.getMetadata().getId());
         LOGGER.debug(marker, "opening");
 
-        // Depending on the excel file used the poi object to use is different
-        // so we try one (catch exception then try the other one)
-        // TODO that's a pain as we have to keep this :-(
-        // TODO use ByteBuffer or mark/reset the input if supported ?
-        // but for some reasons new HSSFWorkbook consume part of the stream
         if (request == null) {
             throw new IOException("cannot read null stream");
         }
 
-        byte[] bytes = IOUtils.toByteArray(request.getContent());
         try {
-            final XSSFWorkbook workbook = new XSSFWorkbook(new ByteArrayInputStream(bytes));
-            LOGGER.debug(marker, "opened as XSSFWorkbook (.xlsx)");
-            return workbook;
+            return WorkbookFactory.create(request.getContent()); // wrapped in a PushbackInputStream in the called
+                                                                 // method
         } catch (Exception e) {
-            LOGGER.debug(marker, "does not seem to be a XSSFWorkbook (.xlsx) : {}", e.getMessage());
-            try {
-                final HSSFWorkbook workbook = new HSSFWorkbook(new ByteArrayInputStream(bytes));
-                LOGGER.debug(marker, "opened as HSSFWorkbook (.xls)");
-                return workbook;
-            } catch (Exception e1) {
-                LOGGER.debug(marker, "does not seem to be a HSSFWorkbook (.xls) neither : {}", e1.getMessage());
-                return null;
-            }
+            LOGGER.debug(marker, "does not seem to be a valid excel (.xls or .xlsx) file : {}", e.getMessage());
+            return null;
         }
 
     }

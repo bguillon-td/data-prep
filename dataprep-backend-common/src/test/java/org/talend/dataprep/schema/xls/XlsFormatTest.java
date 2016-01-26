@@ -374,8 +374,7 @@ public class XlsFormatTest extends AbstractSchemaTestUtils {
      * XlsSerializer should follow the data format as set in the Excel file. This test ensures XlsSerializer follows the
      * data format as defined and don't directly use {@link Cell#getNumericCellValue()}.
      * </p>
-     * 
-     * @see XlsUtils#getCellValueAsString(Cell)
+     *
      */
     @Test
     public void testGeneralNumberFormat_TDP_222() throws Exception {
