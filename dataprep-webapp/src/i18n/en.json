@@ -264,9 +264,9 @@
 
   "_comment": "Lookup",
   "CONFIRM_LOOKUP": "Confirm",
-  "LOOKUP_STEPS_1": "1. Select the columns from both datasets you are using as join (columns turn into blue).",
-  "LOOKUP_STEPS_2": "2. In the lookup, check 'Add to Lookup' for the columns you want to add into the main dataset.",
-  "LOOKUP_STEPS_3": "3. Mouse over Confirm button to preview.",
+  "LOOKUP_STEPS_1": "1. Select two identical columns from two different datasets to link them. These columns turn blue.",
+  "LOOKUP_STEPS_2": "2. Check \"Add to Dataset\" to select the columns you want to associate with the linked columns.",
+  "LOOKUP_STEPS_3": "3. Place your mouse over the \"Confirm\" button to preview the result.<br/>Whenever the column in the lookup dataset appears in the main dataset, the associated column in the lookup dataset is added to the main dataset. If a row in the linked columns matches between the two datasets, the content of the associated column for this row is added too.",
   "LOOKUP_DESC_TITLE": "ADD DATA FROM LOOKUP",
   "LOOKUP_UPDATE_DESC_TITLE": "UPDATE LOOKUP",
   "RECIPE_LOOKUP_MADE_ON_COL":"made on the column",
