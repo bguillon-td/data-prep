@@ -1,15 +1,14 @@
 package org.talend.dataprep.exception.error;
 
+import static org.springframework.http.HttpStatus.*;
+
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-import org.springframework.http.HttpStatus;
 import org.talend.daikon.exception.error.ErrorCode;
 import org.talend.dataprep.api.dataset.DataSetLifecycle;
-
-import static org.springframework.http.HttpStatus.*;
 
 
 /**
@@ -55,14 +54,6 @@ public enum DataSetErrorCodes implements ErrorCode {
      * not exist (or no longer exists) for a data set.
      */
     COLUMN_DOES_NOT_EXIST(BAD_REQUEST.value(), "id"),
-    /**
-     * Error returned when the order is not supported.
-     */
-    ILLEGAL_ORDER_FOR_LIST(BAD_REQUEST.value(), "order"),
-    /**
-     * Error returned when the sort is not supported.
-     */
-    ILLEGAL_SORT_FOR_LIST(BAD_REQUEST.value(), "sort"),
     /**
     * Error returned when the dataset metadata could not be saved.
     */

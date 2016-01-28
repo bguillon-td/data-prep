@@ -193,7 +193,7 @@ public class DataSetService {
         Stream<DataSetMetadata> stream = StreamSupport.stream(iterator, false);
 
         final Comparator<String> comparisonOrder = getOrderComparator(order);
-        final Comparator<DataSetMetadata> comparator = getDataSetMetadataComparator(sort, order, comparisonOrder);
+        final Comparator<DataSetMetadata> comparator = getDataSetMetadataComparator(sort, comparisonOrder);
 
         // Return sorted results
         return stream.filter(metadata -> !metadata.getLifecycle().importing()) //
@@ -212,7 +212,7 @@ public class DataSetService {
      * 
      * @param dataSetId the specified data set id
      * @param sort the sort criterion: either name or date.
-     * @param order the sorting order: either asc or desc
+     * @param order the sorting order: either asc or descgi
      * @return a list containing all data sets that are compatible with the data set with id <tt>dataSetId</tt> and
      * empty list if no data set is compatible.
      */
@@ -229,7 +229,7 @@ public class DataSetService {
         Stream<DataSetMetadata> stream = StreamSupport.stream(iterator, false);
 
         final Comparator<String> comparisonOrder = getOrderComparator(order);
-        final Comparator<DataSetMetadata> comparator = getDataSetMetadataComparator(sort, order, comparisonOrder);
+        final Comparator<DataSetMetadata> comparator = getDataSetMetadataComparator(sort, comparisonOrder);
 
         // Return sorted results
         return stream.filter(metadata -> !metadata.getLifecycle().importing()) //
@@ -956,11 +956,10 @@ public class DataSetService {
      * Return a dataset metadata comparator from the given parameters.
      *
      * @param sort the sort key.
-     * @param order the sort order.
      * @param comparisonOrder the order comparator to use.
      * @return a dataset metadata comparator from the given parameters.
      */
-    private Comparator<DataSetMetadata> getDataSetMetadataComparator(String sort, String order,
+    private Comparator<DataSetMetadata> getDataSetMetadataComparator(String sort,
             Comparator<String> comparisonOrder) {
         // Select comparator for sort (either by name or date)
         final Comparator<DataSetMetadata> comparator;
@@ -973,7 +972,7 @@ public class DataSetService {
                     comparisonOrder);
             break;
         default:
-            throw new TDPException(DataSetErrorCodes.ILLEGAL_SORT_FOR_LIST, ExceptionContext.build().put("sort", order));
+            throw new TDPException(CommonErrorCodes.ILLEGAL_ORDER_FOR_LIST, ExceptionContext.build().put("sort", sort));
         }
         return comparator;
     }
@@ -995,7 +994,7 @@ public class DataSetService {
             comparisonOrder = Comparator.reverseOrder();
             break;
         default:
-            throw new TDPException(DataSetErrorCodes.ILLEGAL_ORDER_FOR_LIST, ExceptionContext.build().put("order", order));
+            throw new TDPException(CommonErrorCodes.ILLEGAL_ORDER_FOR_LIST, ExceptionContext.build().put("order", order));
         }
         return comparisonOrder;
     }

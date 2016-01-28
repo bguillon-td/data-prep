@@ -26,7 +26,6 @@ import org.talend.dataprep.api.service.command.common.GenericCommand;
 import org.talend.dataprep.exception.TDPException;
 import org.talend.dataprep.exception.error.APIErrorCodes;
 import org.talend.dataprep.exception.error.CommonErrorCodes;
-import org.talend.dataprep.exception.error.DataSetErrorCodes;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -92,8 +91,7 @@ public class FolderDataSetList extends GenericCommand<FolderContent> {
                     comparisonOrder = Comparator.reverseOrder();
                     break;
                 default:
-                    throw new TDPException(DataSetErrorCodes.ILLEGAL_ORDER_FOR_LIST,
-                            ExceptionContext.build().put("order", order));
+                    throw new TDPException(CommonErrorCodes.ILLEGAL_ORDER_FOR_LIST, ExceptionContext.build().put("order", order));
                 }
                 // Select comparator for sort (either by name or date)
                 final Comparator<Folder> comparator;
@@ -105,7 +103,7 @@ public class FolderDataSetList extends GenericCommand<FolderContent> {
                     comparator = Comparator.comparing(folder -> String.valueOf(folder.getCreationDate()), comparisonOrder);
                     break;
                 default:
-                    throw new TDPException(DataSetErrorCodes.ILLEGAL_SORT_FOR_LIST, ExceptionContext.build().put("sort", order));
+                    throw new TDPException(CommonErrorCodes.ILLEGAL_SORT_FOR_LIST, ExceptionContext.build().put("sort", order));
                 }
 
                 folders.sort(comparator);

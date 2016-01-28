@@ -13,9 +13,11 @@ import static uk.co.datumedge.hamcrest.json.SameJSONAs.sameJSONAs;
 import java.io.InputStream;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
@@ -33,6 +35,7 @@ import org.talend.dataprep.api.dataset.DataSetGovernance;
 import org.talend.dataprep.api.dataset.DataSetMetadata;
 import org.talend.dataprep.api.dataset.DataSetMoveRequest;
 import org.talend.dataprep.api.folder.FolderContent;
+import org.talend.dataprep.api.preparation.Preparation;
 import org.talend.dataprep.exception.error.DataSetErrorCodes;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -97,6 +100,41 @@ public class DataSetAPITest extends ApiServiceTestBase {
         // then
         assertTrue( compatibleDatasetList.contains( dataSetId2 ) );
         assertFalse( compatibleDatasetList.contains( dataSetId3 ) );
+    }
+
+    @Test
+    public void testListCompatiblePreparationsWhenNothingIsCompatible() throws Exception {
+        //
+        final String dataSetId = createDataset( "dataset/dataset.csv", "compatible1", "text/csv" );
+        final String dataSetId2 = createDataset( "dataset/dataset.csv", "compatible2", "text/csv" );
+        final String dataSetId3 = createDataset("t-shirt_100.csv", "incompatible", "text/csv");
+
+
+        final String getResult = when().get("/api/datasets/{id}/compatiblepreparations", dataSetId).asString();
+        final List compatiblePreparations =  builder.build().readerFor(List.class).readValue(getResult);
+
+        // then
+        assertTrue( compatiblePreparations.isEmpty() );
+    }
+
+    @Test
+    public void testListCompatiblePreparationsWhenTwoPreparationsAreCompatible() throws Exception {
+        //
+        final String dataSetId = createDataset( "dataset/dataset.csv", "compatible1", "text/csv" );
+        final String dataSetId2 = createDataset( "dataset/dataset.csv", "compatible2", "text/csv" );
+        final String dataSetId3 = createDataset("t-shirt_100.csv", "incompatible", "text/csv");
+
+        final String prep1 = createPreparationFromDataset(dataSetId, "prep1");
+        final String prep2 = createPreparationFromDataset(dataSetId2, "prep2");
+
+        final String getResult = when().get("/api/datasets/{id}/compatiblepreparations", dataSetId).asString();
+        final List<Preparation> compatiblePreparations =  builder.build().readerFor(new TypeReference<Collection<Preparation>>() {})
+                .readValue(getResult);
+
+        // then
+        assertTrue( compatiblePreparations.size() == 2 );
+        assertTrue( prep2.equals(compatiblePreparations.get(0).getId()));
+        assertTrue( prep1.equals(compatiblePreparations.get(1).getId()));
     }
 
     @Test

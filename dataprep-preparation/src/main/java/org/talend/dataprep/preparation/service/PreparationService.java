@@ -10,10 +10,7 @@ import static org.talend.dataprep.api.preparation.Step.ROOT_STEP;
 import static org.talend.dataprep.exception.error.PreparationErrorCodes.*;
 
 import java.text.DecimalFormat;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -26,8 +23,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.talend.daikon.exception.ExceptionContext;
+import org.talend.dataprep.api.dataset.DataSetMetadata;
 import org.talend.dataprep.api.preparation.*;
 import org.talend.dataprep.exception.TDPException;
+import org.talend.dataprep.exception.error.CommonErrorCodes;
+import org.talend.dataprep.exception.error.DataSetErrorCodes;
 import org.talend.dataprep.exception.error.PreparationErrorCodes;
 import org.talend.dataprep.exception.json.JsonErrorCodeDescription;
 import org.talend.dataprep.metrics.Timed;
@@ -58,9 +58,12 @@ public class PreparationService {
     @RequestMapping(value = "/preparations", method = GET, produces = APPLICATION_JSON_VALUE)
     @ApiOperation(value = "List all preparations id", notes = "Returns the list of preparations ids the current user is allowed to see. Creation date is always displayed in UTC time zone. See 'preparations/all' to get all details at once.")
     @Timed
-    public List<String> list() {
+    public List<String> list(
+            @ApiParam(value = "Sort key (by name or date).") @RequestParam(defaultValue = "MODIF", required = false) String sort,
+            @ApiParam(value = "Order for sort key (desc or asc).") @RequestParam(defaultValue = "DESC", required = false) String order) {
         LOGGER.debug("Get list of preparations (summary).");
-        return preparationRepository.listAll(Preparation.class).stream().map(Preparation::id).collect(toList());
+        return preparationRepository.listAll(Preparation.class).stream().collect(Collectors.toList()).stream()
+                .sorted(getPreparationComparator(sort, getOrderComparator(order))).map(Preparation::id).collect(toList());
     }
 
     @RequestMapping(value = "/preparations", method = GET, params = "dataSetId", produces = APPLICATION_JSON_VALUE)
@@ -68,7 +71,6 @@ public class PreparationService {
     @Timed
     public Collection<PreparationDetails> listByDataSet(@RequestParam("dataSetId") @ApiParam("dataSetId") String dataSetId) {
         Collection<Preparation> preparations = preparationRepository.getByDataSet(dataSetId);
-
         LOGGER.debug("{} preparation(s) use dataset {}.", preparations.size(), dataSetId);
         return getDetails(preparations);
     }
@@ -76,16 +78,21 @@ public class PreparationService {
     @RequestMapping(value = "/preparations/all", method = GET, produces = APPLICATION_JSON_VALUE)
     @ApiOperation(value = "List all preparations", notes = "Returns the list of preparations the current user is allowed to see. Creation date is always displayed in UTC time zone. This operation return all details on the preparations.")
     @Timed
-    public Collection<PreparationDetails> listAll() {
+    public Collection<PreparationDetails> listAll(
+            @ApiParam(value = "Sort key (by name or date).") @RequestParam(defaultValue = "MODIF", required = false) String sort,
+            @ApiParam(value = "Order for sort key (desc or asc).") @RequestParam(defaultValue = "DESC", required = false) String order) {
         LOGGER.debug("Get list of preparations (with details).");
-        final Collection<Preparation> preparations = preparationRepository.listAll(Preparation.class);
+        final List<Preparation> preparations = preparationRepository.listAll(Preparation.class).stream().collect(Collectors.toList())
+                .stream().sorted(getPreparationComparator(sort, getOrderComparator(order))).collect(Collectors.toList());
         return getDetails(preparations);
     }
 
     @RequestMapping(value = "/preparations", method = PUT, produces = TEXT_PLAIN_VALUE, consumes = APPLICATION_JSON_VALUE)
     @ApiOperation(value = "Create a preparation", notes = "Returns the id of the created preparation.")
     @Timed
-    public String create(@ApiParam("preparation") @RequestBody final Preparation preparation) {
+    public String create(@ApiParam("preparation")
+    @RequestBody
+    final Preparation preparation) {
         LOGGER.debug("Create new preparation for data set {}", preparation.getDataSetId());
         preparation.setHeadId(ROOT_STEP.id());
         preparation.setAuthor(security.getUserId());
@@ -108,7 +115,9 @@ public class PreparationService {
     @ApiOperation(value = "Create a preparation", notes = "Returns the id of the updated preparation.")
     @Timed
     public String update(@ApiParam("id") @PathVariable("id") String id, //
-                         @RequestBody @ApiParam("preparation") final Preparation preparation) {
+            @RequestBody
+    @ApiParam("preparation")
+    final Preparation preparation) {
         Preparation previousPreparation = preparationRepository.get(id, Preparation.class);
         LOGGER.debug("Updating preparation with id {}: {}", preparation.id(), previousPreparation);
         Preparation updated = previousPreparation.merge(preparation);
@@ -136,7 +145,7 @@ public class PreparationService {
     public String clone(@ApiParam("id") @PathVariable("id") String id) {
         LOGGER.debug("Clone preparation  #{}.", id);
         Preparation preparation = preparationRepository.get(id, Preparation.class);
-        preparation.setName( preparation.getName() + " Copy" );
+        preparation.setName(preparation.getName() + " Copy");
         preparation.setCreationDate(System.currentTimeMillis());
         preparation.setLastModificationDate(System.currentTimeMillis());
         preparationRepository.add(preparation);
@@ -158,7 +167,9 @@ public class PreparationService {
     @RequestMapping(value = "/preparations/{id}/actions", method = POST, consumes = APPLICATION_JSON_VALUE)
     @ApiOperation(value = "Adds an action to a preparation", notes = "Append an action at end of the preparation with given id.")
     @Timed
-    public void appendSteps(@PathVariable("id") final String id, @RequestBody final AppendStep stepsToAppend) {
+    public void appendSteps(@PathVariable("id")
+    final String id, @RequestBody
+    final AppendStep stepsToAppend) {
         checkActionStepConsistency(stepsToAppend);
 
         LOGGER.debug("Adding actions to preparation #{}", id);
@@ -189,10 +200,13 @@ public class PreparationService {
     @RequestMapping(value = "/preparations/{id}/actions/{stepId}", method = PUT, consumes = APPLICATION_JSON_VALUE)
     @ApiOperation(value = "Updates an action in a preparation", notes = "Modifies an action in preparation's steps.")
     @Timed
-    public void updateAction(@PathVariable("id") final String preparationId, //
-                            @PathVariable("stepId") final String stepToModifyId, //
-                            @RequestBody final AppendStep newStep) {
-        
+    public void updateAction(@PathVariable("id")
+    final String preparationId, //
+            @PathVariable("stepId")
+    final String stepToModifyId, //
+            @RequestBody
+    final AppendStep newStep) {
+
         checkActionStepConsistency(newStep);
 
         LOGGER.debug("Modifying actions in preparation #{}", preparationId);
@@ -278,8 +292,10 @@ public class PreparationService {
     @RequestMapping(value = "/preparations/{id}/head/{headId}", method = PUT)
     @ApiOperation(value = "Move preparation head", notes = "Set head to the specified head id")
     @Timed
-    public void setPreparationHead(@PathVariable("id") final String preparationId, //
-                                   @PathVariable("headId") final String headId) {
+    public void setPreparationHead(@PathVariable("id")
+    final String preparationId, //
+            @PathVariable("headId")
+    final String headId) {
 
         final Step head = getStep(headId);
         if (head == null) {
@@ -294,8 +310,12 @@ public class PreparationService {
     @RequestMapping(value = "/preparations/{id}/actions/{version}", method = GET, produces = APPLICATION_JSON_VALUE)
     @ApiOperation(value = "Get all the actions of a preparation at given version.", notes = "Returns the action JSON at version.")
     @Timed
-    public List<Action> getVersionedAction(@ApiParam("id") @PathVariable("id") final String id, //
-                                           @ApiParam("version") @PathVariable("version") final String version) {
+    public List<Action> getVersionedAction(@ApiParam("id")
+    @PathVariable("id")
+    final String id, //
+            @ApiParam("version")
+    @PathVariable("version")
+    final String version) {
         LOGGER.debug("Get list of actions of preparations #{} at version {}.", id, version);
         final Preparation preparation = preparationRepository.get(id, Preparation.class);
         if (preparation != null) {
@@ -522,7 +542,7 @@ public class PreparationService {
      * @return The same step but modified
      */
     private Function<AppendStep, AppendStep> shiftCreatedColumns(final int shiftColumnAfterId, final int shiftNumber) {
-        
+
         final DecimalFormat format = new DecimalFormat("0000"); //$NON-NLS-1$
         return step -> {
             final List<String> stepCreatedCols = step.getDiff().getCreatedColumns();
@@ -627,7 +647,7 @@ public class PreparationService {
      * @return the preparations details that match the given preparations.
      */
     private Collection<PreparationDetails> getDetails(Collection<Preparation> preparations) {
-        return preparations.stream().map(this::getDetails).collect(Collectors.toSet());
+        return preparations.stream().map(this::getDetails).collect(Collectors.toList());
     }
 
     /**
@@ -640,5 +660,54 @@ public class PreparationService {
         return new PreparationDetails(preparation);
     }
 
+    // ------------------------------------------------------------------------------------------------------------------
+    // -----------------------------------------------------COMPARATORS------------------------------------------------------
+    // ------------------------------------------------------------------------------------------------------------------
 
+    /**
+     * Return a dataset metadata comparator from the given parameters.
+     *
+     * @param sort the sort key.
+     * @param comparisonOrder the order comparator to use.
+     * @return a dataset metadata comparator from the given parameters.
+     */
+    private Comparator<Preparation> getPreparationComparator(String sort, Comparator<String> comparisonOrder) {
+        // Select comparator for sort (either by name or date)
+        final Comparator<Preparation> comparator;
+        switch (sort.toUpperCase()) {
+        case "NAME":
+            comparator = Comparator.comparing(Preparation::getName, comparisonOrder);
+            break;
+        case "DATE":
+            comparator = Comparator.comparing(p -> String.valueOf(p.getCreationDate()), comparisonOrder);
+            break;
+        case "MODIF":
+            comparator = Comparator.comparing(p -> String.valueOf(p.getLastModificationDate()), comparisonOrder);
+            break;
+        default:
+            throw new TDPException(CommonErrorCodes.ILLEGAL_SORT_FOR_LIST, ExceptionContext.build().put("sort", sort));
+        }
+        return comparator;
+    }
+    /**
+     * Return an order comparator.
+     *
+     * @param order the order key.
+     * @return an order comparator.
+     */
+    private Comparator<String> getOrderComparator(String order) {
+        // Select order (asc or desc)
+        final Comparator<String> comparisonOrder;
+        switch (order.toUpperCase()) {
+        case "ASC":
+            comparisonOrder = Comparator.naturalOrder();
+            break;
+        case "DESC":
+            comparisonOrder = Comparator.reverseOrder();
+            break;
+        default:
+            throw new TDPException(CommonErrorCodes.ILLEGAL_ORDER_FOR_LIST, ExceptionContext.build().put("order", order));
+        }
+        return comparisonOrder;
+    }
 }

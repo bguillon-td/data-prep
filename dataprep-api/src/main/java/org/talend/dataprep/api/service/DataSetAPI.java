@@ -3,23 +3,37 @@ package org.talend.dataprep.api.service;
 import static org.springframework.http.MediaType.*;
 import static org.springframework.web.bind.annotation.RequestMethod.*;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.netflix.hystrix.Hystrix;
+import com.netflix.hystrix.exception.HystrixRuntimeException;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.io.output.ByteArrayOutputStream;
+import org.apache.commons.lang.StringUtils;
 import org.apache.http.client.HttpClient;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.talend.dataprep.api.dataset.DataSetMetadata;
 import org.talend.dataprep.api.dataset.DataSetMoveRequest;
+import org.talend.dataprep.api.preparation.Preparation;
+import org.talend.dataprep.api.preparation.PreparationDetails;
+import org.talend.dataprep.api.service.command.common.GenericCommand;
 import org.talend.dataprep.api.service.command.common.HttpResponse;
 import org.talend.dataprep.api.service.command.dataset.*;
+import org.talend.dataprep.api.service.command.preparation.PreparationList;
 import org.talend.dataprep.api.service.command.transformation.SuggestDataSetActions;
 import org.talend.dataprep.api.service.command.transformation.SuggestLookupActions;
 import org.talend.dataprep.exception.TDPException;
+import org.talend.dataprep.exception.error.APIErrorCodes;
 import org.talend.dataprep.exception.error.CommonErrorCodes;
+import org.talend.dataprep.exception.error.PreparationErrorCodes;
 import org.talend.dataprep.http.HttpResponseContext;
 import org.talend.dataprep.metrics.Timed;
 
@@ -44,8 +58,7 @@ public class DataSetAPI extends APIService {
     public String create(
             @ApiParam(value = "User readable name of the data set (e.g. 'Finance Report 2015', 'Test Data Set').") @RequestParam(defaultValue = "", required = false) String name,
             @ApiParam(value = "The folder path to create the entry.") @RequestParam(defaultValue = "/", required = false) String folderPath,
-            @RequestHeader("Content-Type") String contentType,
-            @ApiParam(value = "content") InputStream dataSetContent) {
+            @RequestHeader("Content-Type") String contentType, @ApiParam(value = "content") InputStream dataSetContent) {
         if (LOG.isDebugEnabled()) {
             LOG.debug("Creating dataset (pool: {} )...", getConnectionStats());
         }
@@ -90,17 +103,20 @@ public class DataSetAPI extends APIService {
 
     @RequestMapping(value = "/api/datasets/{datasetId}/column/{columnId}", method = POST, consumes = APPLICATION_JSON_VALUE)
     @ApiOperation(value = "Update a dataset.", consumes = APPLICATION_JSON_VALUE, //
-        notes = "Update a data set based on content provided in POST body with given id. For documentation purposes, body is typed as 'text/plain' but operation accepts binary content too.")
-    public void updateColumn(@PathVariable(value = "datasetId") @ApiParam(value = "Id of the dataset to update") final String datasetId,
-                             @PathVariable(value = "columnId") @ApiParam(value = "Id of the column to update") final String columnId,
-                             @ApiParam(value = "content") final InputStream body) {
+    notes = "Update a data set based on content provided in POST body with given id. For documentation purposes, body is typed as 'text/plain' but operation accepts binary content too.")
+    public void updateColumn(@PathVariable(value = "datasetId")
+    @ApiParam(value = "Id of the dataset to update")
+    final String datasetId, @PathVariable(value = "columnId")
+    @ApiParam(value = "Id of the column to update")
+    final String columnId, @ApiParam(value = "content")
+    final InputStream body) {
 
         if (LOG.isDebugEnabled()) {
             LOG.debug("Creating or updating dataset #{} (pool: {})...", datasetId, getConnectionStats());
         }
 
         final HttpClient client = getClient();
-        final HystrixCommand<Void> creation = getCommand( UpdateColumn.class, client, datasetId, columnId, body );
+        final HystrixCommand<Void> creation = getCommand(UpdateColumn.class, client, datasetId, columnId, body);
         creation.execute();
 
         LOG.debug("Dataset creation or update for #{} done.", datasetId);
@@ -108,8 +124,7 @@ public class DataSetAPI extends APIService {
 
     @RequestMapping(value = "/api/datasets/{id}", method = GET, consumes = ALL_VALUE, produces = APPLICATION_JSON_VALUE)
     @ApiOperation(value = "Get a data set by id.", produces = APPLICATION_JSON_VALUE, notes = "Get a data set based on given id.")
-    public void get(
-            @ApiParam(value = "Id of the data set to get") @PathVariable(value = "id") String id,
+    public void get(@ApiParam(value = "Id of the data set to get") @PathVariable(value = "id") String id,
             @RequestParam(defaultValue = "true") @ApiParam(name = "metadata", value = "Include metadata information in the response") boolean metadata,
             @RequestParam(required = false, defaultValue = "full") @ApiParam(name = "sample", value = "Size of the wanted sample, if missing or 'full', the full dataset is returned") String sample, //
             final OutputStream output) {
@@ -125,9 +140,9 @@ public class DataSetAPI extends APIService {
         } catch (NumberFormatException e) {
             sampleValue = null;
         }
-        
+
         HystrixCommand<InputStream> retrievalCommand = getCommand(DataSetGet.class, client, id, metadata, sampleValue);
-        try (InputStream content = retrievalCommand.execute()){
+        try (InputStream content = retrievalCommand.execute()) {
             IOUtils.copyLarge(content, output);
             output.flush();
             if (LOG.isDebugEnabled()) {
@@ -174,11 +189,10 @@ public class DataSetAPI extends APIService {
      */
     @RequestMapping(value = "/api/datasets/clone/{id}", method = PUT, produces = TEXT_PLAIN_VALUE)
     @ApiOperation(value = "Create a data set", produces = TEXT_PLAIN_VALUE, notes = "Clone a data set based the id provided.")
-    public void cloneDataset(
-        @ApiParam(value = "Id of the data set to get") @PathVariable(value = "id") String id,
-        @ApiParam(value = "The name of the cloned dataset.") @RequestParam(defaultValue = "", required = false) String cloneName,
-        @ApiParam(value = "The folder path to create the entry.") @RequestParam(defaultValue = "", required = false) String folderPath,
-        final OutputStream output) {
+    public void cloneDataset(@ApiParam(value = "Id of the data set to get") @PathVariable(value = "id") String id,
+            @ApiParam(value = "The name of the cloned dataset.") @RequestParam(defaultValue = "", required = false) String cloneName,
+            @ApiParam(value = "The folder path to create the entry.") @RequestParam(defaultValue = "", required = false) String folderPath,
+            final OutputStream output) {
         if (LOG.isDebugEnabled()) {
             LOG.debug("Cloning dataset (pool: {} )...", getConnectionStats());
         }
@@ -258,9 +272,10 @@ public class DataSetAPI extends APIService {
 
     @RequestMapping(value = "/api/datasets", method = GET, consumes = ALL_VALUE, produces = APPLICATION_JSON_VALUE)
     @ApiOperation(value = "List data sets.", produces = APPLICATION_JSON_VALUE, notes = "Returns a list of data sets the user can use.")
-    public void list(@ApiParam(value = "Sort key (by name or date), defaults to 'date'.") @RequestParam(defaultValue = "DATE", required = false) String sort,
-                     @ApiParam(value = "Order for sort key (desc or asc), defaults to 'desc'.") @RequestParam(defaultValue = "DESC", required = false) String order,
-                     final OutputStream output) {
+    public void list(
+            @ApiParam(value = "Sort key (by name or date), defaults to 'date'.") @RequestParam(defaultValue = "DATE", required = false) String sort,
+            @ApiParam(value = "Order for sort key (desc or asc), defaults to 'desc'.") @RequestParam(defaultValue = "DESC", required = false) String order,
+            final OutputStream output) {
         if (LOG.isDebugEnabled()) {
             LOG.debug("Listing datasets (pool: {})...", getConnectionStats());
         }
@@ -312,10 +327,74 @@ public class DataSetAPI extends APIService {
         }
     }
 
+    /**
+     * Returns a list containing all preparations that are compatible with the data set with id <tt>id</tt>. If no
+     * compatible preparation is found an empty list is returned.
+     *
+     * @param dataSetId the specified data set id
+     * @param sort the sort criterion: either name or date.
+     * @param order the sorting order: either asc or desc
+     * @return a list containing all preparations that are compatible with the data set with id <tt>id</tt> and empty
+     * list if no preparation is compatible.
+     */
+    @RequestMapping(value = "/api/datasets/{id}/compatiblepreparations", method = GET, consumes = ALL_VALUE, produces = APPLICATION_JSON_VALUE)
+    @ApiOperation(value = "List compatible preparations.", produces = APPLICATION_JSON_VALUE, notes = "Returns a list of data sets that are compatible with the specified one.")
+    public void listCompatiblePreparations(
+            @ApiParam(value = "Id of the data set to get") @PathVariable(value = "id") String dataSetId,
+            @ApiParam(value = "Sort key (by name or date), defaults to 'date'.") @RequestParam(defaultValue = "MODIF", required = false) String sort,
+            @ApiParam(value = "Order for sort key (desc or asc), defaults to 'desc'.") @RequestParam(defaultValue = "DESC", required = false) String order,
+            final OutputStream output) {
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Listing compatible preparations (pool: {})...", getConnectionStats());
+        }
+        HttpResponseContext.header("Content-Type", APPLICATION_JSON_VALUE); //$NON-NLS-1$
+        HttpClient client = getClient();
+        try {
+            // get the list of compatible data sets
+            final ByteArrayOutputStream temp = new ByteArrayOutputStream();
+            listCompatibleDatasets(dataSetId, "", order, temp);
+            final Iterable<DataSetMetadata> dataSetMetadataCollection = readServiceResult(
+                    new TypeReference<Iterable<DataSetMetadata>>() {
+                    }, temp);
+            final Set<String> compatibleDataSetIds = StreamSupport.stream(dataSetMetadataCollection.spliterator(), false)
+                    .map(DataSetMetadata::getId).collect(Collectors.toSet());
+            // add the current dataset
+            compatibleDataSetIds.add(dataSetId);
+
+            // get list of preparations
+            HystrixCommand<InputStream> listCommand = getCommand(PreparationList.class, client, PreparationList.Format.LONG, sort,
+                    order);
+            try {
+                String preparationsJson = IOUtils.toString(listCommand.execute());
+                final Collection<Preparation> preparationsList = builder.build()
+                        .readerFor(new TypeReference<Collection<Preparation>>() {
+                        }).readValue(preparationsJson);
+
+                // filter and keep only data sets ids that are compatible
+                List<Preparation> preparations = preparationsList.stream()
+                        .filter(p -> compatibleDataSetIds.contains(p.getDataSetId())).collect(Collectors.toList());
+
+                InputStream content = IOUtils.toInputStream(builder.build().writeValueAsString(preparations));
+                IOUtils.copyLarge(content, output);
+                output.flush();
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("Listing compatible datasets (pool: {}) done.", getConnectionStats());
+                }
+            } catch (HystrixRuntimeException e) {
+                throw new TDPException(APIErrorCodes.UNABLE_TO_RETRIEVE_PREPARATION_LIST, e);
+            }
+
+        } catch (IOException e) {
+            throw new TDPException(APIErrorCodes.UNABLE_TO_LIST_COMPATIBLE_PREPARATIONS, e);
+        }
+
+    }
+
     @RequestMapping(value = "/api/datasets/{id}", method = DELETE, consumes = ALL_VALUE, produces = TEXT_PLAIN_VALUE)
     @ApiOperation(value = "Delete a data set by id", notes = "Delete a data set content based on provided id. Id should be a UUID returned by the list operation. Not valid or non existing data set id returns empty content.")
     @Timed
-    public void delete(@PathVariable(value = "id") @ApiParam(name = "id", value = "Id of the data set to delete") String dataSetId) {
+    public void delete(
+            @PathVariable(value = "id") @ApiParam(name = "id", value = "Id of the data set to delete") String dataSetId) {
         if (LOG.isDebugEnabled()) {
             LOG.debug("Delete dataset #{} (pool: {})...", dataSetId, getConnectionStats());
         }
@@ -368,8 +447,7 @@ public class DataSetAPI extends APIService {
     @RequestMapping(value = "/api/datasets/favorite/{id}", method = POST, consumes = ALL_VALUE, produces = TEXT_PLAIN_VALUE)
     @ApiOperation(value = "Set or Unset the dataset as favorite for the current user.", consumes = TEXT_PLAIN_VALUE, produces = TEXT_PLAIN_VALUE, //
     notes = "Specify if a dataset is or is not a favorite for the current user.")
-    public String favorite(
-            @ApiParam(value = "Id of the favorite data set ") @PathVariable(value = "id") String id,
+    public String favorite(@ApiParam(value = "Id of the favorite data set ") @PathVariable(value = "id") String id,
             @RequestParam(defaultValue = "false") @ApiParam(name = "unset", value = "When true, will remove the dataset from favorites, if false (default) this will set the dataset as favorite.") boolean unset) {
         if (LOG.isDebugEnabled()) {
             LOG.debug((unset ? "Unset" : "Set") + " favorite dataset #{} (pool: {})...", id, getConnectionStats());
@@ -381,4 +459,17 @@ public class DataSetAPI extends APIService {
         return result;
     }
 
+    private <T> T readServiceResult(TypeReference<T> type, ByteArrayOutputStream byteArray) {
+        final String json;
+        try {
+            json = new String(byteArray.toByteArray());
+            final T object = builder.build().readerFor(type).readValue(json);
+            return object;
+        } catch (IOException e) {
+            throw new TDPException(CommonErrorCodes.UNABLE_TO_PARSE_JSON);
+        } finally {
+            IOUtils.closeQuietly(byteArray);
+        }
+
+    }
 }
