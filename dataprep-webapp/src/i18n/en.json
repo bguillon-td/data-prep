@@ -266,7 +266,7 @@
   "CONFIRM_LOOKUP": "Confirm",
   "LOOKUP_STEPS_1": "1. Select two identical columns from two different datasets to link them. These columns turn blue.",
   "LOOKUP_STEPS_2": "2. Check \"Add to Dataset\" to select the columns you want to associate with the linked columns.",
-  "LOOKUP_STEPS_3": "3. Place your mouse over the \"Confirm\" button to preview the result.<br/>Whenever the column in the lookup dataset appears in the main dataset, the associated column in the lookup dataset is added to the main dataset. If a row in the linked columns matches between the two datasets, the content of the associated column for this row is added too.",
+  "LOOKUP_STEPS_3": "3. Place your mouse over the \"Confirm\" button to preview the result.<br/><a target='_blank' href='https://help.talend.com/pages/viewpage.action?pageId=266307196'>Learn more...</a>",
   "LOOKUP_DESC_TITLE": "ADD DATA FROM LOOKUP",
   "LOOKUP_UPDATE_DESC_TITLE": "UPDATE LOOKUP",
   "RECIPE_LOOKUP_MADE_ON_COL":"made on the column",
