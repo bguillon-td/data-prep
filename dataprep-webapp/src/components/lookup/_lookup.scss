@@ -45,11 +45,18 @@
 
       .lookup-description {
         margin-left: 10px;
+        padding-top: 10px;
         width: 93%;
 
-        p {
+        .lookup-step {
           margin-left: 15px;
+          margin-bottom: 5px;
           color: $dark-gray;
+        }
+
+        a {
+          margin-left: 15px;
+          margin-bottom: 5px;
         }
       }
       button {

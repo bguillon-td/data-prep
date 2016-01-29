@@ -19,13 +19,15 @@
 
             <div id="lookup-right">
                 <div class="lookup-description">
-                    <br>
                     <strong ng-if="!lookupCtrl.state.playground.lookup.step"><span translate-once="LOOKUP_DESC_TITLE"></span></strong>
                     <strong ng-if="lookupCtrl.state.playground.lookup.step"><span translate-once="LOOKUP_UPDATE_DESC_TITLE"></span></strong>
                     <br>
-                    <p translate-once="LOOKUP_STEPS_1"></p>
-                    <p translate-once="LOOKUP_STEPS_2"></p>
-                    <p translate-once="LOOKUP_STEPS_3"></p>
+                    <div class="lookup-step" translate-once="LOOKUP_STEPS_1"></div>
+                    <div class="lookup-step" translate-once="LOOKUP_STEPS_2"></div>
+                    <div class="lookup-step" translate-once="LOOKUP_STEPS_3"></div>
+                    <a target='_blank'
+                       href='https://help.talend.com/pages/viewpage.action?pageId=266307196&utm_medium=dpdesktop&utm_source=func'
+                       translate-once="ACTION_HELP"></a>
                 </div>
 
                 <button id="lookup-submit-btn-id"
