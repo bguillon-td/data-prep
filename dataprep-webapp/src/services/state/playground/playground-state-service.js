@@ -9,7 +9,8 @@
         FilterStateService, filterState,
         SuggestionsStateService, suggestionsState,
         LookupStateService, lookupState,
-        StatisticsStateService, statisticsState) {
+        StatisticsStateService, statisticsState,
+        ParametersStateService, parametersState) {
 
         playgroundState.recipe = recipeState;
         playgroundState.grid = gridState;
@@ -17,6 +18,7 @@
         playgroundState.filter = filterState;
         playgroundState.suggestions = suggestionsState;
         playgroundState.statistics = statisticsState;
+        playgroundState.parameters = parametersState;
 
         return {
             //playground
@@ -29,6 +31,12 @@
             setData: setData,
             updateDatasetStatistics: updateDatasetStatistics,
 
+            //parameters
+            toggleDatasetParameters: toggleDatasetParameters,
+            hideDatasetParameters: ParametersStateService.hide,
+            setIsSendingDatasetParameters: ParametersStateService.setIsSending,
+            setDatasetEncodings: ParametersStateService.setEncodings,
+
             //recipe
             showRecipe: RecipeStateService.show,
             hideRecipe: RecipeStateService.hide,
@@ -39,11 +47,15 @@
 
             //lookup
             setLookupActions: LookupStateService.setActions,
+            setLookupAddedActions: LookupStateService.setAddedActions,
+            setLookupDatasets: LookupStateService.setDatasets,
             setLookupAddMode: LookupStateService.setAddMode,
             setLookupSelectedColumn: LookupStateService.setSelectedColumn,
             setLookupUpdateMode: LookupStateService.setUpdateMode,
             setLookupVisibility: LookupStateService.setVisibility,
             updateLookupColumnsToAdd: LookupStateService.updateColumnsToAdd,
+            setLookupDatasetsSort: LookupStateService.setSort,
+            setLookupDatasetsOrder: LookupStateService.setOrder,
 
             //filters
             addGridFilter: addGridFilter,
@@ -108,6 +120,23 @@
         }
 
         //--------------------------------------------------------------------------------------------------------------
+        //-------------------------------------------------PARAMETERS---------------------------------------------------
+        //--------------------------------------------------------------------------------------------------------------
+        function toggleDatasetParameters() {
+            if(parametersState.visible) {
+                ParametersStateService.hide();
+            }
+            else {
+                showDatasetParameters();
+            }
+        }
+
+        function showDatasetParameters() {
+            ParametersStateService.update(playgroundState.dataset);
+            ParametersStateService.show();
+        }
+
+        //--------------------------------------------------------------------------------------------------------------
         //---------------------------------------------------FILTERS----------------------------------------------------
         //--------------------------------------------------------------------------------------------------------------
         function addGridFilter(filter) {
@@ -143,6 +172,7 @@
             LookupStateService.reset();
             SuggestionsStateService.reset();
             StatisticsStateService.reset();
+            ParametersStateService.reset();
         }
     }
 

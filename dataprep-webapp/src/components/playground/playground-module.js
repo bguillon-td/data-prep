@@ -7,6 +7,7 @@
      * @description This module contains the controller and directives to manage the playground
      * @requires talend.widget
      * @requires data-prep.datagrid
+     * @requires data-prep.dataset-parameters
      * @requires data-prep.export
      * @requires data-prep.filter-bar
      * @requires data-prep.history-control
@@ -23,6 +24,7 @@
         'ui.router',
         'pascalprecht.translate',
         'talend.widget',
+        'data-prep.dataset-parameters',
         'data-prep.datagrid',
         'data-prep.export',
         'data-prep.filter-bar',

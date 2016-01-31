@@ -43,18 +43,13 @@
                 return;
             }
             vm.exportService.currentExportType = exportType;
-            if (vm.exportService.currentExportType.parameters) {
-
-                if(vm.state.playground.exportParameters){
-                    vm.exportService.currentExportParameters = _.extend({}, vm.state.playground.exportParameters);
-                    vm.exportService.currentExportParameters.exportType = vm.exportService.currentExportType.id;
-                } else {
-                    updateExportParameters();
-                }
-                vm.showModal = true;
+            if(vm.state.playground.exportParameters){
+                vm.exportService.currentExportParameters = _.extend({}, vm.state.playground.exportParameters);
+                vm.exportService.currentExportParameters.exportType = vm.exportService.currentExportType.id;
             } else {
-                vm.export();
+                updateExportParameters();
             }
+            vm.showModal = true;
         };
 
         /**
@@ -84,7 +79,7 @@
             $timeout(function(){
                 vm.form.action = RestURLs.exportUrl;
                 vm.form.submit();
-            });
+            }, 0, false);
 
         };
 
@@ -109,11 +104,6 @@
                 }
             });
         }
-
-
-        // get types list
-        vm.exportService.refreshTypes()
-            .then(vm.exportService.resetCurrentParameters);
     }
 
     /**

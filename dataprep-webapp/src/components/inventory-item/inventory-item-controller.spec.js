@@ -18,30 +18,89 @@ describe('Inventory Item controller', function () {
         beforeEach(inject(function() {
             ctrl = createController();
             ctrl.open = jasmine.createSpy('open');
+            ctrl.openRelatedInv = jasmine.createSpy('openRelatedInv');
         }));
 
-        it('should call open', inject(function () {
+        it('should call open related inventory callback', inject(function () {
             //given
+            var prep = {};
+
+            //when
+            ctrl.openRelatedInventoryItem(prep);
+
+            //then
+            expect(ctrl.openRelatedInv).toHaveBeenCalledWith(prep);
+        }));
+
+        //it('should NOT call open related inventory callback', inject(function () {
+        //    //given
+        //    var prep = {};
+        //    ctrl.openRelatedInv = null;
+        //
+        //    //when
+        //    ctrl.openRelatedInventoryItem(prep);
+        //
+        //    //then
+        //    expect(ctrl.openRelatedInv).not.toHaveBeenCalledWith();
+        //}));
+
+        it('should process the tooltip data to compile it when related inventories do NOT exist', inject(function () {
+            //given
+            ctrl.relatedInventories = [];
+            ctrl.type = 'dataset';
+            ctrl.item = {
+                name: 'my dataset name'
+            };
+
+            //when
+            var tooltipData = ctrl.getTooltipContent();
+
+            //then
+            expect(tooltipData).toEqual({
+                type: 'dataset',
+                name: 'my dataset name'
+            });
+        }));
+
+        it('should process the tooltip data to compile it when related inventories exist', inject(function () {
+            //given
+            ctrl.relatedInventories = [{name:'prep1'}, {name:'prep2'}];
+            ctrl.relatedInventoriesType = 'preparation';
+
+            //when
+            var tooltipData = ctrl.getTooltipContent();
+
+            //then
+            expect(tooltipData).toEqual({
+                type: 'preparation',
+                name: 'prep1'
+            });
+        }));
+
+        it('should open an inventory Item: the case of related inventory', inject(function () {
+            //given
+            ctrl.relatedInventories = [{name:'prep1'}, {name:'prep2'}];
             ctrl.actionsEnabled = true;
 
             //when
-            ctrl.openOnClick({});
-            scope.$digest();
+            ctrl.openInventoryItem();
 
             //then
-            expect(ctrl.open).toHaveBeenCalledWith({});
+            expect(ctrl.openRelatedInv).toHaveBeenCalledWith(ctrl.relatedInventories[0]);
         }));
 
-        it('should NOT call open', inject(function () {
+        it('should open an inventory Item: the case of the item itself', inject(function () {
             //given
-            ctrl.actionsEnabled = false;
+            ctrl.relatedInventories = [];
+            ctrl.actionsEnabled = true;
+            ctrl.item = {};
 
             //when
-            ctrl.openOnClick({});
-            scope.$digest();
+            ctrl.openInventoryItem();
 
             //then
-            expect(ctrl.open).not.toHaveBeenCalled();
+            expect(ctrl.open).toHaveBeenCalledWith(ctrl.item);
         }));
+
     });
 });

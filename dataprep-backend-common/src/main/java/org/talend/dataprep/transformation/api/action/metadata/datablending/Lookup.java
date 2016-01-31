@@ -52,7 +52,7 @@ public class Lookup extends ActionMetadata implements DataSetAction {
     private String datasetServiceUrl;
 
     /** Lookup parameters */
-    protected enum Parameters {
+    public enum Parameters {
                                LOOKUP_DS_NAME,
                                LOOKUP_DS_ID,
                                LOOKUP_JOIN_ON,

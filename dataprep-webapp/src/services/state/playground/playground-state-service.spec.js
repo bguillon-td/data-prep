@@ -1,18 +1,20 @@
 describe('Playground state service', function () {
     'use strict';
 
-    var recipeStateMock, gridStateMock, filterStateMock;
+    var recipeStateMock, gridStateMock, filterStateMock, parametersStateMock;
 
     beforeEach(module('data-prep.services.state', function ($provide) {
         recipeStateMock = {};
         gridStateMock = {};
         filterStateMock = {};
+        parametersStateMock = {};
         $provide.constant('recipeState', recipeStateMock);
         $provide.constant('gridState', gridStateMock);
         $provide.constant('filterState', filterStateMock);
+        $provide.constant('parametersState', parametersStateMock);
     }));
 
-    beforeEach(inject(function (GridStateService, FilterStateService, LookupStateService, SuggestionsStateService) {
+    beforeEach(inject(function (GridStateService, FilterStateService, LookupStateService, SuggestionsStateService, ParametersStateService) {
         spyOn(GridStateService, 'setData').and.returnValue();
         spyOn(GridStateService, 'setFilter').and.returnValue();
         spyOn(GridStateService, 'reset').and.returnValue();
@@ -23,6 +25,10 @@ describe('Playground state service', function () {
         spyOn(FilterStateService, 'reset').and.returnValue();
         spyOn(LookupStateService, 'reset').and.returnValue();
         spyOn(SuggestionsStateService, 'reset').and.returnValue();
+        spyOn(ParametersStateService, 'hide').and.returnValue();
+        spyOn(ParametersStateService, 'show').and.returnValue();
+        spyOn(ParametersStateService, 'update').and.returnValue();
+        spyOn(ParametersStateService, 'reset').and.returnValue();
     }));
 
     describe('playground state', function () {
@@ -191,6 +197,43 @@ describe('Playground state service', function () {
         }));
     });
 
+    describe('parameters', function() {
+        it('should hide parameters when they are visible', inject(function(PlaygroundStateService, ParametersStateService) {
+            //given
+            parametersStateMock.visible = true;
+
+            //when
+            PlaygroundStateService.toggleDatasetParameters();
+
+            //then
+            expect(ParametersStateService.hide).toHaveBeenCalled();
+        }));
+
+        it('should show parameters when they are not visible', inject(function(PlaygroundStateService, ParametersStateService) {
+            //given
+            parametersStateMock.visible = false;
+
+            //when
+            PlaygroundStateService.toggleDatasetParameters();
+
+            //then
+            expect(ParametersStateService.show).toHaveBeenCalled();
+        }));
+
+        it('should update parameters when they are not visible', inject(function(playgroundState, PlaygroundStateService, ParametersStateService) {
+            //given
+            var dataset = {id: '56a74a6425432cf57b87'};
+            playgroundState.dataset = dataset;
+            parametersStateMock.visible = false;
+
+            //when
+            PlaygroundStateService.toggleDatasetParameters();
+
+            //then
+            expect(ParametersStateService.update).toHaveBeenCalledWith(dataset);
+        }));
+    });
+
     describe('filters', function () {
         describe('add', function () {
             it('should add filter in filter list', inject(function (PlaygroundStateService, FilterStateService) {
@@ -302,7 +345,7 @@ describe('Playground state service', function () {
     });
 
     describe('reset', function () {
-        it('should reset playground and sub-states', inject(function (playgroundState, PlaygroundStateService, GridStateService, FilterStateService, LookupStateService, SuggestionsStateService) {
+        it('should reset playground and sub-states', inject(function (playgroundState, PlaygroundStateService, GridStateService, FilterStateService, LookupStateService, SuggestionsStateService, ParametersStateService) {
             //given
             playgroundState.data = {};
             playgroundState.dataset = {};
@@ -324,6 +367,7 @@ describe('Playground state service', function () {
             expect(FilterStateService.reset).toHaveBeenCalled();
             expect(LookupStateService.reset).toHaveBeenCalled();
             expect(SuggestionsStateService.reset).toHaveBeenCalled();
+            expect(ParametersStateService.reset).toHaveBeenCalled();
         }));
     });
 });

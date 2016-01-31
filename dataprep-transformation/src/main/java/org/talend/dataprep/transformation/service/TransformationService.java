@@ -212,6 +212,7 @@ public class TransformationService extends BaseTransformationService {
         // get it from the cache if available
         final InputStream inputStream = contentCache.get(key);
         if (inputStream != null) {
+            setExportHeaders(name, getFormat(formatName));
             IOUtils.copyLarge(inputStream, output);
             return;
         }

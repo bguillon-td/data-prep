@@ -22,6 +22,7 @@ import org.talend.dataprep.api.type.Type;
 import org.talend.dataprep.date.DateManipulator;
 import org.talend.dataprep.exception.TDPException;
 import org.talend.dataprep.exception.error.CommonErrorCodes;
+import org.talend.dataprep.number.BigDecimalParser;
 import org.talend.dataprep.transformation.api.action.metadata.date.DateParser;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -29,21 +30,33 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Service
 public class SimpleFilterService implements FilterService {
+
     private static final String EQ = "eq";
+
     private static final String GT = "gt";
+
     private static final String LT = "lt";
+
     private static final String GTE = "gte";
+
     private static final String LTE = "lte";
+
     private static final String CONTAINS = "contains";
+
     private static final String MATCHES = "matches";
 
     private static final String INVALID = "invalid";
+
     private static final String VALID = "valid";
+
     private static final String EMPTY = "empty";
+
     private static final String RANGE = "range";
 
     private static final String AND = "and";
+
     private static final String OR = "or";
+
     private static final String NOT = "not";
 
     final private DateManipulator dateManipulator = new DateManipulator();
@@ -83,36 +96,37 @@ public class SimpleFilterService implements FilterService {
 
         final String currentNodeName = propertiesIterator.next();
         switch (currentNodeName) {
-            case EQ:
-                return createEqualsPredicate(currentNode, columnId, value);
-            case GT:
-                return createGreaterThanPredicate(currentNode, columnId, value);
-            case LT:
-                return createLowerThanPredicate(currentNode, columnId, value);
-            case GTE:
-                return createGreaterOrEqualsPredicate(currentNode, columnId, value);
-            case LTE:
-                return createLowerOrEqualsPredicate(currentNode, columnId, value);
-            case CONTAINS:
-                return createContainsPredicate(currentNode, columnId, value);
-            case MATCHES:
-                return createMatchesPredicate(currentNode, columnId, value);
-            case INVALID:
-                return createInvalidPredicate(columnId);
-            case VALID:
-                return createValidPredicate(columnId);
-            case EMPTY:
-                return createEmptyPredicate(columnId);
-            case RANGE:
-                return createRangePredicate(columnId, currentNodeContent);
-            case AND:
-                return createAndPredicate(currentNodeContent);
-            case OR:
-                return createOrPredicate(currentNodeContent);
-            case NOT:
-                return createNotPredicate(currentNodeContent);
-            default:
-                throw new UnsupportedOperationException("Unsupported query, unknown filter '" + currentNodeName + "': " + currentNode.toString());
+        case EQ:
+            return createEqualsPredicate(currentNode, columnId, value);
+        case GT:
+            return createGreaterThanPredicate(currentNode, columnId, value);
+        case LT:
+            return createLowerThanPredicate(currentNode, columnId, value);
+        case GTE:
+            return createGreaterOrEqualsPredicate(currentNode, columnId, value);
+        case LTE:
+            return createLowerOrEqualsPredicate(currentNode, columnId, value);
+        case CONTAINS:
+            return createContainsPredicate(currentNode, columnId, value);
+        case MATCHES:
+            return createMatchesPredicate(currentNode, columnId, value);
+        case INVALID:
+            return createInvalidPredicate(columnId);
+        case VALID:
+            return createValidPredicate(columnId);
+        case EMPTY:
+            return createEmptyPredicate(columnId);
+        case RANGE:
+            return createRangePredicate(columnId, currentNodeContent);
+        case AND:
+            return createAndPredicate(currentNodeContent);
+        case OR:
+            return createOrPredicate(currentNodeContent);
+        case NOT:
+            return createNotPredicate(currentNodeContent);
+        default:
+            throw new UnsupportedOperationException(
+                    "Unsupported query, unknown filter '" + currentNodeName + "': " + currentNode.toString());
         }
     }
 
@@ -161,76 +175,79 @@ public class SimpleFilterService implements FilterService {
     }
 
     /**
-     * Create a predicate that checks if the var is equals to a value
+     * Create a predicate that checks if the var is equals to a value.
      *
-     * @param node     The filter node
+     * It first tries String comparison, and if not 'true' uses number comparison.
+     *
+     * @param node The filter node
      * @param columnId The column id
-     * @param value    The compare value
+     * @param value The compare value
      * @return The eq predicate
      */
     private Predicate<DataSetRow> createEqualsPredicate(final JsonNode node, final String columnId, final String value) {
         checkValidValue(node, value);
-        return r -> StringUtils.equals(r.get(columnId), value);
+        return safeNumber(
+                r -> StringUtils.equals(r.get(columnId), value) || toBigDecimal(r.get(columnId)) == toBigDecimal(value));
     }
 
     /**
      * Create a predicate that checks if the var is greater than a value
      *
-     * @param node     The filter node
+     * @param node The filter node
      * @param columnId The column id
-     * @param value    The compare value
+     * @param value The compare value
      * @return The gt predicate
      */
     private Predicate<DataSetRow> createGreaterThanPredicate(final JsonNode node, final String columnId, final String value) {
         checkValidValue(node, value);
-        return safeNumber(r -> Double.parseDouble(r.get(columnId)) > Double.parseDouble(value));
+        return safeNumber(r -> toBigDecimal(r.get(columnId)) > toBigDecimal(value));
     }
 
     /**
      * Create a predicate that checks if the var is lower than a value
      *
-     * @param node     The filter node
+     * @param node The filter node
      * @param columnId The column id
-     * @param value    The compare value
+     * @param value The compare value
      * @return The lt predicate
      */
     private Predicate<DataSetRow> createLowerThanPredicate(final JsonNode node, final String columnId, final String value) {
         checkValidValue(node, value);
-        return safeNumber(r -> Double.parseDouble(r.get(columnId)) < Double.parseDouble(value));
+        return safeNumber(r -> toBigDecimal(r.get(columnId)) < toBigDecimal(value));
     }
 
     /**
      * Create a predicate that checks if the var is greater than or equals to a value
      *
-     * @param node     The filter node
+     * @param node The filter node
      * @param columnId The column id
-     * @param value    The compare value
+     * @param value The compare value
      * @return The gte predicate
      */
     private Predicate<DataSetRow> createGreaterOrEqualsPredicate(final JsonNode node, final String columnId, final String value) {
         checkValidValue(node, value);
-        return safeNumber(r -> Double.parseDouble(r.get(columnId)) >= Double.parseDouble(value));
+        return safeNumber(r -> toBigDecimal(r.get(columnId)) >= toBigDecimal(value));
     }
 
     /**
      * Create a predicate that checks if the var is lower than or equals to a value
      *
-     * @param node     The filter node
+     * @param node The filter node
      * @param columnId The column id
-     * @param value    The compare value
+     * @param value The compare value
      * @return The lte predicate
      */
     private Predicate<DataSetRow> createLowerOrEqualsPredicate(final JsonNode node, final String columnId, final String value) {
         checkValidValue(node, value);
-        return safeNumber(r -> Double.parseDouble(r.get(columnId)) <= Double.parseDouble(value));
+        return safeNumber(r -> toBigDecimal(r.get(columnId)) <= toBigDecimal(value));
     }
 
     /**
      * Create a predicate that checks if the var contains a value
      *
-     * @param node     The filter node
+     * @param node The filter node
      * @param columnId The column id
-     * @param value    The contained value
+     * @param value The contained value
      * @return The contains predicate
      */
     private Predicate<DataSetRow> createContainsPredicate(final JsonNode node, final String columnId, final String value) {
@@ -241,9 +258,9 @@ public class SimpleFilterService implements FilterService {
     /**
      * Create a predicate that checks if the var match a value
      *
-     * @param node     The filter node
+     * @param node The filter node
      * @param columnId The column id
-     * @param value    The value to match
+     * @param value The value to match
      * @return The match predicate
      */
     private Predicate<DataSetRow> createMatchesPredicate(final JsonNode node, final String columnId, final String value) {
@@ -292,7 +309,7 @@ public class SimpleFilterService implements FilterService {
     /**
      * Create a predicate that checks if the value is within a range [min, max[
      *
-     * @param columnId    The column id
+     * @param columnId The column id
      * @param nodeContent The node content that contains min/max values
      * @return The range predicate
      */
@@ -316,8 +333,8 @@ public class SimpleFilterService implements FilterService {
      * Create a predicate that checks if the date value is within a range [min, max[
      *
      * @param columnId The column id
-     * @param start    The start value
-     * @param end      The end value
+     * @param start The start value
+     * @param end The end value
      * @return The date range predicate
      */
     private Predicate<DataSetRow> createDateRangePredicate(final String columnId, final String start, final String end) {
@@ -334,7 +351,8 @@ public class SimpleFilterService implements FilterService {
                 return minDate.compareTo(columnValue) == 0 || (minDate.isBefore(columnValue) && maxDate.isAfter(columnValue));
             });
         } catch (final Exception e) {
-            throw new IllegalArgumentException("Unsupported query, malformed date 'range' (expected timestamps in min and max properties).");
+            throw new IllegalArgumentException(
+                    "Unsupported query, malformed date 'range' (expected timestamps in min and max properties).");
         }
     }
 
@@ -342,16 +360,16 @@ public class SimpleFilterService implements FilterService {
      * Create a predicate that checks if the number value is within a range [min, max[
      *
      * @param columnId The column id
-     * @param start    The start value
-     * @param end      The end value
+     * @param start The start value
+     * @param end The end value
      * @return The number range predicate
      */
     private Predicate<DataSetRow> createNumberRangePredicate(final String columnId, final String start, final String end) {
         try {
-            final double min = Double.parseDouble(start);
-            final double max = Double.parseDouble(end);
+            final double min = toBigDecimal(start);
+            final double max = toBigDecimal(end);
             return safeNumber(r -> {
-                final double columnValue = Double.parseDouble(r.get(columnId));
+                final double columnValue = toBigDecimal(r.get(columnId));
                 return NumberUtils.compare(columnValue, min) == 0 || (columnValue > min && columnValue < max);
             });
         } catch (final Exception e) {
@@ -362,7 +380,7 @@ public class SimpleFilterService implements FilterService {
     /**
      * Get the invalid value collection on a specific column
      *
-     * @param row      The dataset row
+     * @param row The dataset row
      * @param columnId The column id
      * @return The invalid values for the specified column
      */
@@ -371,13 +389,13 @@ public class SimpleFilterService implements FilterService {
         if (column != null) {
             return column.getQuality().getInvalidValues();
         }
-        return Collections.<String>emptySet();
+        return Collections.<String> emptySet();
     }
 
     /**
      * check if the node has a non null value
      *
-     * @param node  The node to test
+     * @param node The node to test
      * @param value The node 'value' property
      * @throws IllegalArgumentException If the node has not a 'value' property
      */
@@ -402,7 +420,7 @@ public class SimpleFilterService implements FilterService {
     /**
      * Test a string value against a pattern returned during value analysis.
      *
-     * @param value   A string value. May be null.
+     * @param value A string value. May be null.
      * @param pattern A pattern as returned in value analysis.
      * @return <code>true</code> if value matches, <code>false</code> otherwise.
      */
@@ -414,7 +432,7 @@ public class SimpleFilterService implements FilterService {
             return false;
         }
         // Character based patterns
-        if (StringUtils.containsAny(pattern, new char[]{'A', 'a', '9'})) {
+        if (StringUtils.containsAny(pattern, new char[] { 'A', 'a', '9' })) {
             if (value.length() != pattern.length()) {
                 return false;
             }
@@ -454,8 +472,8 @@ public class SimpleFilterService implements FilterService {
         return r -> {
             try {
                 return inner.test(r);
-            } catch (NumberFormatException | NullPointerException e) {
-                // Double.parseDouble throws NPE when parsing null strings.
+            } catch (NumberFormatException e) {
+                // BigDecimalParser.toBigDecimal throws NumberFormatException when parsing null or NaN strings.
                 return false;
             }
         };
@@ -465,14 +483,21 @@ public class SimpleFilterService implements FilterService {
         return r -> {
             try {
                 return inner.test(r);
-            } catch (DateTimeException e) { //thrown by DateParser
+            } catch (DateTimeException e) { // thrown by DateParser
                 return false;
             }
         };
     }
 
-    // Intentionally left protected since only used by unit test (in same package)
-    protected void setDateParser(final DateParser dateParser) {
+    /**
+     * Simple wrapper to call BigDecimalParser to simplify code above.
+     */
+    private double toBigDecimal(String value) {
+        return BigDecimalParser.toBigDecimal(value).doubleValue();
+    }
+
+    // Intentionally left with package modifier since only used by unit test (in same package)
+    void setDateParser(final DateParser dateParser) {
         this.dateParser = dateParser;
     }
 }

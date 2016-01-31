@@ -21,14 +21,12 @@
   }
 
   .label {
+    @include ellipsis();
     background-color: rgba(255, 255, 255, 0);
     font-size: .8em;
     padding-top: 3px;
     padding-left: 10px;
     font-family: $inconsolota;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    overflow: hidden;
 
     &.blueBar {
       color: $dark-green;

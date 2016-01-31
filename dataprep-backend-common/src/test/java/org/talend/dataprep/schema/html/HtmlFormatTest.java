@@ -1,11 +1,7 @@
 package org.talend.dataprep.schema.html;
 
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 
 import javax.inject.Inject;
 
@@ -19,7 +15,6 @@ import org.talend.dataprep.api.dataset.ColumnMetadata;
 import org.talend.dataprep.api.dataset.DataSetMetadata;
 import org.talend.dataprep.api.type.Type;
 import org.talend.dataprep.schema.AbstractSchemaTestUtils;
-import org.talend.dataprep.schema.IoTestUtils;
 import org.talend.dataprep.schema.SchemaParser;
 import org.talend.dataprep.schema.SchemaParserResult;
 
@@ -41,7 +36,7 @@ public class HtmlFormatTest extends AbstractSchemaTestUtils {
 
         String fileName = "sales-force.xls";
 
-        DataSetMetadata datasetMetadata = IoTestUtils.getSimpleDataSetMetadata();
+        DataSetMetadata datasetMetadata = ioTestUtils.getSimpleDataSetMetadata();
 
         datasetMetadata.setEncoding("UTF-16");
 
@@ -83,7 +78,7 @@ public class HtmlFormatTest extends AbstractSchemaTestUtils {
 
         String fileName = "sales-force.xls";
 
-        DataSetMetadata datasetMetadata = IoTestUtils.getSimpleDataSetMetadata();
+        DataSetMetadata datasetMetadata = ioTestUtils.getSimpleDataSetMetadata();
 
         datasetMetadata.setEncoding("UTF-16");
 

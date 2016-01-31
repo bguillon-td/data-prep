@@ -1,21 +1,5 @@
 package org.talend.dataprep.preparation.store.file;
 
-import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
-import org.springframework.stereotype.Component;
-import org.talend.daikon.exception.ExceptionContext;
-import org.talend.dataprep.api.preparation.Identifiable;
-import org.talend.dataprep.api.preparation.Preparation;
-import org.talend.dataprep.exception.TDPException;
-import org.talend.dataprep.exception.error.CommonErrorCodes;
-import org.talend.dataprep.preparation.store.PreparationRepository;
-
-import javax.annotation.PostConstruct;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -27,8 +11,26 @@ import java.util.stream.Collectors;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
-import static org.talend.dataprep.api.preparation.PreparationActions.ROOT_CONTENT;
-import static org.talend.dataprep.api.preparation.Step.ROOT_STEP;
+import javax.annotation.PostConstruct;
+import javax.annotation.Resource;
+
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
+import org.springframework.stereotype.Component;
+import org.talend.daikon.exception.ExceptionContext;
+import org.talend.dataprep.api.preparation.Identifiable;
+import org.talend.dataprep.api.preparation.Preparation;
+import org.talend.dataprep.api.preparation.PreparationActions;
+import org.talend.dataprep.api.preparation.Step;
+import org.talend.dataprep.exception.TDPException;
+import org.talend.dataprep.exception.error.CommonErrorCodes;
+import org.talend.dataprep.preparation.store.PreparationRepository;
+
 
 /**
  * File system implementation of preparation repository.
@@ -44,6 +46,14 @@ public class FileSystemPreparationRepository implements PreparationRepository {
     @Autowired
     private Jackson2ObjectMapperBuilder builder;
 
+    /** The root step. */
+    @Resource(name = "rootStep")
+    private Step rootStep;
+
+    /** The default root content. */
+    @Resource(name = "rootContent")
+    private PreparationActions rootContent;
+
     /** Where to store the dataset metadata */
     @Value("${preparation.store.file.location}")
     private String preparationsLocation;
@@ -54,8 +64,8 @@ public class FileSystemPreparationRepository implements PreparationRepository {
     @PostConstruct
     private void init() {
         getRootFolder().mkdirs();
-        add(ROOT_CONTENT);
-        add(ROOT_STEP);
+        add(rootContent);
+        add(rootStep);
     }
 
     /**
@@ -164,8 +174,8 @@ public class FileSystemPreparationRepository implements PreparationRepository {
         }
 
         // add the default files
-        add(ROOT_CONTENT);
-        add(ROOT_STEP);
+        add(rootContent);
+        add(rootStep);
 
         LOG.debug("preparation repository cleared");
     }

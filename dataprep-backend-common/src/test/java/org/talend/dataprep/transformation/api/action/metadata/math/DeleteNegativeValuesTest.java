@@ -85,6 +85,38 @@ public class DeleteNegativeValuesTest {
     }
 
     @Test
+    public void should_delete_alt_format_1() {
+        // given
+        final Map<String, String> values = new HashMap<>();
+        values.put("name", "David Bowie");
+        values.put("age", "-1 200");
+        final DataSetRow row = new DataSetRow(values);
+
+        // when
+        ActionTestWorkbench.test(row, action.create(parameters).getRowAction());
+
+        // then
+        assertTrue(row.isDeleted());
+        assertEquals("David Bowie", row.get("name"));
+    }
+
+    @Test
+    public void should_delete_alt_format_2() {
+        // given
+        final Map<String, String> values = new HashMap<>();
+        values.put("name", "David Bowie");
+        values.put("age", "(1 200,55)");
+        final DataSetRow row = new DataSetRow(values);
+
+        // when
+        ActionTestWorkbench.test(row, action.create(parameters).getRowAction());
+
+        // then
+        assertTrue(row.isDeleted());
+        assertEquals("David Bowie", row.get("name"));
+    }
+
+    @Test
     public void should_delete_even_with_leading_space() {
         // given
         final Map<String, String> values = new HashMap<>();
@@ -185,7 +217,7 @@ public class DeleteNegativeValuesTest {
     }
 
     @Test
-    public void should_not_delete_because_space_between_sign_and_value() {
+    public void should_delete_even_with_space_between_sign_and_value() {
         // given
         final Map<String, String> values = new HashMap<>();
         values.put("name", "David Bowie");
@@ -196,7 +228,7 @@ public class DeleteNegativeValuesTest {
         ActionTestWorkbench.test(row, action.create(parameters).getRowAction());
 
         // then
-        assertFalse(row.isDeleted());
+        assertTrue(row.isDeleted());
         assertEquals("David Bowie", row.get("name"));
         assertEquals("- 6", row.get("age"));
     }

@@ -14,10 +14,9 @@ describe('Dataset xls preview controller', function () {
         scope = $rootScope.$new();
 
         createController = function () {
-            var ctrl = $controller('DatasetXlsPreviewCtrl', {
+            return $controller('DatasetXlsPreviewCtrl', {
                 $scope: scope
             });
-            return ctrl;
         };
 
         //insert grid entry point

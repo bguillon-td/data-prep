@@ -21,8 +21,14 @@
     function PlaygroundService($rootScope, $q, state, DatasetService, DatagridService, PreviewService,
                                RecipeService, TransformationCacheService, PreparationService,
                                StatisticsService, HistoryService, StateService,
-                               OnboardingService, MessageService, ExportService) {
-        var DEFAULT_NAME = 'Preparation draft';
+                               OnboardingService, MessageService, ExportService, $translate) {
+
+        var INVENTORY_PREFIX = '';
+        var INVENTORY_SUFFIX = ' ' + $translate.instant('PREPARATION');
+
+        function wrapInventoryName (invName){
+            return INVENTORY_PREFIX + invName + INVENTORY_SUFFIX;
+        }
 
         var service = {
             /**
@@ -47,7 +53,10 @@
             editCell: editCell,
 
             //Preview
-            updatePreview: updatePreview
+            updatePreview: updatePreview,
+
+            //parameters
+            changeDatasetParameters: changeDatasetParameters
         };
         return service;
 
@@ -74,25 +83,21 @@
          * @methodOf data-prep.services.playground.service:PlaygroundService
          * @param {object} dataset The dataset to load
          * @description Initiate a new preparation from dataset.
-         - If there is no preparation yet and the dataset to load is still the last loaded, the playground is not changed.
-         - Otherwise, the playground is reset with the wanted dataset
          * @returns {Promise} The process promise
          */
         function initPlayground(dataset) {
-            if (!state.playground.dataset || state.playground.preparation || dataset.id !== state.playground.dataset.id) {
+            $rootScope.$emit('talend.loading.start');
+            return DatasetService.getContent(dataset.id, true)
+                .then(function (data) {
+                    //TODO : temporary fix because asked to.
+                    //TODO : when error status during import and get dataset content is managed by backend,
+                    //TODO : remove this controle and the 'data-prep.services.utils'/MessageService dependency
+                    if (!data || !data.records) {
+                        MessageService.error('INVALID_DATASET_TITLE', 'INVALID_DATASET');
+                        throw Error('Empty data');
+                    }
 
-                $rootScope.$emit('talend.loading.start');
-                return DatasetService.getContent(dataset.id, true)
-                    .then(function (data) {
-                        //TODO : temporary fix because asked to.
-                        //TODO : when error status during import and get dataset content is managed by backend,
-                        //TODO : remove this controle and the 'data-prep.services.utils'/MessageService dependency
-                        if (!data || !data.records) {
-                            MessageService.error('INVALID_DATASET_TITLE', 'INVALID_DATASET');
-                            throw Error('Empty data');
-                        }
-
-                        service.preparationName = '';
+                        service.preparationName = wrapInventoryName(dataset.name);
                         reset(dataset, data);
                         StateService.hideRecipe();
                         StateService.setNameEditionMode(true);
@@ -105,10 +110,6 @@
                     .finally(function () {
                         $rootScope.$emit('talend.loading.stop');
                     });
-            }
-            else {
-                return $q.when(true);
-            }
         }
 
         /**
@@ -154,11 +155,6 @@
          * @returns {Promise} The process promise
          */
         function loadStep(step) {
-            //step already loaded
-            if (RecipeService.getActiveThresholdStep() === step) {
-                return;
-            }
-
             $rootScope.$emit('talend.loading.start');
             return PreparationService.getContent(state.playground.preparation.id, step.transformation.stepId)
                 .then(function (response) {
@@ -191,7 +187,7 @@
         }
 
         //------------------------------------------------------------------------------------------------------
-        //------------------------------------------------PREPARATIO*N-------------------------------------------
+        //------------------------------------------------PREPARATION-------------------------------------------
         //------------------------------------------------------------------------------------------------------
         /**
          * @ngdoc method
@@ -208,7 +204,7 @@
 
             return promise.then(function (preparation) {
                 StateService.setCurrentPreparation(preparation);
-                service.preparationName = name;
+                service.preparationName = preparation.name;
                 return preparation;
             });
         }
@@ -267,15 +263,14 @@
             //create the preparation and taf it draft if it does not exist
             var prepCreation = state.playground.preparation ?
                 $q.when(state.playground.preparation) :
-                createOrUpdatePreparation(DEFAULT_NAME)
+                createOrUpdatePreparation(wrapInventoryName(state.playground.dataset.name))
                     .then(function (preparation) {
                         preparation.draft = true;
-                        service.preparationName = '';
                         return preparation;
                     });
 
             return prepCreation
-            //append step
+                //append step
                 .then(function (preparation) {
                     return PreparationService.appendStep(preparation.id, {action: action, parameters: parameters});
                 })
@@ -407,6 +402,59 @@
         }
 
         //------------------------------------------------------------------------------------------------------
+        //--------------------------------------------------PREVIEW---------------------------------------------
+        //------------------------------------------------------------------------------------------------------
+        /**
+         * @ngdoc method
+         * @name updatePreview
+         * @methodOf data-prep.services.playground.service:PlaygroundService
+         * @param {string} updateStep The step position index to update for the preview
+         * @param {object} params The new step params
+         * @description [PRIVATE] Call the preview service to display the diff between the original steps and the updated steps
+         */
+        function updatePreview(updateStep, params) {
+            var originalParameters = updateStep.actionParameters.parameters;
+            PreparationService.copyImplicitParameters(params, originalParameters);
+
+            //Parameters has not changed
+            if(updateStep.inactive || ! PreparationService.paramsHasChanged(updateStep, params)) {
+                return $q.when();
+            }
+
+            var currentStep = RecipeService.getLastActiveStep();
+            var preparationId = state.playground.preparation.id;
+            PreviewService.getPreviewUpdateRecords(preparationId, currentStep, updateStep, params);
+        }
+
+        //------------------------------------------------------------------------------------------------------
+        //------------------------------------------------PARAMETERS--------------------------------------------
+        //------------------------------------------------------------------------------------------------------
+        /**
+         * @ngdoc method
+         * @name changeDatasetParameters
+         * @methodOf data-prep.services.playground.service:PlaygroundService
+         * @param {object} params The new dataset parameters
+         * @description Update the parameters of the dataset and reload
+         */
+        function changeDatasetParameters(params) {
+            var dataset = state.playground.dataset;
+            var isPreparation = state.playground.preparation;
+            var lastActiveStepIndex = isPreparation ?
+                RecipeService.getActiveThresholdStepIndex() :
+                null;
+            return DatasetService.updateParameters(dataset, params)
+                .then(function() {
+                    if(isPreparation) {
+                        var activeStep = RecipeService.getStep(lastActiveStepIndex, true);
+                        return loadStep(activeStep);
+                    }
+                    else {
+                        initPlayground(dataset);
+                    }
+                });
+        }
+
+        //------------------------------------------------------------------------------------------------------
         //---------------------------------------------------UTILS----------------------------------------------
         //------------------------------------------------------------------------------------------------------
         /**
@@ -440,29 +488,6 @@
                         setTimeout(OnboardingService.startTour.bind(null, 'recipe'), 300);
                     }
                 });
-        }
-
-
-        /**
-         * @ngdoc method
-         * @name updatePreview
-         * @methodOf data-prep.services.playground.service:PlaygroundService
-         * @param {string} updateStep The step position index to update for the preview
-         * @param {object} params The new step params
-         * @description [PRIVATE] Call the preview service to display the diff between the original steps and the updated steps
-         */
-        function updatePreview(updateStep, params) {
-            var originalParameters = updateStep.actionParameters.parameters;
-            PreparationService.copyImplicitParameters(params, originalParameters);
-
-            //Parameters has not changed
-            if(updateStep.inactive || ! PreparationService.paramsHasChanged(updateStep, params)) {
-                return $q.when();
-            }
-
-            var currentStep = RecipeService.getLastActiveStep();
-            var preparationId = state.playground.preparation.id;
-            PreviewService.getPreviewUpdateRecords(preparationId, currentStep, updateStep, params);
         }
     }
 

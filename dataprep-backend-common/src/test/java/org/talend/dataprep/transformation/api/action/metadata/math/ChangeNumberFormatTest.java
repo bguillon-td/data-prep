@@ -315,6 +315,34 @@ public class ChangeNumberFormatTest extends AbstractMetadataBaseTest {
         assertEquals(expectedRow.values(), row.values());
     }
 
+    /**
+     * Format number does not work if there is a null or an invalid in the column.
+     * Values after a null or an invalid value (which is not a number) were not formatted by the transformation.
+     * Have look at https://jira.talendforge.org/browse/TDP-1361
+     * @throws Exception
+     */
+    @Test
+    public void TDP_1361() throws Exception {
+        // given
+        final DataSetRow row1 = getRow("toto", "1.5E-11", "tata");
+        final DataSetRow row2 = getRow("titi", "azerty", "tata");
+        final DataSetRow row3 = getRow("tutu", "010", "tata");
+        Collection<DataSetRow> rows = Arrays.asList(row1, row2, row3);
+        parameters.put(FROM_SEPARATORS, US_SEPARATORS);
+        parameters.put(TARGET_PATTERN, SCIENTIFIC);
+
+        // when
+        ActionTestWorkbench.test(rows, action.create(parameters).getRowAction());
+
+        // then (values should now be compliant with scientific notation)
+        final DataSetRow expectedRow1 = getRow("toto", "1.5E-11", "tata");
+        final DataSetRow expectedRow2 = getRow("titi", "azerty", "tata");
+        final DataSetRow expectedRow3 = getRow("tutu", "1E1", "tata");
+        assertEquals(expectedRow1.values(), row1.values());
+        assertEquals(expectedRow2.values(), row2.values());
+        assertEquals(expectedRow3.values(), row3.values());
+    }
+
     @Test
     public void should_accept_column() {
         assertTrue(action.acceptColumn(getColumn(Type.NUMERIC)));

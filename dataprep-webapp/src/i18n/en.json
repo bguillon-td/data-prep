@@ -24,6 +24,7 @@
   "FEEDBACK_FORUM_LINK_2": "on the forum",
   "FEEDBACK_KNOWN_ISSUES_1": "Known issues and other documentation towards the bottom of&nbsp;",
   "FEEDBACK_KNOWN_ISSUES_2": "the Beta page",
+  "DATAGRID_PARAMETERS_GEAR": "Click here to edit the datagrid parameters (encoding, separator, etc.)",
 
   "ONBOARDING": "Click here to discover the application",
 
@@ -59,6 +60,10 @@
   "RECIPE": "recipe",
   "ROWS": "row(s)",
   "STEPS": "step(s)",
+  "CREATE_NEW_PREP":"Create New Preparation",
+  "REL_INV_MODIFIED" : "modified",
+  "PREPARATION_DETAILS_SINCE":"{{since | TDPMoment}}",
+  "PREPARATION_DETAILS_STEPS":"{{nbsteps}} step(s)",
   "PREPARATION_RENAME_SUCCESS_TITLE": "Preparation renaming",
   "PREPARATION_RENAME_SUCCESS": "The preparation has been renamed.",
   "PREPARATION_COPYING_SUCCESS_TITLE": "Preparation copying",
@@ -90,11 +95,11 @@
   "OK": "OK",
   "CONFIRM": "Confirm",
 
-  "_comment": "Import datasets",
-  "IMPORT_DATASET": "Create Dataset",
-  "IMPORT_HTTP_DATASET": "Create HTTP Dataset",
+  "_comment": "Add datasets",
+  "IMPORT_DATASET": "Add Dataset",
+  "IMPORT_HTTP_DATASET": "Add HTTP Dataset",
   "ENTER_DATASET_URL": "Enter the dataset URL",
-  "IMPORT_HDFS_DATASET": "Create HDFS Dataset",
+  "IMPORT_HDFS_DATASET": "Add HDFS Dataset",
 
   "_comment": "Common",
   "LOADING": "Loading...",
@@ -233,6 +238,7 @@
   "CERTIFY_ACTION": "Certify {{type}} \"{{name}}\"",
   "FAVORITE_ACTION": "Add {{type}} \"{{name}}\" in your favorites",
   "DELETE_ACTION": "Delete {{type}} \"{{name}}\"",
+  "COPY_CLONE_ACTION": "Copy or Clone {{type}} \"{{name}}\"",
   "COPY_TO_ACTION": "Copy {{type}} \"{{name}}\"",
   "COPY_ACTION": "Copy",
   "MOVE_HERE_ACTION": "Move",
@@ -264,9 +270,9 @@
 
   "_comment": "Lookup",
   "CONFIRM_LOOKUP": "Confirm",
-  "LOOKUP_STEPS_1": "1. Select the columns from both datasets you are using as join (columns turn into blue).",
-  "LOOKUP_STEPS_2": "2. In the lookup, check 'Add to Lookup' for the columns you want to add into the main dataset.",
-  "LOOKUP_STEPS_3": "3. Mouse over Confirm button to preview.",
+  "LOOKUP_STEPS_1": "1. Select two identical columns from two different datasets to link them. These columns turn blue.",
+  "LOOKUP_STEPS_2": "2. Check \"Add to Dataset\" to select the columns you want to associate with the linked columns.",
+  "LOOKUP_STEPS_3": "3. Place your mouse over the \"Confirm\" button to preview the result.<br/>",
   "LOOKUP_DESC_TITLE": "ADD DATA FROM LOOKUP",
   "LOOKUP_UPDATE_DESC_TITLE": "UPDATE LOOKUP",
   "RECIPE_LOOKUP_MADE_ON_COL":"made on the column",
@@ -277,9 +283,18 @@
   "RECIPE_LOOKUP_FOLLOWING_COLS_ADDED_PLURAL":"column(s) have been added.",
   "RECIPE_LOOKUP_FOLLOWING_COLS_ADDED_SINGULAR":"column has been added.",
   "ADD_TO_LOOKUP":"Add to Dataset",
+  "ADD_LOOKUP_DATASET_TITLE": "Add a dataset to Lookup",
+  "ADD_LOOKUP_DATASET_MODAL_TITLE": "Select dataset(s) to add to lookup",
+  "ADD_LOOKUP_DATASET": "Add",
+  "ADD_DATASET_TO_PERFORM_A_LOOKUP": "Add a dataset by cliking on \"+\" button to perform a lookup",
 
   "_comment": "Folders",
   "FIND_FOLDER": "Find a Folder",
 
-  "ACTION_HELP": "More details"
+  "_comment": "Dataset parameters",
+  "DATASET_PARAMETERS": "Dataset parameters",
+  "DATASET_PARAMETERS_ENCODING": "Encoding",
+  "DATASET_PARAMETERS_SEPARATOR": "Separator",
+
+  "ACTION_HELP": "Learn more..."
 }

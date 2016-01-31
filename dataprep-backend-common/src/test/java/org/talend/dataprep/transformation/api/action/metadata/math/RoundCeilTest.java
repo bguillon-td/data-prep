@@ -76,15 +76,15 @@ public class RoundCeilTest {
         ActionTestWorkbench.test(row, action.create(parameters).getRowAction());
 
         // then
-        assertEquals( expected, row.get( "aNumber" ) );
+        assertEquals(expected, row.get("aNumber"));
     }
 
     @Test
     public void testPositive() {
-        testCommon( "5.0", "5" );
+        testCommon("5.0", "5");
         testCommon("5.1", "6");
-        testCommon( "5.5", "6" );
-        testCommon( "5.8", "6" );
+        testCommon("5.5", "6");
+        testCommon("5.8", "6");
     }
 
     @Test
@@ -92,6 +92,13 @@ public class RoundCeilTest {
         testCommon("-5.0", "-5");
         testCommon("-5.4", "-5");
         testCommon("-5.6", "-5");
+    }
+
+    @Test
+    public void testAltFormat() {
+        testCommon("-5 000.2", "-5000");
+        testCommon("5,4", "6");
+        testCommon("1.200,45", "1201");
     }
 
     @Test

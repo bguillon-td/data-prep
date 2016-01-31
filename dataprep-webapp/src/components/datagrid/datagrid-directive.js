@@ -178,7 +178,7 @@
 
                         //manage column selection (external)
                         clearTimeout(externalTimeout);
-                        if (!getData().preview) {
+                        if (getData() && !getData().preview) {
                             externalTimeout = setTimeout(DatagridExternalService.updateSuggestionPanel.bind(null, true), 300);
                         }
                     }
@@ -194,7 +194,7 @@
                     if (grid) {
                         clearTimeout(cellHighlightTimeout);
                         var stateSelectedLine = getSelectedLine();
-                        if (!getData().preview && stateSelectedLine) {
+                        if (getData() && !getData().preview && stateSelectedLine) {
                             cellHighlightTimeout = setTimeout(function() {
                                 var colId = getSelectedColumn() && getSelectedColumn().id;
                                 DatagridStyleService.highlightCellsContaining(colId, stateSelectedLine[colId]);

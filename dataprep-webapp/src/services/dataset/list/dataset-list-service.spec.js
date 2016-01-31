@@ -1,7 +1,7 @@
 describe('Dataset List Service', function () {
     'use strict';
 
-    var preparations, datasets;
+    var preparations, datasets, stateMock;
 
     function initDatasets() {
         datasets = [
@@ -83,7 +83,7 @@ describe('Dataset List Service', function () {
                 'id': 'fbaa18e82e913e97e5f0e9d40f04413412be1126',
                 'dataSetId': datasets[2].id,
                 'author': 'anonymousUser',
-                'creationDate': 1427447330693,
+                'lastModificationDate': 1427447330693,
                 'steps': [
                     '47e2444dd1301120b539804507fd307072294048',
                     'ae1aebf4b3fa9b983c895486612c02c766305410',
@@ -117,7 +117,7 @@ describe('Dataset List Service', function () {
                 'id': 'ds3f51sf3q1df35qsf412qdsf15ds3ff454qg8r4qr',
                 'dataSetId': datasets[2].id,
                 'author': 'anonymousUser',
-                'creationDate': 1437487330692,
+                'lastModificationDate': 1437487330692,
                 'steps': [
                     '87e38cv438dth4yd6k84x3dr84htryj84xc3k21u'
                 ],
@@ -152,9 +152,30 @@ describe('Dataset List Service', function () {
         ];
     }
 
-    beforeEach(module('data-prep.services.dataset'));
+    var sortList = [
+        {id: 'name', name: 'NAME_SORT', property: 'name'},
+        {id: 'date', name: 'DATE_SORT', property: 'created'}
+    ];
 
-    beforeEach(inject(function ($q, DatasetRestService, DatasetListSortService) {
+    var orderList = [
+        {id: 'asc', name: 'ASC_ORDER'},
+        {id: 'desc', name: 'DESC_ORDER'}
+    ];
+
+    beforeEach(module('data-prep.services.dataset', function ($provide) {
+        stateMock = {
+            inventory: {
+                datasets: [],
+                sortList: sortList,
+                orderList: orderList,
+                sort: sortList[1],
+                order: orderList[1]
+            }
+        };
+        $provide.constant('state', stateMock);
+    }));
+
+    beforeEach(inject(function ($q, DatasetRestService, StateService) {
         initDatasets();
         initPreparations();
 
@@ -166,25 +187,25 @@ describe('Dataset List Service', function () {
         spyOn(DatasetRestService, 'clone').and.returnValue($q.when(true));
         spyOn(DatasetRestService, 'processCertification').and.returnValue($q.when(true));
 
-        spyOn(DatasetListSortService, 'getSort').and.returnValue('name');
-        spyOn(DatasetListSortService, 'getOrder').and.returnValue('asc');
+        spyOn(StateService, 'setDatasets').and.returnValue();
+        spyOn(StateService, 'removeDataset').and.returnValue();
     }));
 
-    it('should refresh dataset list', inject(function ($rootScope, DatasetListService) {
+    it('should refresh dataset list', inject(function ($rootScope, DatasetListService, StateService) {
         //given
-        DatasetListService.datasets = [{name: 'my dataset'}, {name: 'my second dataset'}];
+        stateMock.inventory.datasets = [{name: 'my dataset'}, {name: 'my second dataset'}];
 
         //when
         DatasetListService.refreshDatasets();
         $rootScope.$apply();
 
         //then
-        expect(DatasetListService.datasets).toEqual(datasets);
+        expect(StateService.setDatasets).toHaveBeenCalledWith(datasets);
     }));
 
-    it('should trigger another refresh when one is already pending with different sort condition', inject(function ($rootScope, DatasetListService, DatasetRestService) {
+    it('should trigger another refresh when one is already pending with different sort condition', inject(function ($rootScope, DatasetListService, DatasetRestService, StateService) {
         //given
-        DatasetListService.datasets = [{name: 'my dataset'}, {name: 'my second dataset'}];
+        stateMock.inventory.datasets = [{name: 'my dataset'}, {name: 'my second dataset'}];
         DatasetListService.refreshDatasets();
 
         //when
@@ -192,19 +213,8 @@ describe('Dataset List Service', function () {
         $rootScope.$apply();
 
         //then
-        expect(DatasetListService.datasets).toEqual(datasets);
+        expect(StateService.setDatasets).toHaveBeenCalledWith(datasets);
         expect(DatasetRestService.getDatasets.calls.count()).toBe(2);
-    }));
-
-    it('should trigger refresh with sort parameters', inject(function (DatasetListService, DatasetRestService, DatasetListSortService) {
-        //when
-        DatasetListService.refreshDatasets();
-
-        //then
-        expect(DatasetListSortService.getSort).toHaveBeenCalled();
-        expect(DatasetListSortService.getOrder).toHaveBeenCalled();
-        expect(DatasetRestService.getDatasets.calls.mostRecent().args[0]).toBe('name');
-        expect(DatasetRestService.getDatasets.calls.mostRecent().args[1]).toBe('asc');
     }));
 
     it('should create dataset', inject(function ($rootScope, DatasetListService, DatasetRestService) {
@@ -299,7 +309,7 @@ describe('Dataset List Service', function () {
 
     it('should delete dataset', inject(function ($rootScope, DatasetListService, DatasetRestService) {
         //given
-        DatasetListService.datasets = datasets.slice(0);
+        stateMock.inventory.datasets = datasets.slice(0);
 
         //when
         DatasetListService.delete(datasets[0]);
@@ -309,54 +319,57 @@ describe('Dataset List Service', function () {
         expect(DatasetRestService.delete).toHaveBeenCalledWith(datasets[0]);
     }));
 
-    it('should remove dataset from its internal list', inject(function ($rootScope, DatasetListService) {
+    it('should remove dataset from its internal list', inject(function ($rootScope, DatasetListService, StateService) {
         //given
-        DatasetListService.datasets = datasets.slice(0);
-        var datasetsWithoutFirstElement = datasets.slice(1);
+        stateMock.inventory.datasets = datasets.slice(0);
 
         //when
         DatasetListService.delete(datasets[0]);
         $rootScope.$apply();
 
         //then
-        expect(DatasetListService.datasets).toEqual(datasetsWithoutFirstElement);
+        expect(StateService.removeDataset).toHaveBeenCalledWith(datasets[0]);
     }));
 
     it('should init default preparations in datasets', inject(function ($rootScope, DatasetListService) {
         //given
-        DatasetListService.datasets = datasets.slice(0);
+        stateMock.inventory.datasets = datasets.slice(0);
 
         //when
-        DatasetListService.refreshDefaultPreparation(preparations);
+        DatasetListService.refreshPreparations(preparations);
         $rootScope.$apply();
 
         //then
-        expect(datasets[0].defaultPreparation.id).toBe(preparations[0].id);
-        expect(datasets[1].defaultPreparation.id).toBe(preparations[3].id);
-        expect(datasets[2].defaultPreparation).toBeNull();
+        expect(datasets[0].preparations[0].id).toBe(preparations[0].id);
+        expect(datasets[1].preparations[0].id).toBe(preparations[3].id);
+        expect(datasets[2].preparations[0].id).toBe(preparations[2].id);// due to sort process
+        expect(datasets[2].preparations[1].id).toBe(preparations[1].id);
+        expect(datasets[3].preparations).toEqual([]);
     }));
 
     it('should fetch datasets when not already initialized and init default preparations in datasets', inject(function ($rootScope, DatasetListService) {
         //given
-        DatasetListService.datasets = null;
+        stateMock.inventory.datasets = null;
 
         //when
-        DatasetListService.refreshDefaultPreparation(preparations);
+        DatasetListService.refreshPreparations(preparations);
         $rootScope.$apply();
 
         //then
-        expect(datasets[0].defaultPreparation.id).toBe(preparations[0].id);
-        expect(datasets[1].defaultPreparation.id).toBe(preparations[3].id);
-        expect(datasets[2].defaultPreparation).toBeNull();
+        expect(datasets[0].preparations[0].id).toBe(preparations[0].id);
+        expect(datasets[1].preparations[0].id).toBe(preparations[3].id);
+        expect(datasets[2].preparations[0].id).toBe(preparations[2].id);
+        expect(datasets[2].preparations[1].id).toBe(preparations[1].id);
+        expect(datasets[3].preparations).toEqual([]);
     }));
 
     it('should return datasets after init default preparations in datasets', inject(function ($rootScope, DatasetListService) {
         //given
-        DatasetListService.datasets = null;
+        stateMock.inventory.datasets = null;
         var result = [];
 
         //when
-        DatasetListService.refreshDefaultPreparation(preparations)
+        DatasetListService.refreshPreparations(preparations)
             .then(function (promiseResult) {
                 result = promiseResult;
             });
@@ -377,7 +390,7 @@ describe('Dataset List Service', function () {
     it('should return datasetsPromise when datasetsPromise is not false', inject(function (DatasetRestService, DatasetListService) {
 
         //given
-        DatasetListService.datasets = null;
+        stateMock.inventory.datasets = null;
 
         //when
         DatasetListService.getDatasetsPromise();
@@ -404,5 +417,4 @@ describe('Dataset List Service', function () {
         //then
         expect(DatasetRestService.clone).toHaveBeenCalledWith(datasets[0], folder, 'beer');
     }));
-
 });

@@ -12,20 +12,12 @@
             </li>
         </ul>
     </nav>
-    <div class="navigation-tools">
-        <div class="search-bar">
-            <form role="search" ng-submit="navbarCtrl.search()">
-                <input type="search" ng-model="navbarCtrl.searchInput" translate-once-placeholder="SEARCH"
-                       title="{{'COMING_SOON' | translate}}"/>
-            </form>
-        </div>
-    </div>
 </talend-navbar>
 
 <ui-view class="content"></ui-view>
 
 <footer class="footer" role="contentinfo">
     <div class="copyright">
-        © 2015 Talend. All Rights Reserved | {{ ::navbarCtrl.version }}
+        © {{::navbarCtrl.copyRights}} | {{ ::navbarCtrl.version }}
     </div>
 </footer>

@@ -322,7 +322,6 @@ describe('Dataset Rest Service', function () {
             //then
             expect(result).toEqual(data);
         }));
-
     });
 
     describe('certification', function() {
@@ -469,7 +468,6 @@ describe('Dataset Rest Service', function () {
             //expect GET not to throw any exception;
         }));
 
-
         it('should call clone w/o folder and w/o clone name', inject(function ($rootScope, DatasetRestService, RestURLs) {
             //given
             var dataset = {id: 'foobar'};
@@ -541,9 +539,7 @@ describe('Dataset Rest Service', function () {
             //then
             //expect PUT not to throw any exception;
         }));
-
     });
-
 
     describe('move', function() {
         it('should call move w/o new name', inject(function ($rootScope, DatasetRestService, RestURLs) {
@@ -588,10 +584,28 @@ describe('Dataset Rest Service', function () {
             //then
             //expect PUT not to throw any exception;
         }));
-
     });
 
+    describe('encodings', function() {
+        it('should call encodings GET', inject(function ($rootScope, DatasetRestService, RestURLs) {
+            //given
+            var encodings = ['UTF-8', 'UTF-16'];
+            var result = null;
 
+            $httpBackend
+                .expectGET(RestURLs.datasetUrl + '/encodings')
+                .respond(200, encodings);
 
+            //when
+            DatasetRestService.getEncodings()
+                .then(function(encodingsFromCall) {
+                    result = encodingsFromCall;
+                });
+            $httpBackend.flush();
+            $rootScope.$digest();
 
+            //then
+            expect(result).toEqual(encodings);
+        }));
+    });
 });

@@ -183,7 +183,8 @@ public abstract class ActionMetadata {
             } else {
                 rowId = null;
             }
-            return predicate.and(r -> ObjectUtils.equals(r.getTdpId(), rowId));
+            final Predicate<DataSetRow> rowFilter = r -> ObjectUtils.equals(r.getTdpId(), rowId);
+            return filterService == null ? rowFilter : predicate.and(rowFilter);
         } else {
             return predicate;
         }

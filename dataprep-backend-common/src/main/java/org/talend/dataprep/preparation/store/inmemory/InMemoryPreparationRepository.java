@@ -1,7 +1,5 @@
 package org.talend.dataprep.preparation.store.inmemory;
 
-import static org.talend.dataprep.api.preparation.PreparationActions.ROOT_CONTENT;
-import static org.talend.dataprep.api.preparation.Step.ROOT_STEP;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -9,11 +7,16 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import javax.annotation.PostConstruct;
+import javax.annotation.Resource;
+
 import org.apache.commons.lang.StringUtils;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 import org.talend.dataprep.api.preparation.Identifiable;
 import org.talend.dataprep.api.preparation.Preparation;
+import org.talend.dataprep.api.preparation.PreparationActions;
+import org.talend.dataprep.api.preparation.Step;
 import org.talend.dataprep.preparation.store.PreparationRepository;
 
 /**
@@ -23,16 +26,26 @@ import org.talend.dataprep.preparation.store.PreparationRepository;
 @ConditionalOnProperty(name = "preparation.store", havingValue = "in-memory", matchIfMissing = true)
 public class InMemoryPreparationRepository implements PreparationRepository {
 
+    /** The root step. */
+    @Resource(name = "rootStep")
+    private Step rootStep;
+
+    /** The default root content. */
+    @Resource(name = "rootContent")
+    private PreparationActions rootContent;
+
     /** Map where preparations are stored. */
     private final Map<String, Identifiable> store = new HashMap<>();
 
     /**
-     * Default empty constructor.
+     * Initialize root content.
      */
-    public InMemoryPreparationRepository() {
-        add(ROOT_CONTENT);
-        add(ROOT_STEP);
+    @PostConstruct
+    private void initRootContent() {
+        add(rootContent);
+        add(rootStep);
     }
+
 
     /**
      * @see PreparationRepository#add(Identifiable)
@@ -93,8 +106,8 @@ public class InMemoryPreparationRepository implements PreparationRepository {
     @Override
     public void clear() {
         store.clear();
-        add(ROOT_CONTENT);
-        add(ROOT_STEP);
+        add(rootContent);
+        add(rootStep);
     }
 
     /**

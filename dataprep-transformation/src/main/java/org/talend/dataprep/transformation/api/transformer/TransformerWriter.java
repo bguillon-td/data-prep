@@ -81,9 +81,4 @@ public interface TransformerWriter {
         // default implementation to ease implementations development
     }
 
-    /**
-     * @return <code>true</code> if writer must <b>first</b> receive metadata (e.g. for header). <code>false</code>
-     * indicates to caller that metadata can be written after the records.
-     */
-    boolean requireMetadataForHeader();
 }

@@ -3,16 +3,19 @@ package org.talend.dataprep.transformation.service;
 import static com.jayway.restassured.RestAssured.given;
 import static com.jayway.restassured.RestAssured.when;
 import static junit.framework.TestCase.assertTrue;
+import static org.junit.Assert.assertEquals;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 import org.assertj.core.api.Assertions;
+import org.junit.Assert;
 import org.junit.Test;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jayway.restassured.response.Response;
 
 /**
  * Base tests for transformation service.
@@ -68,4 +71,23 @@ public class BaseTests extends TransformationServiceBaseTests {
         }
     }
 
+    @Test
+    public void checkHeadersFromCache() throws Exception {
+        // given
+        final String datasetId = createDataset("input_dataset.csv", "testHeadersFromCache", "text/csv");
+        final String preparationId = createEmptyPreparationFromDataset(datasetId, "myPrep");
+
+        // first time is computed, next times are from the cache
+        for (int i = 0; i < 3; i++) {
+            // when
+            final Response response = given() //
+                    .when() //
+                    .get("/apply/preparation/{preparationId}/dataset/{datasetId}/{format}?name={name}", preparationId, datasetId,
+                            "CSV", "myPrep");
+
+            // then
+            Assert.assertTrue(response.getContentType().startsWith("text/csv"));
+            assertEquals(response.getHeader("Content-Disposition"), "attachment; filename=\"myPrep.csv\"");
+        }
+    }
 }

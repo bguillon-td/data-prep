@@ -25,6 +25,7 @@
             getMetadata: getMetadata,
             getContent: getContent,
             getSheetPreview: getSheetPreview,
+            getEncodings: getEncodings,
 
             processCertification: processCertification,
             toggleFavorite: toggleFavorite
@@ -293,6 +294,23 @@
          */
         function toggleFavorite (dataset) {
             return $http.post(RestURLs.datasetUrl + '/favorite/' + dataset.id + '?unset=' + dataset.favorite);
+        }
+
+        //--------------------------------------------------------------------------------------------------------------
+        //---------------------------------------------------Encodings--------------------------------------------------
+        //--------------------------------------------------------------------------------------------------------------
+        /**
+         * @ngdoc method
+         * @name getEncodings
+         * @methodOf data-prep.services.dataset.service:DatasetRestService
+         * @description Get the supported encoding list
+         * @returns {Promise} The GET promise
+         */
+        function getEncodings () {
+            return $http.get(RestURLs.datasetUrl + '/encodings')
+                .then(function(response) {
+                    return response.data;
+                });
         }
     }
 

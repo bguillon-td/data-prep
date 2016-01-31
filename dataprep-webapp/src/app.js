@@ -9,6 +9,8 @@ var fetchConfiguration, bootstrapDataPrepApplication;
             'ui.router', //more advanced router
             'data-prep.app', //app root
             'data-prep.services.rest', //rest interceptors
+            'data-prep.services.dataset', //for configuration
+            'data-prep.services.export', //for configuration
             'data-prep.services.utils', //for configuration
             'bgDirectives'
         ])
@@ -82,10 +84,18 @@ var fetchConfiguration, bootstrapDataPrepApplication;
                     //Configure server api urls
                     .run(['RestURLs', function (RestURLs) {
                         RestURLs.setServerUrl(config.data.serverUrl);
-                    }]);
+                    }])
+                    //Fetch dynamic configuration (export types, supported encodings, ...)
+                    .run(function(ExportService, DatasetService) {
+                        ExportService.refreshTypes();
+                        DatasetService.refreshSupportedEncodings();
+                    });
 
                 angular.module('data-prep.services.utils')
                     .value('version', config.data.version);
+
+                angular.module('data-prep.services.utils')
+                    .value('copyRights', config.data.copyRights);
             });
     };
 

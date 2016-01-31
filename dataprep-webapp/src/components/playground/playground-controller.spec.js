@@ -258,7 +258,7 @@ describe('Playground controller', function () {
         }));
     });
 
-    describe('feedback ', function() {
+    describe('feedback', function() {
         beforeEach(inject(function (StateService) {
             spyOn(StateService, 'showFeedback').and.returnValue();
         }));
@@ -273,6 +273,71 @@ describe('Playground controller', function () {
             //then
             expect(StateService.showFeedback).toHaveBeenCalled();
         }));
+    });
 
+    describe('dataset parameters', function() {
+        beforeEach(inject(function ($q, StateService, PlaygroundService) {
+            spyOn(StateService, 'hideDatasetParameters').and.returnValue();
+            spyOn(StateService, 'toggleDatasetParameters').and.returnValue();
+            spyOn(StateService, 'setIsSendingDatasetParameters').and.returnValue();
+            spyOn(PlaygroundService, 'changeDatasetParameters').and.returnValue($q.when());
+        }));
+
+        it('should open dataset parameters', inject(function (StateService) {
+            //given
+            var ctrl = createController();
+            expect(StateService.toggleDatasetParameters).not.toHaveBeenCalled();
+
+            //when
+            ctrl.toggleParameters();
+
+            //then
+            expect(StateService.toggleDatasetParameters).toHaveBeenCalled();
+        }));
+
+        it('should manage progress flag', inject(function (StateService) {
+            //given
+            var ctrl = createController();
+            var parameters = {separator: ';', encoding: 'UTF-8'};
+
+            expect(StateService.setIsSendingDatasetParameters).not.toHaveBeenCalled();
+
+            //when
+            ctrl.changeDatasetParameters(parameters);
+            expect(StateService.setIsSendingDatasetParameters).toHaveBeenCalledWith(true);
+            scope.$digest();
+
+            //then
+            expect(StateService.setIsSendingDatasetParameters).toHaveBeenCalledWith(false);
+        }));
+
+        it('should call parameter change function', inject(function (PlaygroundService) {
+            //given
+            var ctrl = createController();
+            var parameters = {separator: ';', encoding: 'UTF-8'};
+
+            expect(PlaygroundService.changeDatasetParameters).not.toHaveBeenCalled();
+
+            //when
+            ctrl.changeDatasetParameters(parameters);
+
+            //then
+            expect(PlaygroundService.changeDatasetParameters).toHaveBeenCalled();
+        }));
+
+        it('should hide dataset parameters', inject(function (StateService) {
+            //given
+            var ctrl = createController();
+            var parameters = {separator: ';', encoding: 'UTF-8'};
+
+            expect(StateService.hideDatasetParameters).not.toHaveBeenCalled();
+
+            //when
+            ctrl.changeDatasetParameters(parameters);
+            scope.$digest();
+
+            //then
+            expect(StateService.hideDatasetParameters).toHaveBeenCalled();
+        }));
     });
 });

@@ -5,28 +5,32 @@ describe('Dataset Service', function () {
         {id: '22', name: 'my second dataset'},
         {id: '33', name: 'my second dataset (1)'},
         {id: '44', name: 'my second dataset (2)'}];
-
+    var encodings = ['UTF-8', 'UTF-16'];
     var preparationConsolidation, datasetConsolidation;
     var promiseWithProgress, stateMock;
     var preparations = [{id: '4385fa764bce39593a405d91bc23'}];
 
     beforeEach(module('data-prep.services.dataset', function ($provide) {
-        stateMock = {folder: {
-            currentFolderContent : {
-                datasets : datasets
+        stateMock = {
+            folder: {
+                currentFolderContent: {
+                    datasets: datasets
+                }
+            }, inventory: {
+                datasets: []
             }
-        }};
+        };
         $provide.constant('state', stateMock);
     }));
 
-    beforeEach(inject(function ($q, DatasetListService, DatasetRestService, PreparationListService) {
+    beforeEach(inject(function ($q, DatasetListService, DatasetRestService, PreparationListService, StateService) {
         preparationConsolidation = $q.when(preparations);
         datasetConsolidation = $q.when(true);
         promiseWithProgress = $q.when(true);
 
-        DatasetListService.datasets = datasets;
+        stateMock.inventory.datasets = datasets;
 
-        spyOn(DatasetListService, 'refreshDefaultPreparation').and.returnValue(datasetConsolidation);
+        spyOn(DatasetListService, 'refreshPreparations').and.returnValue(datasetConsolidation);
         spyOn(DatasetListService, 'delete').and.returnValue($q.when(true));
         spyOn(DatasetListService, 'create').and.returnValue(promiseWithProgress);
         spyOn(DatasetListService, 'importRemoteDataset').and.returnValue(promiseWithProgress);
@@ -34,23 +38,24 @@ describe('Dataset Service', function () {
         spyOn(DatasetListService, 'clone').and.returnValue($q.when(true));
         spyOn(DatasetListService, 'processCertification').and.returnValue($q.when(true));
         spyOn(DatasetListService, 'move').and.returnValue($q.when(true));
+        spyOn(DatasetListService, 'refreshDatasets').and.returnValue($q.when(datasets));
 
         spyOn(DatasetRestService, 'getContent').and.returnValue($q.when({}));
         spyOn(DatasetRestService, 'getSheetPreview').and.returnValue($q.when({}));
-        spyOn(DatasetRestService, 'updateMetadata').and.returnValue($q.when({}));
         spyOn(DatasetRestService, 'toggleFavorite').and.returnValue($q.when({}));
+        spyOn(DatasetRestService, 'getEncodings').and.returnValue($q.when(encodings));
 
-        spyOn(DatasetListService, 'refreshDatasets').and.returnValue($q.when(datasets));
         spyOn(PreparationListService, 'refreshMetadataInfos').and.returnValue(preparationConsolidation);
+        spyOn(StateService, 'setDatasetEncodings').and.returnValue();
     }));
 
-    afterEach(inject(function (DatasetListService) {
-        DatasetListService.datasets = null;
+    afterEach(inject(function () {
+        stateMock.inventory.datasets = [];
     }));
 
     describe('lifecycle', function () {
 
-        describe('import', function() {
+        describe('import', function () {
             it('should import remote and return the http promise', inject(function ($rootScope, DatasetService, DatasetListService) {
                 //given
                 var importParameters = {
@@ -59,7 +64,7 @@ describe('Dataset Service', function () {
                     url: 'http://talend.com'
                 };
 
-                var folder = {id : '', path: '', name: 'Home'};
+                var folder = {id: '', path: '', name: 'Home'};
 
                 //when
                 var result = DatasetService.import(importParameters, folder);
@@ -71,11 +76,11 @@ describe('Dataset Service', function () {
             }));
         });
 
-        describe('create', function() {
+        describe('create', function () {
             it('should create a dataset and return the http promise (with progress function)', inject(function ($rootScope, DatasetService, DatasetListService) {
                 //given
-                var dataset = DatasetListService.datasets[0];
-                var folder = {id : '', path: '', name: 'Home'};
+                var dataset = stateMock.inventory.datasets[0];
+                var folder = {id: '', path: '', name: 'Home'};
 
                 //when
                 var result = DatasetService.create(dataset, folder);
@@ -88,7 +93,7 @@ describe('Dataset Service', function () {
 
             it('should consolidate preparations and datasets', inject(function ($rootScope, DatasetService, DatasetListService, PreparationListService) {
                 //given
-                var dataset = DatasetListService.datasets[0];
+                var dataset = stateMock.inventory.datasets[0];
 
                 //when
                 DatasetService.create(dataset);
@@ -96,14 +101,14 @@ describe('Dataset Service', function () {
 
                 //then
                 expect(PreparationListService.refreshMetadataInfos).toHaveBeenCalledWith(datasets);
-                expect(DatasetListService.refreshDefaultPreparation).toHaveBeenCalledWith(preparations);
+                expect(DatasetListService.refreshPreparations).toHaveBeenCalledWith(preparations);
             }));
         });
 
-        describe('update', function() {
+        describe('update', function () {
             it('should update a dataset and return the http promise (with progress function)', inject(function ($rootScope, DatasetService, DatasetListService) {
                 //given
-                var dataset = DatasetListService.datasets[0];
+                var dataset = stateMock.inventory.datasets[0];
 
                 //when
                 var result = DatasetService.update(dataset);
@@ -116,7 +121,7 @@ describe('Dataset Service', function () {
             it('should consolidate preparations and datasets', inject(function ($rootScope, $q, DatasetService, DatasetListService, PreparationListService) {
                 //given
                 spyOn(DatasetListService, 'getDatasetsPromise').and.returnValue($q.when(datasets));
-                var dataset = DatasetListService.datasets[0];
+                var dataset = stateMock.inventory.datasets[0];
 
                 //when
                 DatasetService.update(dataset);
@@ -124,15 +129,15 @@ describe('Dataset Service', function () {
 
                 //then
                 expect(PreparationListService.refreshMetadataInfos).toHaveBeenCalledWith(datasets);
-                expect(DatasetListService.refreshDefaultPreparation).toHaveBeenCalledWith(preparations);
+                expect(DatasetListService.refreshPreparations).toHaveBeenCalledWith(preparations);
             }));
 
         });
 
-        describe('delete', function() {
+        describe('delete', function () {
             it('should delete a dataset', inject(function ($rootScope, DatasetService, DatasetListService) {
                 //given
-                var dataset = DatasetListService.datasets[0];
+                var dataset = stateMock.inventory.datasets[0];
 
                 //when
                 DatasetService.delete(dataset);
@@ -144,7 +149,7 @@ describe('Dataset Service', function () {
 
             it('should consolidate preparations and datasets', inject(function ($rootScope, DatasetService, DatasetListService, PreparationListService) {
                 //given
-                var dataset = DatasetListService.datasets[0];
+                var dataset = stateMock.inventory.datasets[0];
 
                 //when
                 DatasetService.delete(dataset);
@@ -152,12 +157,12 @@ describe('Dataset Service', function () {
 
                 //then
                 expect(PreparationListService.refreshMetadataInfos).toHaveBeenCalledWith(datasets);
-                expect(DatasetListService.refreshDefaultPreparation).toHaveBeenCalledWith(preparations);
+                expect(DatasetListService.refreshPreparations).toHaveBeenCalledWith(preparations);
             }));
 
             it('should consolidate preparations and datasets', inject(function ($rootScope, DatasetService, DatasetListService, PreparationListService, StorageService) {
                 //given
-                var dataset = DatasetListService.datasets[0];
+                var dataset = stateMock.inventory.datasets[0];
                 spyOn(StorageService, 'removeAllAggregations').and.returnValue();
 
                 //when
@@ -169,11 +174,11 @@ describe('Dataset Service', function () {
             }));
         });
 
-        describe('clone', function() {
+        describe('clone', function () {
             it('should clone a dataset and return the http promise (with progress function)', inject(function ($rootScope, DatasetService, DatasetListService) {
                 //given
-                var dataset = DatasetListService.datasets[0];
-                var newFolder = {id:'/wine/beer'};
+                var dataset = stateMock.inventory.datasets[0];
+                var newFolder = {id: '/wine/beer'};
                 var name = 'my clone';
                 var mockPromise = {};
 
@@ -186,7 +191,7 @@ describe('Dataset Service', function () {
 
             it('should consolidate preparations and datasets', inject(function ($rootScope, DatasetService, DatasetListService, PreparationListService) {
                 //given
-                var dataset = DatasetListService.datasets[0];
+                var dataset = stateMock.inventory.datasets[0];
                 var name = 'my clone';
 
                 //when
@@ -195,16 +200,16 @@ describe('Dataset Service', function () {
 
                 //then
                 expect(PreparationListService.refreshMetadataInfos).toHaveBeenCalledWith(datasets);
-                expect(DatasetListService.refreshDefaultPreparation).toHaveBeenCalledWith(preparations);
+                expect(DatasetListService.refreshPreparations).toHaveBeenCalledWith(preparations);
             }));
         });
 
-        describe('move', function() {
+        describe('move', function () {
             it('should love a dataset and return the http promise (with progress function)', inject(function ($rootScope, DatasetService, DatasetListService) {
                 //given
-                var dataset = DatasetListService.datasets[0];
-                var folder = {id:'/wine/foo'};
-                var newFolder = {id:'/wine/beer'};
+                var dataset = stateMock.inventory.datasets[0];
+                var folder = {id: '/wine/foo'};
+                var newFolder = {id: '/wine/beer'};
                 var name = 'my clone';
                 var mockPromise = {};
 
@@ -217,7 +222,7 @@ describe('Dataset Service', function () {
 
             it('should consolidate preparations and datasets', inject(function ($rootScope, DatasetService, DatasetListService, PreparationListService) {
                 //given
-                var dataset = DatasetListService.datasets[0];
+                var dataset = stateMock.inventory.datasets[0];
                 var name = 'my clone';
 
                 //when
@@ -226,7 +231,7 @@ describe('Dataset Service', function () {
 
                 //then
                 expect(PreparationListService.refreshMetadataInfos).toHaveBeenCalledWith(datasets);
-                expect(DatasetListService.refreshDefaultPreparation).toHaveBeenCalledWith(preparations);
+                expect(DatasetListService.refreshPreparations).toHaveBeenCalledWith(preparations);
             }));
         });
 
@@ -236,7 +241,7 @@ describe('Dataset Service', function () {
         describe('certification', function () {
             it('should process certification on dataset', inject(function ($rootScope, DatasetService, DatasetListService) {
                 //given
-                var dataset = DatasetListService.datasets[0];
+                var dataset = stateMock.inventory.datasets[0];
 
                 //when
                 DatasetService.processCertification(dataset);
@@ -248,7 +253,7 @@ describe('Dataset Service', function () {
 
             it('should consolidate preparations and datasets', inject(function ($rootScope, DatasetService, DatasetListService, PreparationListService) {
                 //given
-                var dataset = DatasetListService.datasets[0];
+                var dataset = stateMock.inventory.datasets[0];
 
                 //when
                 DatasetService.processCertification(dataset);
@@ -256,14 +261,14 @@ describe('Dataset Service', function () {
 
                 //then
                 expect(PreparationListService.refreshMetadataInfos).toHaveBeenCalledWith(datasets);
-                expect(DatasetListService.refreshDefaultPreparation).toHaveBeenCalledWith(preparations);
+                expect(DatasetListService.refreshPreparations).toHaveBeenCalledWith(preparations);
             }));
         });
 
         describe('favorite', function () {
             it('should toggle favorite in a dataset', inject(function ($rootScope, DatasetService, DatasetListService, DatasetRestService) {
                 //given
-                var dataset = DatasetListService.datasets[0];
+                var dataset = stateMock.inventory.datasets[0];
                 dataset.favorite = false;
                 //when
                 DatasetService.toggleFavorite(dataset);
@@ -298,10 +303,11 @@ describe('Dataset Service', function () {
                 expect(DatasetRestService.getSheetPreview).toHaveBeenCalledWith(metadata.id, sheetName);
             }));
 
-            it('should set metadata sheet', inject(function (DatasetService, DatasetRestService) {
+            it('should set metadata sheet', inject(function ($q, DatasetService, DatasetRestService) {
                 //given
                 var metadata = {id: '7c98ae64154bc', sheetName: 'my old sheet'};
                 var sheetName = 'my sheet';
+                spyOn(DatasetRestService, 'updateMetadata').and.returnValue($q.when({}));
 
                 //when
                 DatasetService.setDatasetSheet(metadata, sheetName);
@@ -309,6 +315,104 @@ describe('Dataset Service', function () {
                 //then
                 expect(metadata.sheetName).toBe(sheetName);
                 expect(DatasetRestService.updateMetadata).toHaveBeenCalledWith(metadata);
+            }));
+        });
+
+        describe('dataset parameters', function () {
+            it('should get supported encodings and set them in state', inject(function ($rootScope, DatasetService, DatasetRestService, StateService){
+                //given
+                expect(DatasetRestService.getEncodings).not.toHaveBeenCalled();
+                expect(StateService.setDatasetEncodings).not.toHaveBeenCalled();
+
+                //when
+                DatasetService.refreshSupportedEncodings();
+                expect(DatasetRestService.getEncodings).toHaveBeenCalled();
+                expect(StateService.setDatasetEncodings).not.toHaveBeenCalled();
+                $rootScope.$digest();
+
+                //then
+                expect(StateService.setDatasetEncodings).toHaveBeenCalledWith(encodings);
+            }));
+
+            it('should update parameters (without its preparation to avoid cyclic ref: waiting for TDP-1348)', inject(function ($q, DatasetService, DatasetRestService){
+                //given
+                var metadata = {
+                    id: '543a216fc796e354',
+                    defaultPreparation: {id: '876a32bc545a846'},
+                    preparations: [{id: '876a32bc545a846'}, {id: '799dc6b2562a186'}],
+                    encoding: 'UTF-8',
+                    parameters: {SEPARATOR: '|'}
+                };
+                var parameters = {
+                    separator: ';',
+                    encoding: 'UTF-16'
+                };
+                spyOn(DatasetRestService, 'updateMetadata').and.returnValue($q.when());
+                expect(DatasetRestService.updateMetadata).not.toHaveBeenCalled();
+
+                //when
+                DatasetService.updateParameters(metadata, parameters);
+
+                //then
+                expect(DatasetRestService.updateMetadata).toHaveBeenCalled();
+                expect(metadata.defaultPreparation).toBeFalsy();
+                expect(metadata.preparations).toBeFalsy();
+            }));
+
+            it('should set back preparations after parameters update (waiting for TDP-1348)', inject(function ($rootScope, $q, DatasetService, DatasetRestService){
+                //given
+                var metadata = {
+                    id: '543a216fc796e354',
+                    defaultPreparation: {id: '876a32bc545a846', parameters: {SEPARATOR: '|'}},
+                    preparations: [{id: '876a32bc545a846'}, {id: '799dc6b2562a186'}],
+                    encoding: 'UTF-8',
+                    parameters: {SEPARATOR: '|'}
+                };
+                var parameters = {
+                    separator: ';',
+                    encoding: 'UTF-16'
+                };
+                spyOn(DatasetRestService, 'updateMetadata').and.returnValue($q.when());
+
+                //when
+                DatasetService.updateParameters(metadata, parameters);
+                expect(metadata.defaultPreparation).toBeFalsy();
+                expect(metadata.preparations).toBeFalsy();
+                $rootScope.$digest();
+
+                //then
+                expect(metadata.defaultPreparation).toEqual({id: '876a32bc545a846', parameters: {SEPARATOR: '|'}});
+                expect(metadata.preparations).toEqual([{id: '876a32bc545a846'}, {id: '799dc6b2562a186'}]);
+            }));
+
+            it('should set back old parameters and preparations (waiting for TDP-1348) when update fails', inject(function ($rootScope, $q, DatasetService, DatasetRestService){
+                //given
+                var metadata = {
+                    id: '543a216fc796e354',
+                    defaultPreparation: {id: '876a32bc545a846', parameters: {SEPARATOR: '|'}},
+                    preparations: [{id: '876a32bc545a846'}, {id: '799dc6b2562a186'}],
+                    encoding: 'UTF-8',
+                    parameters: {SEPARATOR: '|'}
+                };
+                var parameters = {
+                    separator: ';',
+                    encoding: 'UTF-16'
+                };
+                spyOn(DatasetRestService, 'updateMetadata').and.returnValue($q.reject());
+
+                //when
+                DatasetService.updateParameters(metadata, parameters);
+                expect(metadata.parameters.SEPARATOR).toBe(';');
+                expect(metadata.encoding).toBe('UTF-16');
+                expect(metadata.defaultPreparation).toBeFalsy();
+                expect(metadata.preparations).toBeFalsy();
+                $rootScope.$digest();
+
+                //then
+                expect(metadata.parameters.SEPARATOR).toBe('|');
+                expect(metadata.encoding).toBe('UTF-8');
+                expect(metadata.defaultPreparation).toEqual({id: '876a32bc545a846', parameters: {SEPARATOR: '|'}});
+                expect(metadata.preparations).toEqual([{id: '876a32bc545a846'}, {id: '799dc6b2562a186'}]);
             }));
         });
     });
@@ -329,17 +433,6 @@ describe('Dataset Service', function () {
     });
 
     describe('getter', function () {
-        it('should return dataset list from ListService', inject(function (DatasetService, DatasetListService) {
-            //given
-            DatasetListService.datasets = datasets;
-
-            //when
-            var result = DatasetService.datasetsList();
-
-            //then
-            expect(result).toBe(datasets);
-        }));
-
         it('should get a promise that resolve the existing datasets if already fetched', inject(function ($q, $rootScope, DatasetService, DatasetListService) {
             //given
             spyOn(DatasetListService, 'hasDatasetsPromise').and.returnValue(true);
@@ -371,7 +464,7 @@ describe('Dataset Service', function () {
         it('should get a promise that fetch datasets', inject(function ($rootScope, DatasetService, DatasetListService) {
             //given
             var results = null;
-            DatasetListService.datasets = null;
+            stateMock.inventory.datasets = null;
 
             //when
             DatasetService.getDatasets()
@@ -387,16 +480,16 @@ describe('Dataset Service', function () {
 
         it('should consolidate preparations and datasets on new dataset fetch', inject(function ($rootScope, DatasetService, DatasetListService, PreparationListService) {
             //given
-            DatasetListService.datasets = null;
+            stateMock.inventory.datasets = null;
 
             //when
             DatasetService.getDatasets();
-            DatasetListService.datasets = datasets; // simulate dataset list initialisation
+            stateMock.inventory.datasets = datasets; // simulate dataset list initialisation
             $rootScope.$digest();
 
             //then
             expect(PreparationListService.refreshMetadataInfos).toHaveBeenCalledWith(datasets);
-            expect(DatasetListService.refreshDefaultPreparation).toHaveBeenCalledWith(preparations);
+            expect(DatasetListService.refreshPreparations).toHaveBeenCalledWith(preparations);
         }));
 
         it('should refresh dataset list', inject(function (DatasetService, DatasetListService) {
@@ -410,12 +503,12 @@ describe('Dataset Service', function () {
         it('should consolidate preparations and datasets on datasets refresh', inject(function ($rootScope, DatasetService, DatasetListService, PreparationListService) {
             //when
             DatasetService.refreshDatasets();
-            DatasetListService.datasets = datasets; // simulate dataset list initialisation
+            stateMock.inventory.datasets = datasets; // simulate dataset list initialisation
             $rootScope.$digest();
 
             //then
             expect(PreparationListService.refreshMetadataInfos).toHaveBeenCalledWith(datasets);
-            expect(DatasetListService.refreshDefaultPreparation).toHaveBeenCalledWith(preparations);
+            expect(DatasetListService.refreshPreparations).toHaveBeenCalledWith(preparations);
         }));
 
         it('should find dataset by name', inject(function (DatasetService) {

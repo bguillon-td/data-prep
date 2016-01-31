@@ -9,6 +9,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+import javax.annotation.Resource;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
@@ -36,6 +38,10 @@ public abstract class PreparationCommand<T> extends GenericCommand<T> {
 
     @Autowired
     protected Jackson2ObjectMapperBuilder builder;
+
+    /** The root step. */
+    @Resource(name = "rootStep")
+    private Step rootStep;
 
 
     protected PreparationCommand(final HystrixCommandGroupKey groupKey, final HttpClient client) {
@@ -149,7 +155,7 @@ public abstract class PreparationCommand<T> extends GenericCommand<T> {
     }
 
     protected List<Action> getPreparationActions(Preparation preparation, String stepId) throws IOException {
-        if (StringUtils.isEmpty(stepId) || Step.ROOT_STEP.id().equals(stepId)) {
+        if (StringUtils.isEmpty(stepId) || rootStep.id().equals(stepId)) {
             // No need for a connection to retrieve an empty list.
             return Collections.emptyList();
         }

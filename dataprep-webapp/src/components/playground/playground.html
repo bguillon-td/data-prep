@@ -3,15 +3,25 @@
               close-button="true"
               before-close="playgroundCtrl.beforeClose()"
               on-close="playgroundCtrl.close()">
-    <div class="modal-header">
+    <div class="modal-header playground-header">
         <ul class="left-header" insertion-playground-left-header>
-            <li id="dataset-header-details" ng-switch="!!playgroundCtrl.state.playground.dataset.limit">
-                <span translate="FILE_DETAILS_NAME"
-                      translate-value-name="{{playgroundCtrl.state.playground.dataset.name}}"></span> -
+            <li id="dataset-header-details"
+                ng-switch="!!playgroundCtrl.state.playground.dataset.limit">
+
+                <span class="playground-dataset-name" translate="FILE_DETAILS_NAME"
+                      title="{{playgroundCtrl.state.playground.dataset.name}}"
+                      translate-value-name="{{playgroundCtrl.state.playground.dataset.name}}"></span>
+                <span class="playground-dataset-name">-</span>
                 <span class="file-lines-count" ng-switch-when="false" translate="FILE_DETAILS_LINES"
                       translate-value-records="{{playgroundCtrl.state.playground.dataset.records}}"></span>
                 <span class="file-lines-count" ng-switch-when="true" translate="FILE_DETAILS_LIMIT"
                       translate-value-records="{{playgroundCtrl.state.playground.dataset.limit}}"></span>
+
+                <a id="playground-gear-icon"
+                   class="icon"
+                   data-icon="L"
+                   ng-click="playgroundCtrl.toggleParameters()"
+                   translate-once-title="DATAGRID_PARAMETERS_GEAR"></a>
             </li>
         </ul>
 
@@ -66,7 +76,9 @@
                     <talend-editable-text edition-mode="playgroundCtrl.state.playground.nameEditionMode"
                                           on-validate="playgroundCtrl.confirmPrepNameEdition(text)"
                                           placeholder="ENTER_PREPARATION_NAME"
-                                          text="playgroundCtrl.preparationName"></talend-editable-text>
+                                          text="playgroundCtrl.preparationName"
+                                          text-class="steps-header-preparation-text"
+                                          text-title="{{playgroundCtrl.preparationName}}"></talend-editable-text>
                 </div>
             </div>
 
@@ -75,13 +87,29 @@
         </talend-slidable>
 
         <div class="playground-center">
-            <filter-bar></filter-bar>
+            <talend-slidable id="playground-dataset-parameters"
+                             visible="playgroundCtrl.state.playground.parameters.visible"
+                             side="top"
+                             control-bar="false">
+                <dataset-parameters on-parameters-change="playgroundCtrl.changeDatasetParameters(parameters)"
+                                    processing="playgroundCtrl.state.playground.parameters.isSending"
+                                    dataset="playgroundCtrl.state.playground.dataset"
+                                    configuration="playgroundCtrl.state.playground.parameters.configuration"
+                                    parameters="playgroundCtrl.state.playground.parameters.values"></dataset-parameters>
+            </talend-slidable>
 
-            <div class="datagrid-container">
+            <filter-bar id="playground-filter-bar"></filter-bar>
+
+            <div id="playground-datagrid-container">
                 <datagrid></datagrid>
             </div>
 
-            <lookup visible="playgroundCtrl.state.playground.lookup.visibility"></lookup>
+            <talend-slidable
+                    visible="playgroundCtrl.state.playground.lookup.visibility"
+                    side="bottom"
+                    control-bar="false">
+                <lookup></lookup>
+            </talend-slidable>
         </div>
 
         <talend-slidable visible="true" side="right" class="flex-side suggestions">
@@ -116,13 +144,12 @@
         <div class="modal-buttons">
             <a class="modal-secondary-button"
                ng-click="playgroundCtrl.discardSaveOnClose()" translate-once="NO_THANKS"></a>
-            <button class="modal-primary-button btn-primary"
-                    ng-disabled="savePreparationForm.$invalid || playgroundCtrl.saveInProgress"
-                    type="submit"
-                    ng-switch="!!playgroundCtrl.saveInProgress">
-                <span ng-switch-when="false" translate-once="SAVE_IT"></span>
-                <span ng-switch-when="true"><i data-icon="c" class="icon continuous-rotate"></i></span>
-            </button>
+            <talend-button-loader button-class="modal-primary-button btn-primary"
+                                  disable-condition="savePreparationForm.$invalid || playgroundCtrl.saveInProgress"
+                                  loading="playgroundCtrl.saveInProgress"
+                                  loading-class="icon">
+                <span translate-once="SAVE_IT"></span>
+            </talend-button-loader>
         </div>
     </form>
 </talend-modal>

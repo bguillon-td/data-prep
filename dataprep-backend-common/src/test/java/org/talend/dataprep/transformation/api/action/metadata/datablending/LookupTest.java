@@ -26,6 +26,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.talend.dataprep.api.dataset.ColumnMetadata;
 import org.talend.dataprep.api.dataset.DataSetMetadata;
+import org.talend.dataprep.api.dataset.DataSetMetadataBuilder;
 import org.talend.dataprep.api.dataset.DataSetRow;
 import org.talend.dataprep.transformation.api.action.ActionTestWorkbench;
 import org.talend.dataprep.transformation.api.action.metadata.ActionMetadataTestUtils;
@@ -48,6 +49,9 @@ public class LookupTest {
     /** Spring application context. */
     @Autowired
     private ApplicationContext applicationContext;
+
+    @Autowired
+    private DataSetMetadataBuilder metadataBuilder;
 
     @Autowired
     protected ConfigurableEnvironment environment;
@@ -109,7 +113,7 @@ public class LookupTest {
     @Test
     public void shouldAdapt() {
         // given
-        final DataSetMetadata ds = DataSetMetadata.Builder.metadata().name("great dataset").id("ds#123").build();
+        final DataSetMetadata ds = metadataBuilder.metadata().name("great dataset").id("ds#123").build();
 
         // when
         final Lookup actual = action.adapt(ds);

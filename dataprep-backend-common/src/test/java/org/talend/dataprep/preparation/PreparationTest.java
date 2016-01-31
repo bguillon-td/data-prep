@@ -4,12 +4,12 @@ import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.lessThan;
 import static org.junit.Assert.assertEquals;
-import static org.talend.dataprep.api.preparation.PreparationActions.ROOT_CONTENT;
-import static org.talend.dataprep.api.preparation.Step.ROOT_STEP;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+
+import javax.annotation.Resource;
 
 import org.hamcrest.core.Is;
 import org.junit.Test;
@@ -24,6 +24,7 @@ import org.talend.dataprep.api.preparation.Action;
 import org.talend.dataprep.api.preparation.Preparation;
 import org.talend.dataprep.api.preparation.PreparationActions;
 import org.talend.dataprep.api.preparation.Step;
+import org.talend.dataprep.api.service.info.VersionService;
 import org.talend.dataprep.preparation.store.PreparationRepository;
 
 
@@ -37,11 +38,25 @@ public class PreparationTest {
     @Autowired
     private PreparationRepository repository;
 
+    @Autowired
+    private VersionService versionService;
+
+    /** The root step. */
+    @Resource(name = "rootStep")
+    private Step rootStep;
+
+    /** The default root content. */
+    @Resource(name = "rootContent")
+    private PreparationActions rootContent;
+
     @Test
     public void testDefaultPreparation() throws Exception {
-        final Preparation preparation = Preparation.defaultPreparation("12345");
-        assertThat(preparation.id(), is("ec718238e9bfe45f58031313b79501a3cc55b186"));
-        assertThat(preparation.getHeadId(), is(ROOT_STEP.id()));
+
+        final Preparation preparation = new Preparation("12345", rootStep.id(), versionService.version().getVersionId());
+        preparation.setCreationDate(0L);
+
+        assertThat(preparation.id(), is("b7368bd7e4de38ff954636d0ac0438c7fb56a208"));
+        assertThat(preparation.getHeadId(), is(rootStep.id()));
     }
 
     @Test
@@ -54,7 +69,7 @@ public class PreparationTest {
 
     @Test
     public void testTimestamp() throws Exception {
-        Preparation preparation = new Preparation("1234", ROOT_STEP.id());
+        Preparation preparation = new Preparation("1234", rootStep.id(), versionService.version().getVersionId());
         final long time0 = preparation.getLastModificationDate();
         TimeUnit.MILLISECONDS.sleep(50);
         preparation.updateLastModificationDate();
@@ -65,86 +80,94 @@ public class PreparationTest {
     @Test
     public void testId_withName() throws Exception {
         // Preparation id with name
-        Preparation preparation = new Preparation("1234", ROOT_STEP.id());
+        Preparation preparation = new Preparation("1234", rootStep.id(), versionService.version().getVersionId());
         preparation.setName("My Preparation");
+        preparation.setCreationDate(0L);
         final String id0 = preparation.getId();
-        assertThat(id0, is("e34f3448d71dac403df5305a04086fc88054aa15"));
+        assertThat(id0, is("b100bd5fd2dc6a00781342569dec27cd3550b3c8"));
         // Same preparation (but with empty name)
         preparation.setName("");
         final String id1 = preparation.getId();
-        assertThat(id1, is("ae242b07084aa7b8341867a8be1707f4d52501d1"));
+        assertThat(id1, is("8b6281c5e99c41313a83777c3ab43b06adda9e5c"));
         // Same preparation (but with null name, null and empty names should be treated all the same)
         preparation.setName(null);
         final String id2 = preparation.getId();
-        assertThat(id2, is("ae242b07084aa7b8341867a8be1707f4d52501d1"));
+        assertThat(id2, is("8b6281c5e99c41313a83777c3ab43b06adda9e5c"));
     }
 
     @Test
     public void initialStep() {
+        final String version = versionService.version().getVersionId();
+
         final List<Action> actions = getSimpleAction("uppercase", "column_name", "lastname");
 
-        final PreparationActions newContent = new PreparationActions(actions);
+        final PreparationActions newContent = new PreparationActions(actions, version);
         repository.add(newContent);
 
-        final Step s = new Step(ROOT_STEP.id(), newContent.id());
+        final Step s = new Step(rootStep.id(), newContent.id(), version);
         repository.add(s);
 
-        Preparation preparation = new Preparation("1234", s.id());
+        Preparation preparation = new Preparation("1234", s.id(), version);
+        preparation.setCreationDate(0L);
         repository.add(preparation);
 
-        assertThat(preparation.id(), Is.is("ae242b07084aa7b8341867a8be1707f4d52501d1"));
+        assertThat(preparation.id(), Is.is("8b6281c5e99c41313a83777c3ab43b06adda9e5c"));
     }
 
     @Test
     public void initialStepWithAppend() {
+        final String version = versionService.version().getVersionId();
         final List<Action> actions = getSimpleAction("uppercase", "column_name", "lastname");
 
-        final PreparationActions newContent = ROOT_CONTENT.append(actions);
+        final PreparationActions newContent = rootContent.append(actions);
         repository.add(newContent);
 
-        final Step s = new Step(ROOT_STEP.id(), newContent.id());
+        final Step s = new Step(rootStep.id(), newContent.id(), version);
         repository.add(s);
 
-        final Preparation preparation = new Preparation("1234", s.id());
+        final Preparation preparation = new Preparation("1234", s.id(), version);
+        preparation.setCreationDate(0L);
         repository.add(preparation);
 
-        assertThat(preparation.id(), Is.is("ae242b07084aa7b8341867a8be1707f4d52501d1"));
+        assertThat(preparation.id(), Is.is("8b6281c5e99c41313a83777c3ab43b06adda9e5c"));
     }
 
     @Test
     public void stepsWithAppend() {
+        final String version = versionService.version().getVersionId();
         final List<Action> actions = getSimpleAction("uppercase", "column_name", "lastname");
 
-        final PreparationActions newContent1 = ROOT_CONTENT.append(actions);
+        final PreparationActions newContent1 = rootContent.append(actions);
         repository.add(newContent1);
         final PreparationActions newContent2 = newContent1.append(actions);
         repository.add(newContent2);
 
         // Steps
-        final Step s1 = new Step(ROOT_STEP.id(), newContent1.id());
+        final Step s1 = new Step(rootStep.id(), newContent1.id(), version);
         repository.add(s1);
 
-        final Step s2 = new Step(s1.id(), newContent2.id());
+        final Step s2 = new Step(s1.id(), newContent2.id(), version);
         repository.add(s2);
 
         // Preparation
-        final Preparation preparation = new Preparation("1234", s2.id());
+        final Preparation preparation = new Preparation("1234", s2.id(), version);
+        preparation.setCreationDate(0L);
         repository.add(preparation);
 
-        assertThat(preparation.id(), Is.is("ae242b07084aa7b8341867a8be1707f4d52501d1"));
+        assertThat(preparation.id(), Is.is("8b6281c5e99c41313a83777c3ab43b06adda9e5c"));
     }
 
     @Test
     public void should_merge_from_other() {
-        Preparation source = new Preparation();
+        Preparation source = new Preparation(versionService.version().getVersionId());
 
-        Preparation theOtherOne = new Preparation();
+        Preparation theOtherOne = new Preparation(versionService.version().getVersionId());
         theOtherOne.setAuthor("Joss Stone");
         theOtherOne.setCreationDate(source.getCreationDate() - 1000);
         theOtherOne.setDataSetId("ds#123456");
         theOtherOne.setLastModificationDate(theOtherOne.getCreationDate() + 12345682);
         theOtherOne.setName("my preparation name");
-        theOtherOne.setHeadId(ROOT_STEP.id());
+        theOtherOne.setHeadId(rootStep.id());
 
         Preparation actual = source.merge(theOtherOne);
 
@@ -153,15 +176,15 @@ public class PreparationTest {
 
     @Test
     public void should_merge_from_source() {
-        Preparation theOtherOne = new Preparation();
+        Preparation theOtherOne = new Preparation(versionService.version().getVersionId());
 
-        Preparation source = new Preparation();
+        Preparation source = new Preparation(versionService.version().getVersionId());
         source.setAuthor("Bloc Party");
         source.setCreationDate(theOtherOne.getCreationDate() - 1000);
         source.setDataSetId("ds#65478");
         source.setLastModificationDate(source.getCreationDate() + 2658483);
         source.setName("banquet");
-        source.setHeadId(ROOT_STEP.id());
+        source.setHeadId(rootStep.id());
 
         Preparation actual = source.merge(theOtherOne);
 

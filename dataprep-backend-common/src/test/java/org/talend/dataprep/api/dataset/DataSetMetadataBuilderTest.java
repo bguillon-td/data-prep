@@ -1,74 +1,87 @@
 package org.talend.dataprep.api.dataset;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.talend.dataprep.api.dataset.ColumnMetadata.Builder.column;
-import static org.talend.dataprep.api.dataset.DataSetMetadata.Builder.metadata;
 
-import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.test.SpringApplicationConfiguration;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.talend.dataprep.api.dataset.location.HttpLocation;
 import org.talend.dataprep.api.type.Type;
 import org.talend.dataprep.schema.SchemaParserResult;
 
+@RunWith(SpringJUnit4ClassRunner.class)
+@SpringApplicationConfiguration(classes = DataSetMetadataBuilderTest.class)
+@Configuration
+@ComponentScan(basePackages = "org.talend.dataprep")
+@EnableAutoConfiguration
 public class DataSetMetadataBuilderTest {
 
-    DataSetMetadata.Builder builder;
-
-    @Before
-    public void setUp() throws Exception {
-        builder = metadata();
-    }
+    @Autowired
+    private DataSetMetadataBuilder builder;
 
     @Test(expected = IllegalStateException.class)
     public void testExpectedId() {
-        builder.build();
+        builder.metadata().build();
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void testUseOfMetadata() {
+        builder.id("12").build();
     }
 
     @Test
     public void testId() throws Exception {
-        builder.id("1234");
-        assertEquals("1234", builder.build().getId());
+        assertEquals("1234", builder.metadata().id("1234").build().getId());
     }
 
     @Test
     public void testAuthor() throws Exception {
-        builder.id("1234").author("author");
-        assertEquals("author", builder.build().getAuthor());
+        assertEquals("author", builder.metadata().id("1234").author("author").build().getAuthor());
     }
 
     @Test
     public void testName() throws Exception {
-        builder.id("1234").name("name");
-        assertEquals("name", builder.build().getName());
+        assertEquals("name", builder.metadata().id("1234").name("name").build().getName());
+    }
+
+    @Test
+    public void testVersion() throws Exception {
+        // default version
+        assertNotNull(builder.metadata().id("4321").build().getAppVersion());
+        // set version
+        assertEquals("1.0.PE", builder.metadata().id("4321").appVersion("1.0.PE").build().getAppVersion());
     }
 
     @Test
     public void testCreated() throws Exception {
-        builder.id("1234").created(1234);
-        assertEquals(1234, builder.build().getCreationDate());
+        assertEquals(1234, builder.metadata().id("1234").created(1234).build().getCreationDate());
     }
 
     @Test
     public void testSize() throws Exception {
-        builder.id("1234").size(30000);
-        assertEquals(30000, builder.build().getContent().getNbRecords());
+        assertEquals(30000, builder.metadata().id("1234").size(30000).build().getContent().getNbRecords());
     }
 
     @Test
     public void testHeaderSize() throws Exception {
-        builder.id("1234").headerSize(1);
-        assertEquals(1, builder.build().getContent().getNbLinesInHeader());
+        assertEquals(1, builder.metadata().id("1234").headerSize(1).build().getContent().getNbLinesInHeader());
     }
 
     @Test
     public void testFooterSize() throws Exception {
-        builder.id("1234").footerSize(1);
-        assertEquals(1, builder.build().getContent().getNbLinesInFooter());
+        assertEquals(1, builder.metadata().id("1234").footerSize(1).build().getContent().getNbLinesInFooter());
     }
 
     @Test
     public void testContentAnalyzed() throws Exception {
-        final DataSetMetadata metadata = builder.id("1234").contentAnalyzed(false).build();
+        final DataSetMetadata metadata = builder.metadata().id("1234").contentAnalyzed(false).build();
         assertEquals(false, metadata.getLifecycle().contentIndexed());
         metadata.getLifecycle().contentIndexed(true);
         assertEquals(true, metadata.getLifecycle().contentIndexed());
@@ -76,8 +89,7 @@ public class DataSetMetadataBuilderTest {
 
     @Test
     public void testSchemaAnalyzed() throws Exception {
-        builder.id("1234").build();
-        final DataSetMetadata metadata = builder.id("1234").schemaAnalyzed(false).build();
+        final DataSetMetadata metadata = builder.metadata().id("1234").schemaAnalyzed(false).build();
         assertEquals(false, metadata.getLifecycle().schemaAnalyzed());
         metadata.getLifecycle().schemaAnalyzed(true);
         assertEquals(true, metadata.getLifecycle().schemaAnalyzed());
@@ -85,8 +97,7 @@ public class DataSetMetadataBuilderTest {
 
     @Test
     public void testQualityAnalyzed() throws Exception {
-        builder.id("1234").build();
-        final DataSetMetadata metadata = builder.id("1234").qualityAnalyzed(false).build();
+        final DataSetMetadata metadata = builder.metadata().id("1234").qualityAnalyzed(false).build();
         assertEquals(false, metadata.getLifecycle().qualityAnalyzed());
         metadata.getLifecycle().qualityAnalyzed(true);
         assertEquals(true, metadata.getLifecycle().qualityAnalyzed());
@@ -94,67 +105,65 @@ public class DataSetMetadataBuilderTest {
 
     @Test
     public void testImporting() throws Exception {
-        final DataSetMetadata metadata = builder.id("1234").importing(true).build();
+        final DataSetMetadata metadata = builder.metadata().id("1234").importing(true).build();
         assertEquals(true, metadata.getLifecycle().importing());
     }
 
     @Test
     public void testSheetName() throws Exception {
-        builder.id("1234").sheetName("test");
-        assertEquals("test", builder.build().getSheetName());
+        assertEquals("test", builder.metadata().id("1234").sheetName("test").build().getSheetName());
     }
 
     @Test
     public void testDraft() throws Exception {
-        builder.id("1234").draft(true);
-        assertEquals(true, builder.build().isDraft());
+        assertEquals(true, builder.metadata().id("1234").draft(true).build().isDraft());
     }
 
     @Test
     public void testFormatGuessId() throws Exception {
-        builder.id("1234").formatGuessId("formatGuess");
-        assertEquals("formatGuess", builder.build().getContent().getFormatGuessId());
+        assertEquals("formatGuess",
+                builder.metadata().id("1234").formatGuessId("formatGuess").build().getContent().getFormatGuessId());
     }
 
     @Test
     public void testMediaType() throws Exception {
-        builder.id("1234").mediaType("mediaType");
-        assertEquals("mediaType", builder.build().getContent().getMediaType());
+        assertEquals("mediaType", builder.metadata().id("1234").mediaType("mediaType").build().getContent().getMediaType());
     }
 
     @Test
     public void testIsFavorite() throws Exception {
-        builder.id("1234").isFavorite(true);
-        assertEquals(true, builder.build().isFavorite());
+        assertEquals(true, builder.metadata().id("1234").isFavorite(true).build().isFavorite());
     }
 
     @Test
     public void testLocation() throws Exception {
-        builder.id("1234").location(new HttpLocation());
-        assertEquals(HttpLocation.class, builder.build().getLocation().getClass());
+        final DataSetMetadata metadata = builder.metadata().id("1234").location(new HttpLocation()).build();
+        assertEquals(HttpLocation.class, metadata.getLocation().getClass());
     }
 
     @Test
     public void testCertificationStep() throws Exception {
-        builder.id("1234").certificationStep(DataSetGovernance.Certification.CERTIFIED);
-        assertEquals(DataSetGovernance.Certification.CERTIFIED, builder.build().getGovernance().getCertificationStep());
+        final DataSetMetadata metadata = builder.metadata().id("1234")
+                .certificationStep(DataSetGovernance.Certification.CERTIFIED).build();
+        assertEquals(DataSetGovernance.Certification.CERTIFIED, metadata.getGovernance().getCertificationStep());
     }
 
     @Test
     public void testCopy() throws Exception {
-        final DataSetMetadata build = metadata().id("1234") //
+        final DataSetMetadata build = builder.metadata() //
+                .id("1234") //
                 .row(column().type(Type.STRING).name("col0"), column().type(Type.STRING).name("col1")) //
                 .build();
-        builder.copy(build);
-        final DataSetMetadata metadata = builder.build();
-        assertEquals("1234", metadata.getId());
-        assertEquals("col0", metadata.getRowMetadata().getColumns().get(0).getName());
-        assertEquals("col1", metadata.getRowMetadata().getColumns().get(1).getName());
+        final DataSetMetadata copy = builder.metadata().copy(build).build();
+        assertEquals("1234", copy.getId());
+        assertEquals("col0", copy.getRowMetadata().getColumns().get(0).getName());
+        assertEquals("col1", copy.getRowMetadata().getColumns().get(1).getName());
     }
 
     @Test
     public void testSchemaParserResult() throws Exception {
-        builder.id("1234").schemaParserResult(SchemaParserResult.Builder.parserResult().sheetName("sheetName").build());
-        assertEquals("sheetName", builder.build().getSchemaParserResult().getSheetName());
+        final DataSetMetadata metadata = builder.metadata().id("1234")
+                .schemaParserResult(SchemaParserResult.Builder.parserResult().sheetName("sheetName").build()).build();
+        assertEquals("sheetName", metadata.getSchemaParserResult().getSheetName());
     }
 }

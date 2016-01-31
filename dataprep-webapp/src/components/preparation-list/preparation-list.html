@@ -5,7 +5,8 @@
                 <talend-editable-text text="preparation.name"
                                       text-class="title one-line"
                                       on-text-click="preparationListCtrl.load(preparation)"
-                                      on-validate="preparationListCtrl.rename(preparation, text)"></talend-editable-text>
+                                      on-validate="preparationListCtrl.rename(preparation, text)"
+                                      text-title="{{preparation.name}}"></talend-editable-text>
             </div>
             <p class="description">
                 <span translate-once="OWNED_BY"></span> <span class="important" title="{{preparation.author}}" >{{preparation.author}}</span><br/>

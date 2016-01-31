@@ -14,5 +14,12 @@
     @include flex-direction(row-reverse);
     @include justify-content(space-between);
     padding: 0 10px 10px 10px;
+    a {
+      color: $dark-blue;
+      font-size: .8em; 
+    }
+    a:hover{
+        text-decoration: underline;
+    }
   }
 }

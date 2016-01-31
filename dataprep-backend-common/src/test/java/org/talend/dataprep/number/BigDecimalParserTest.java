@@ -4,7 +4,6 @@ import static org.junit.Assert.assertEquals;
 
 import java.math.BigDecimal;
 import java.text.DecimalFormatSymbols;
-import java.text.ParseException;
 import java.util.Locale;
 
 import org.junit.After;
@@ -30,12 +29,12 @@ public class BigDecimalParserTest {
         assertEquals(new BigDecimal(0), BigDecimalParser.toBigDecimal("0", ((char) -1), ((char) -1)));
     }
 
-    @Test(expected = ParseException.class)
+    @Test(expected = NumberFormatException.class)
     public void testEmptyString() throws Exception {
         BigDecimalParser.toBigDecimal("");
     }
 
-    @Test(expected = ParseException.class)
+    @Test(expected = NumberFormatException.class)
     public void testNullString() throws Exception {
         BigDecimalParser.toBigDecimal(null);
     }
@@ -45,7 +44,7 @@ public class BigDecimalParserTest {
         assertFewLocales(new BigDecimal("12.5"), BigDecimalParser.toBigDecimal("0012.5"));
     }
 
-    @Test(expected = ParseException.class)
+    @Test(expected = NumberFormatException.class)
     public void testToBigDecimal_not_a_number() throws Exception {
         BigDecimalParser.toBigDecimal("ouf");
     }

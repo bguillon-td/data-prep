@@ -6,14 +6,17 @@ import static org.junit.Assert.assertEquals;
 import static org.talend.dataprep.transformation.api.action.metadata.category.ActionCategory.DATA_CLEANSING;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.talend.dataprep.api.dataset.DataSetRow;
+import org.talend.dataprep.api.preparation.Action;
 import org.talend.dataprep.transformation.api.action.ActionTestWorkbench;
 import org.talend.dataprep.transformation.api.action.metadata.common.ImplicitParameters;
+import org.talend.dataprep.transformation.api.action.metadata.text.UpperCase;
 
 public class MakeLineHeaderTest {
 
@@ -78,5 +81,52 @@ public class MakeLineHeaderTest {
         assertEquals("John", row2.getRowMetadata().getById("0000").getName());
         assertEquals("Lennon", row2.getRowMetadata().getById("0001").getName());
     }
+
+    @Test
+    public void should_keep_header_after_modifications() {
+        //given
+        Long rowId = 0L;
+
+        // row 1
+        Map<String, String> rowContent = new HashMap<>();
+        rowContent.put("0000", "David");
+        rowContent.put("0001", "Bowie");
+        final DataSetRow row1 = new DataSetRow(rowContent);
+        row1.setTdpId(rowId++);
+
+        // row 2
+        rowContent = new HashMap<>();
+        rowContent.put("0000", "John");
+        rowContent.put("0001", "Lennon");
+        final DataSetRow row2 = new DataSetRow(rowContent);
+        row2.setTdpId(rowId++);
+
+        // row 3
+        rowContent = new HashMap<>();
+        rowContent.put("0000", "Johnny");
+        rowContent.put("0001", "Lennon");
+        final DataSetRow row3 = new DataSetRow(rowContent);
+        row3.setTdpId(rowId++);
+
+        //when
+        final Map<String, String> makeHeaderParameters = new HashMap<>();
+        makeHeaderParameters.put(ImplicitParameters.SCOPE.getKey().toLowerCase(), "line");
+        makeHeaderParameters.put("row_id", row2.getTdpId().toString());
+        final Action makeHeader = this.action.create(makeHeaderParameters);
+        final Map<String, String> upperCaseParameters = new HashMap<>();
+        upperCaseParameters.put(ImplicitParameters.SCOPE.getKey().toLowerCase(), "column");
+        upperCaseParameters.put(ImplicitParameters.COLUMN_ID.getKey().toLowerCase(), "0000");
+        final Action upperCase = new UpperCase().create(upperCaseParameters);
+        ActionTestWorkbench.test(Arrays.asList(row1, row2, row3), makeHeader.getRowAction(), upperCase.getRowAction());
+
+        //then
+        assertEquals("0000", row1.getRowMetadata().getById("0000").getName());
+        assertEquals("0001", row1.getRowMetadata().getById("0001").getName());
+        assertEquals("John", row2.getRowMetadata().getById("0000").getName());
+        assertEquals("Lennon", row2.getRowMetadata().getById("0001").getName());
+        assertEquals("John", row3.getRowMetadata().getById("0000").getName());
+        assertEquals("Lennon", row3.getRowMetadata().getById("0001").getName());
+    }
+
 
 }

@@ -64,10 +64,7 @@
     }
 
     .one-line {
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-      max-width: 240px;
+      @include ellipsis(210px);
     }
 
     .information {

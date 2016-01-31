@@ -40,6 +40,9 @@ public class DataSetJSONTest {
     @Autowired
     private Jackson2ObjectMapperBuilder builder;
 
+    @Autowired
+    private DataSetMetadataBuilder metadataBuilder;
+
     /**
      * @param json A valid JSON stream, may be <code>null</code>.
      * @return The {@link DataSetMetadata} instance parsed from stream or <code>null</code> if parameter is null. If
@@ -128,19 +131,19 @@ public class DataSetJSONTest {
 
     @Test
     public void testWrite1() throws Exception {
-        List<ColumnMetadata> columns = new ArrayList<>();
-        ColumnMetadata column = ColumnMetadata.Builder //
+        final ColumnMetadata.Builder columnBuilder = ColumnMetadata.Builder //
                 .column() //
                 .id(5) //
                 .name("column1") //
                 .type(Type.STRING) //
                 .empty(0) //
                 .invalid(10) //
-                .valid(50) //
+                .valid(50);
+
+        DataSetMetadata metadata = metadataBuilder.metadata().id("1234").name("name").author("author").created(0)
+                .row(columnBuilder)
                 .build();
-        columns.add(column);
-        RowMetadata row = new RowMetadata(columns);
-        DataSetMetadata metadata = new DataSetMetadata("1234", "name", "author", 0, row);
+
         final DataSetContent content = metadata.getContent();
         content.addParameter(CSVFormatGuess.SEPARATOR_PARAMETER, ",");
         content.setFormatGuessId(new CSVFormatGuess().getBeanId());

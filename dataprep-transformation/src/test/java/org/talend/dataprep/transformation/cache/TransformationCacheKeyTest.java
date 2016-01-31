@@ -10,13 +10,14 @@ import org.junit.Test;
 import org.talend.dataprep.api.dataset.ColumnMetadata;
 import org.talend.dataprep.api.dataset.DataSetMetadata;
 import org.talend.dataprep.api.type.Type;
+import org.talend.dataprep.transformation.TransformationBaseTest;
 
 /**
  * Unit test for the TransformationCacheKey.
  * 
  * @see TransformationCacheKey
  */
-public class TransformationCacheKeyTest {
+public class TransformationCacheKeyTest extends TransformationBaseTest {
 
     /** When the unit test is created. */
     private Long now;
@@ -51,7 +52,7 @@ public class TransformationCacheKeyTest {
     }
 
     private DataSetMetadata getDataSetMetadataSample(String name) {
-        return DataSetMetadata.Builder.metadata() //
+        return metadataBuilder.metadata() //
                 .id("123456789") //
                 .created(now) //
                 .name(name).mediaType("String").encoding("ISO-8859-1")

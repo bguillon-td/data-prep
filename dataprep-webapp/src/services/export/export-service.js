@@ -33,7 +33,7 @@
 
         /**
          * @ngdoc method
-         * @name resetCurrentParameters
+         * @name reset
          * @methodOf data-prep.export.controller:ExportCtrl
          * @description Reset current export parameters with the saved one from localStorage
          */

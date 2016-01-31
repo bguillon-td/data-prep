@@ -278,6 +278,16 @@ public class DataSetRow implements Cloneable {
     }
 
     /**
+     * Order values of this data set row according to its own <code>columns</code>. This method clones the current
+     * record, so no need to call {@link #clone()}.
+     *
+     * @return A new data set row for method with values ordered following its <code>columns</code>.
+     */
+    public DataSetRow order() {
+        return order(getRowMetadata().getColumns());
+    }
+
+    /**
      * Removes the value with the specified id and removes the column metadata if it has not been already removed, and
      * returns <tt>true</tt> if the value has been removed. If this dataset row does not contain the specified it, it
      * is unchanged and returns <tt>false</tt>.

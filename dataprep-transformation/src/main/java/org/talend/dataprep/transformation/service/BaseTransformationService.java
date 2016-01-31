@@ -83,8 +83,7 @@ public abstract class BaseTransformationService {
             actions = getActions(preparationId, stepId);
         }
 
-        HttpResponseContext.contentType(format.getMimeType());
-        HttpResponseContext.header("Content-Disposition", "attachment; filename=\"" + exportName + format.getExtension() + "\"");
+        setExportHeaders(exportName, format);
 
         Configuration configuration = Configuration.builder() //
                 .format(format.getName()) //
@@ -98,12 +97,23 @@ public abstract class BaseTransformationService {
     }
 
     /**
+     * Set the content-type header for export.
+     *
+     * @param exportName the name of the export.
+     * @param format the format to use.
+     */
+    protected void setExportHeaders(String exportName, ExportFormat format) {
+        HttpResponseContext.contentType(format.getMimeType());
+        HttpResponseContext.header("Content-Disposition", "attachment; filename=\"" + exportName + format.getExtension() + "\"");
+    }
+
+    /**
      * Return the format that matches the given name or throw an error if the format is unknown.
      *
      * @param formatName the format name.
      * @return the format that matches the given name.
      */
-    private ExportFormat getFormat(String formatName) {
+    protected ExportFormat getFormat(String formatName) {
         final ExportFormat format = formatRegistrationService.getByName(formatName);
         if (format == null) {
             LOG.error("Export format {} not supported", formatName);

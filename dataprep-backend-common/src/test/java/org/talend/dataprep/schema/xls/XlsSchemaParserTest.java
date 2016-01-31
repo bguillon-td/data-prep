@@ -8,9 +8,10 @@ import java.util.stream.Collectors;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.talend.dataprep.api.dataset.ColumnMetadata;
 import org.talend.dataprep.api.dataset.DataSetMetadata;
-import org.talend.dataprep.schema.IoTestUtils;
+import org.talend.dataprep.schema.AbstractSchemaTestUtils;
 import org.talend.dataprep.schema.SchemaParser;
 import org.talend.dataprep.schema.SchemaParserResult;
 
@@ -19,17 +20,12 @@ import org.talend.dataprep.schema.SchemaParserResult;
  * 
  * @see XlsSchemaParser
  */
-public class XlsSchemaParserTest {
+public class XlsSchemaParserTest extends AbstractSchemaTestUtils {
 
     /** The parser to test. */
+    @Autowired
     private XlsSchemaParser parser;
 
-    /**
-     * Unit test constructor.
-     */
-    public XlsSchemaParserTest() {
-        parser = new XlsSchemaParser();
-    }
 
     @Test
     public void should_parse_xls() throws IOException {
@@ -67,11 +63,11 @@ public class XlsSchemaParserTest {
     private void checkColumnsName(String sourceFileName, List<String> expectedColsName) throws IOException {
         try (InputStream inputStream = this.getClass().getResourceAsStream(sourceFileName)) {
 
-            DataSetMetadata datasetMetadata = IoTestUtils.getSimpleDataSetMetadata();
+            DataSetMetadata datasetMetadata = ioTestUtils.getSimpleDataSetMetadata();
 
             SchemaParserResult result = parser.parse(new SchemaParser.Request(inputStream, datasetMetadata));
             List<ColumnMetadata> columns = result.getSheetContents().get(0).getColumnMetadatas();
-            final List<String> actual = columns.stream().map(c -> c.getName()).collect(Collectors.toList());
+            final List<String> actual = columns.stream().map(ColumnMetadata::getName).collect(Collectors.toList());
 
             Assert.assertEquals(expectedColsName, actual);
         }

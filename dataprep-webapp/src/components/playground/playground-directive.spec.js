@@ -62,16 +62,36 @@ describe('Playground directive', function () {
         }
     ];
 
+    var sortList = [
+        {id: 'name', name: 'NAME_SORT', property: 'name'},
+        {id: 'date', name: 'DATE_SORT', property: 'created'}
+    ];
+
+    var orderList = [
+        {id: 'asc', name: 'ASC_ORDER'},
+        {id: 'desc', name: 'DESC_ORDER'}
+    ];
+
     beforeEach(module('data-prep.playground', function($provide) {
         stateMock = {
             playground: {
                 visible: true,
                 filter: {gridFilters: []},
-                lookup: {visibility: false},
+                lookup: {
+                    visibility: false,
+                    datasets: [],
+                    sortList: sortList,
+                    orderList: orderList
+                },
                 grid: {
                     selectedColumn: {'id': '0001'},
                     selectedLine: {'0001': '1'}
                 }
+            },
+            inventory: {
+                datasets: [],
+                sortList: sortList,
+                orderList: orderList
             }
         };
         $provide.constant('state', stateMock);
@@ -80,12 +100,11 @@ describe('Playground directive', function () {
     beforeEach(module('pascalprecht.translate', function ($translateProvider) {
         $translateProvider.translations('en', {
             'FILE_DETAILS_NAME': 'File: {{name}}',
-            'FILE_DETAILS_LINES': '- {{records}} lines',
-            'FILE_DETAILS_LIMIT': '- cut at {{records}} lines'
+            'FILE_DETAILS_LINES': '{{records}} lines',
+            'FILE_DETAILS_LIMIT': 'cut at {{records}} lines'
         });
         $translateProvider.preferredLanguage('en');
     }));
-
 
     beforeEach(inject(function ($state, $rootScope, $compile, $q, $timeout, PreparationService, PlaygroundService, ExportService) {
         stateMock.playground.visible = true;
@@ -139,7 +158,8 @@ describe('Playground directive', function () {
             expect(playgroundModal.find('.modal-header').length).toBe(1);
             expect(playgroundModal.find('.modal-header').eq(0).find('.left-header > li').length).toBe(1);
             expect(playgroundModal.find('.modal-header').eq(0).find('li').eq(0).find('span').eq(0).text().trim()).toBe('File: US States');
-            expect(playgroundModal.find('.modal-header').eq(0).find('li').eq(0).find('span').eq(1).text().trim()).toBe('- 3 lines');
+            expect(playgroundModal.find('.modal-header').eq(0).find('li').eq(0).find('span').eq(1).text().trim()).toBe('-');
+            expect(playgroundModal.find('.modal-header').eq(0).find('li').eq(0).find('span').eq(2).text().trim()).toBe('3 lines');
         });
 
         it('should render playground header when dataset is truncated', function () {
@@ -158,7 +178,8 @@ describe('Playground directive', function () {
             expect(playgroundModal.find('.modal-header').length).toBe(1);
             expect(playgroundModal.find('.modal-header').eq(0).find('.left-header > li').length).toBe(1);
             expect(playgroundModal.find('.modal-header').eq(0).find('li').eq(0).find('span').eq(0).text().trim()).toBe('File: US States');
-            expect(playgroundModal.find('.modal-header').eq(0).find('li').eq(0).find('span').eq(1).text().trim()).toBe('- cut at 50 lines');
+            expect(playgroundModal.find('.modal-header').eq(0).find('li').eq(0).find('span').eq(1).text().trim()).toBe('-');
+            expect(playgroundModal.find('.modal-header').eq(0).find('li').eq(0).find('span').eq(2).text().trim()).toBe('cut at 50 lines');
         });
 
         it('should render insertion playground left header', function () {
@@ -293,6 +314,20 @@ describe('Playground directive', function () {
             //then
             expect(chkboxOnOff.prop('checked')).toBe(true);
         }));
+    });
+
+    describe('dataset parameters', function() {
+        it('should render dataset parameters', function () {
+            //given
+            stateMock.playground.dataset = metadata;
+
+            //when
+            createElement();
+
+            //then : check dataset parameters is present
+            var playground = angular.element('body').find('.playground').eq(0);
+            expect(playground.find('.dataset-parameters').length).toBe(1);
+        });
     });
 
     describe('datagrid', function() {

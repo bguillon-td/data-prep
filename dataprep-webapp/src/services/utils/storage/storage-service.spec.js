@@ -233,4 +233,108 @@ describe('Storage service', function() {
             expect($window.localStorage.getItem(otherKey)).toBe(otherAggregation);
         }));
     });
+
+    describe('localStorage management', function() {
+        var LOOKUP_DATASETS_KEY = 'org.talend.dataprep.lookup_datasets';
+        var LOOKUP_DATASETS_SORT_KEY = 'org.talend.dataprep.lookup_datasets_sort';
+        var LOOKUP_DATASETS_ORDER_KEY = 'org.talend.dataprep.lookup_datasets_order';
+        var DATASETS_SORT_KEY = 'org.talend.dataprep.datasets.sort';
+        var DATASETS_ORDER_KEY = 'org.talend.dataprep.datasets.order';
+
+        it('should get Lookup Datasets', inject(function($window, StorageService) {
+
+            //given
+            expect(StorageService.getLookupDatasets()).toEqual([]);
+
+            $window.localStorage.setItem(LOOKUP_DATASETS_KEY, JSON.stringify([{id :'abc'}]));
+
+            //then
+            expect(StorageService.getLookupDatasets()).toEqual([{id :'abc'}]);
+        }));
+
+        it('should save Lookup Datasets', inject(function($window, StorageService) {
+            //when
+            StorageService.setLookupDatasets([{id :'abc'}]);
+
+            //then
+            expect(JSON.parse($window.localStorage.getItem(LOOKUP_DATASETS_KEY))).toEqual([{id :'abc'}]);
+        }));
+
+        it('should get Lookup Datasets sort', inject(function($window, StorageService) {
+
+            //given
+            expect(StorageService.getLookupDatasetsSort()).toEqual(null);
+
+            $window.localStorage.setItem(LOOKUP_DATASETS_SORT_KEY, 'name');
+
+            //then
+            expect(StorageService.getLookupDatasetsSort()).toEqual('name');
+        }));
+
+        it('should save Lookup Datasets sort', inject(function($window, StorageService) {
+            //when
+            StorageService.setLookupDatasetsSort('name');
+
+            //then
+            expect($window.localStorage.getItem(LOOKUP_DATASETS_SORT_KEY)).toEqual('name');
+        }));
+
+        it('should get Lookup Datasets order', inject(function($window, StorageService) {
+
+            //given
+            expect(StorageService.getLookupDatasetsOrder()).toEqual(null);
+
+            $window.localStorage.setItem(LOOKUP_DATASETS_ORDER_KEY, 'desc');
+
+            //then
+            expect(StorageService.getLookupDatasetsOrder()).toEqual('desc');
+        }));
+
+        it('should save Lookup Datasets order', inject(function($window, StorageService) {
+            //when
+            StorageService.setLookupDatasetsOrder('desc');
+
+            //then
+            expect($window.localStorage.getItem(LOOKUP_DATASETS_ORDER_KEY)).toEqual('desc');
+        }));
+
+        it('should get Datasets sort', inject(function($window, StorageService) {
+
+            //given
+            expect(StorageService.getDatasetsSort()).toEqual(null);
+
+            $window.localStorage.setItem(DATASETS_SORT_KEY, 'name');
+
+            //then
+            expect(StorageService.getDatasetsSort()).toEqual('name');
+        }));
+
+        it('should save Datasets sort', inject(function($window, StorageService) {
+            //when
+            StorageService.setDatasetsSort('name');
+
+            //then
+            expect($window.localStorage.getItem(DATASETS_SORT_KEY)).toEqual('name');
+        }));
+
+        it('should get Datasets order', inject(function($window, StorageService) {
+
+            //given
+            expect(StorageService.getDatasetsOrder()).toEqual(null);
+
+            $window.localStorage.setItem(DATASETS_ORDER_KEY, 'desc');
+
+            //then
+            expect(StorageService.getDatasetsOrder()).toEqual('desc');
+        }));
+
+        it('should save Datasets order', inject(function($window, StorageService) {
+            //when
+            StorageService.setDatasetsOrder('desc');
+
+            //then
+            expect($window.localStorage.getItem(DATASETS_ORDER_KEY)).toEqual('desc');
+        }));
+
+    });
 });

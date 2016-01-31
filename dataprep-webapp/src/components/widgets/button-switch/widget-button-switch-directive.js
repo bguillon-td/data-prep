@@ -3,24 +3,20 @@
 
     /**
      * @ngdoc directive
-     * @name talend.widget.directive:TalendConfirm
-     * @description This directive create a badge with editable content.<br/>
-     * Key action (inherited from {@link talend.widget.directive:TalendModal TalendModal}):
-     * <ul>
-     *     <li>ENTER : validate (is not disabled)</li>
-     *     <li>ESC : dismiss the modal</li>
-     * </ul>
+     * @name talend.widget.directive:TalendButtonSwitch
+     * @description This directive create a badge with editable content switch on click.
      * @restrict E
      * @usage
      *
      <talend-button-switch
-     button-values="valuesArray"
-     button-current-text="texts"
-     button-action="clickAction">
+         button-values="valuesArray"
+         button-current-text="texts"
+         button-action="clickAction">
      </talend-button-switch>
 
-     * @param {boolean} disableEnter Disable the ENTER key support
-     * @param {string[]} texts The texts ids (translation ids) to display
+     * @param {string[]}  button-values The possible values
+     * @param {string} button-current-text The current value
+     * @param {function} button-action The action that is triggered on switch
      */
     function TalendButtonSwitch() {
         return {

@@ -8,16 +8,18 @@
      On creation, it fetch dataset list from backend and load playground if 'datasetid' query param is provided
      * @requires data-prep.services.state.service:StateService
      * @requires data-prep.services.dataset.service:DatasetService
-     * @requires data-prep.services.dataset.service:DatasetListSortService
      * @requires data-prep.services.folder.service:FolderService
      * @requires data-prep.services.playground.service:PlaygroundService
      * @requires data-prep.services.uploadWorkflowService.service:UploadWorkflowService
      * @requires data-prep.services.datasetWorkflowService.service:UpdateWorkflowService
      * @requires data-prep.services.utils.service:MessageService
      * @requires talend.widget.service:TalendConfirmService
+     * @requires data-prep.services.utils.service:StorageService
+     * @requires data-prep.services.dataset.service:DatasetListService
      */
-    function DatasetListCtrl ($timeout, $translate, $stateParams, StateService, DatasetService, DatasetListSortService, PlaygroundService,
-                              TalendConfirmService, MessageService, UploadWorkflowService, UpdateWorkflowService, FolderService, state) {
+    function DatasetListCtrl (state, $timeout, $translate, $stateParams, StateService, DatasetService, PlaygroundService,
+                              TalendConfirmService, MessageService, UploadWorkflowService, UpdateWorkflowService,
+                              FolderService, StorageService) {
         var vm = this;
 
         vm.datasetService = DatasetService;
@@ -34,42 +36,6 @@
         vm.folderName = '';
 
         /**
-         * @ngdoc property
-         * @name sortList
-         * @propertyOf data-prep.dataset-list.controller:DatasetListCtrl
-         * @description The sort list
-         * @type {array}
-         */
-        vm.sortList = DatasetListSortService.getSortList();
-
-        /**
-         * @ngdoc property
-         * @name orderList
-         * @propertyOf data-prep.dataset-list.controller:DatasetListCtrl
-         * @description The sort order list
-         * @type {string}
-         */
-        vm.orderList = DatasetListSortService.getOrderList();
-
-        /**
-         * @ngdoc property
-         * @name sortSelected
-         * @propertyOf data-prep.dataset-list.controller:DatasetListCtrl
-         * @description Selected sort.
-         * @type {object}
-         */
-        vm.sortSelected = DatasetListSortService.getSortItem();
-
-        /**
-         * @ngdoc property
-         * @name sortOrderSelected
-         * @propertyOf data-prep.dataset-list.controller:DatasetListCtrl
-         * @description Selected sort order.
-         * @type {object}
-         */
-        vm.sortOrderSelected = DatasetListSortService.getOrderItem();
-
-        /**
          * @ngdoc method
          * @name sort
          * @methodOf data-prep.dataset-list.controller:DatasetListCtrl
@@ -77,18 +43,19 @@
          * @param {object} sortType Criteria to sort
          */
         vm.updateSortBy = function (sortType) {
-            if (vm.sortSelected === sortType) {
+            if (state.inventory.sort.id === sortType.id) {
                 return;
             }
 
-            var oldSort = vm.sortSelected;
-            vm.sortSelected = sortType;
-            DatasetListSortService.setSort(sortType.id);
+            var oldSort = state.inventory.sort;
+
+            StateService.setDatasetsSort(sortType);
+            StorageService.setDatasetsSort(sortType.id);
 
             FolderService.getContent(state.folder.currentFolder)
                 .catch(function () {
-                    vm.sortSelected = oldSort;
-                    DatasetListSortService.setSort(oldSort.id);
+                    StateService.setDatasetsSort(oldSort);
+                    StorageService.setDatasetsSort(oldSort.id);
                 });
         };
 
@@ -100,18 +67,19 @@
          * @param {object} order Sort order ASC(ascending) or DESC(descending)
          */
         vm.updateSortOrder = function (order) {
-            if (vm.sortOrderSelected === order) {
+            if (state.inventory.order.id === order.id) {
                 return;
             }
 
-            var oldSort = vm.sortOrderSelected;
-            vm.sortOrderSelected = order;
-            DatasetListSortService.setOrder(order.id);
+            var oldOrder = state.inventory.order;
+
+            StateService.setDatasetsOrder(order);
+            StorageService.setDatasetsOrder(order.id);
 
             FolderService.getContent(state.folder.currentFolder)
                 .catch(function () {
-                    vm.sortOrderSelected = oldSort;
-                    DatasetListSortService.setOrder(oldSort.id);
+                    StateService.setDatasetsOrder(oldOrder);
+                    StorageService.setDatasetsOrder(oldOrder.id);
                 });
         };
 
@@ -128,6 +96,21 @@
                     $timeout(StateService.showPlayground);
                 });
         }
+
+        /**
+         * @ngdoc method
+         * @name openPreparation
+         * @methodOf data-prep.dataset-list.controller:DatasetListCtrl
+         * @description opens a preparation
+         * @param {object} preparation The preparation to open
+         */
+        vm.openPreparation = function openPreparation(preparation){
+            PlaygroundService
+                .load(preparation)
+                .then(function () {
+                    $timeout(StateService.showPlayground);
+                });
+        };
 
         /**
          * @ngdoc method
@@ -148,9 +131,9 @@
          */
         vm.remove = function remove (dataset) {
             TalendConfirmService.confirm({disableEnter: true}, ['DELETE_PERMANENTLY', 'NO_UNDONE_CONFIRM'], {
-                type: 'dataset',
-                name: dataset.name
-            })
+                    type: 'dataset',
+                    name: dataset.name
+                })
                 .then(function () {
                     return DatasetService.delete(dataset);
                 })
@@ -319,38 +302,6 @@
             .getDatasets()
             .then(loadUrlSelectedDataset);
     }
-
-    /**
-     * @ngdoc property
-     * @name datasets
-     * @propertyOf data-prep.dataset-list.controller:DatasetListCtrl
-     * @description The dataset list.
-     * This list is bound to {@link data-prep.services.dataset.service:DatasetService DatasetService}.datasetsList()
-     */
-    Object.defineProperty(DatasetListCtrl.prototype,
-        'datasets', {
-            enumerable: true,
-            configurable: false,
-            get: function () {
-                return this.datasetService.datasetsList();
-            }
-        });
-
-    /**
-     * @ngdoc property
-     * @name currentFolderContent
-     * @propertyOf data-prep.folder.controller:FolderCtrl
-     * @description The folder content list.
-     * This list is bound to {@link data-prep.services.state.service:FolderStateService}.state.currentFolderContent
-     */
-    Object.defineProperty(DatasetListCtrl.prototype,
-        'currentFolderContent', {
-            enumerable: true,
-            configurable: false,
-            get: function () {
-                return this.state.folder.currentFolderContent;
-            }
-        });
 
     angular.module('data-prep.dataset-list')
         .controller('DatasetListCtrl', DatasetListCtrl);

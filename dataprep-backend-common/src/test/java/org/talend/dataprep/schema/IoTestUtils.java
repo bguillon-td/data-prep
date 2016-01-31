@@ -3,8 +3,11 @@ package org.talend.dataprep.schema;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import org.talend.dataprep.api.dataset.ColumnMetadata;
 import org.talend.dataprep.api.dataset.DataSetMetadata;
+import org.talend.dataprep.api.dataset.DataSetMetadataBuilder;
 import org.talend.dataprep.api.dataset.RowMetadata;
 import org.talend.dataprep.api.type.Type;
 import org.talend.dataprep.schema.csv.CSVFormatGuess;
@@ -12,7 +15,11 @@ import org.talend.dataprep.schema.csv.CSVFormatGuess;
 /**
  * Utility class for the io unit tests.
  */
+@Component
 public class IoTestUtils {
+
+    @Autowired
+    private DataSetMetadataBuilder metadataBuilder;
 
     /**
      * Default constructor.
@@ -24,8 +31,8 @@ public class IoTestUtils {
     /**
      * @return a ready to use dataset.
      */
-    public static DataSetMetadata getDataSetMetadata() {
-        DataSetMetadata datasetMetadata = DataSetMetadata.Builder.metadata().id("123456789").build();
+    public DataSetMetadata getDataSetMetadata() {
+        DataSetMetadata datasetMetadata = metadataBuilder.metadata().id("123456789").build();
         datasetMetadata.getContent().addParameter(CSVFormatGuess.SEPARATOR_PARAMETER, ";");
         return datasetMetadata;
     }
@@ -35,7 +42,7 @@ public class IoTestUtils {
      * @param name the column name.
      * @return the wanted column metadata.
      */
-    public static ColumnMetadata getColumnMetadata(int id, String name) {
+    public ColumnMetadata getColumnMetadata(int id, String name) {
         return ColumnMetadata.Builder.column().id(id).name(name).type(Type.STRING).build();
     }
 
@@ -43,11 +50,11 @@ public class IoTestUtils {
      * @param wantedColumns the wanted columns for the dataset.
      * @return a simple dataset metadata with as many columns as wanted
      */
-    public static DataSetMetadata getSimpleDataSetMetadata(String... wantedColumns) {
+    public DataSetMetadata getSimpleDataSetMetadata(String... wantedColumns) {
 
         List<ColumnMetadata> columns = new ArrayList<>(wantedColumns.length);
         for (int i = 0; i < wantedColumns.length; i++) {
-            columns.add(IoTestUtils.getColumnMetadata(i, wantedColumns[i]));
+            columns.add(getColumnMetadata(i, wantedColumns[i]));
         }
 
         DataSetMetadata datasetMetadata = getDataSetMetadata();

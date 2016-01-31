@@ -1,7 +1,30 @@
 describe('Folder controller', function () {
     'use strict';
 
-    var createController, scope;
+    var createController, scope, stateMock;
+
+    var sortList = [
+        {id: 'name', name: 'NAME_SORT', property: 'name'},
+        {id: 'date', name: 'DATE_SORT', property: 'created'}
+    ];
+
+    var orderList = [
+        {id: 'asc', name: 'ASC_ORDER'},
+        {id: 'desc', name: 'DESC_ORDER'}
+    ];
+
+    beforeEach(module('data-prep.folder', function($provide){
+        stateMock = {
+            inventory: {
+                datasets: [],
+                sortList: sortList,
+                orderList: orderList,
+                sort: sortList[1],
+                order: orderList[1]
+            }
+        };
+        $provide.constant('state', stateMock);
+    }));
 
     beforeEach(module('data-prep.folder'));
 
@@ -38,6 +61,22 @@ describe('Folder controller', function () {
         //then
         expect(FolderService.populateMenuChildren).toHaveBeenCalled();
         expect(StateService.setMenuChildren).toHaveBeenCalledWith([]);
+    }));
+
+    it('should refresh sort parameters', inject(function ($timeout, StorageService, StateService) {
+        //given
+        spyOn(StorageService, 'getDatasetsSort').and.returnValue('date');
+        spyOn(StorageService, 'getDatasetsOrder').and.returnValue('desc');
+        spyOn(StateService, 'setDatasetsOrder');
+        spyOn(StateService, 'setDatasetsSort');
+
+
+        //when
+        createController();
+
+        //then
+        expect(StateService.setDatasetsSort).toHaveBeenCalledWith({id: 'date', name: 'DATE_SORT', property: 'created'});
+        expect(StateService.setDatasetsOrder).toHaveBeenCalledWith({id: 'desc', name: 'DESC_ORDER'});
     }));
 
 });

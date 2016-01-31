@@ -1,12 +1,13 @@
 package org.talend.dataprep.preparation.store.file;
 
 import static org.junit.Assert.*;
-import static org.talend.dataprep.api.preparation.Step.ROOT_STEP;
 
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import javax.annotation.Resource;
 
 import org.junit.After;
 import org.junit.Test;
@@ -22,6 +23,7 @@ import org.talend.dataprep.api.preparation.Action;
 import org.talend.dataprep.api.preparation.Preparation;
 import org.talend.dataprep.api.preparation.PreparationActions;
 import org.talend.dataprep.api.preparation.Step;
+import org.talend.dataprep.api.service.info.VersionService;
 import org.talend.dataprep.preparation.PreparationTest;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -37,6 +39,13 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 @TestPropertySource(inheritLocations = false, inheritProperties = false, properties = { "preparation.store=file",
         "preparation.store.file.location=target/test/store/preparation" })
 public class FileSystemPreparationRepositoryTest {
+
+    /** The root step. */
+    @Resource(name = "rootStep")
+    private Step rootStep;
+
+    @Autowired
+    private VersionService versionService;
 
     /**
      * Bean needed to resolve test properties set by the @TestPropertySource annotation
@@ -70,16 +79,16 @@ public class FileSystemPreparationRepositoryTest {
 
     @Test
     public void shouldGetStepThatWasAdded() {
-        final Step expected = new Step(ROOT_STEP.id(), "684fdqs638");
+        final Step expected = new Step(rootStep.id(), "684fdqs638", versionService.version().getVersionId());
         repository.add(expected);
         final Step actual = repository.get(expected.id(), Step.class);
         assertEquals(expected, actual);
     }
 
     @Test
-    public void shouldActionListThatWasAdded() {
+    public void shouldListActionThatWasAdded() {
         final List<Action> actions = PreparationTest.getSimpleAction("uppercase", "column_name", "lastname");
-        PreparationActions expected = new PreparationActions(actions);
+        PreparationActions expected = new PreparationActions(actions, versionService.version().getVersionId());
 
         repository.add(expected);
         final PreparationActions actual = repository.get(expected.id(), PreparationActions.class);
@@ -88,7 +97,7 @@ public class FileSystemPreparationRepositoryTest {
 
     @Test
     public void shouldGetOnlyWantedClass() {
-        final Step expected = new Step(ROOT_STEP.id(), "8rq4868");
+        final Step expected = new Step(rootStep.id(), "8rq4868", versionService.version().getVersionId());
         repository.add(expected);
         assertNull(repository.get(expected.id(), Preparation.class));
         assertNull(repository.get(expected.id(), PreparationActions.class));
@@ -126,7 +135,7 @@ public class FileSystemPreparationRepositoryTest {
         preparations.stream().forEach(prep -> repository.add(prep));
 
         // store some steps
-        ids.stream().map(i -> new Step(ROOT_STEP.id(), "step" + i)) //
+        ids.stream().map(i -> new Step(rootStep.id(), "step" + i, versionService.version().getVersionId())) //
                 .forEach(step -> repository.add(step));
 
         // list all preparations
@@ -148,7 +157,7 @@ public class FileSystemPreparationRepositoryTest {
         preparations.stream().forEach(prep -> repository.add(prep));
 
         // and some steps to add some noise
-        ids.stream().map(i -> new Step(ROOT_STEP.id(), "step" + i)) //
+        ids.stream().map(i -> new Step(rootStep.id(), "step" + i, versionService.version().getVersionId())) //
                 .forEach(step -> repository.add(step));
 
         // get some preparation by dataset id
@@ -165,7 +174,7 @@ public class FileSystemPreparationRepositoryTest {
      * @return a preparation with a root step an a the given dataset id.
      */
     private Preparation getPreparation(String datasetId) {
-        Preparation preparation = new Preparation(datasetId, Step.ROOT_STEP.id());
+        Preparation preparation = new Preparation(datasetId, rootStep.id(), versionService.version().getVersionId());
         preparation.setName("prep-" + datasetId);
         return preparation;
     }

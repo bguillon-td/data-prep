@@ -3,6 +3,7 @@
 @import "../../components/widgets/accordions/accordions";
 @import "../../components/widgets/badge/badge";
 @import "../../components/widgets/button-dropdown/button-dropdown";
+@import "../../components/widgets/button-loader/button-loader";
 @import "../../components/widgets/charts/boxplot-chart/boxplot-chart";
 @import "../../components/widgets/charts/horizontal-barchart/horizontal-barchart";
 @import "../../components/widgets/charts/range-slider/range-slider";
@@ -23,9 +24,10 @@
 @import "../../components/widgets/tooltip/tooltip";
 
 @import "../../components/dataset/list/dataset-list";
+@import "../../components/dataset/parameters/dataset-parameters";
+@import "../../components/dataset/preview/dataset-xls-preview";
 @import "../../components/datagrid/datagrid";
 @import "../../components/datagrid/header/datagrid-header";
-@import "../../components/dataset/preview/dataset-xls-preview";
 @import "../../components/filter/bar/filter-bar";
 @import "../../components/filter/list/filter-list";
 @import "../../components/filter/monitor/filter-monitor";

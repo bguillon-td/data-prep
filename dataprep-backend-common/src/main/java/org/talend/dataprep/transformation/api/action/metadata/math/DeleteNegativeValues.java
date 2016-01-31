@@ -4,6 +4,7 @@ import static org.talend.dataprep.api.type.Type.NUMERIC;
 import static org.talend.dataprep.api.type.Type.STRING;
 
 import java.math.BigDecimal;
+import java.text.ParseException;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -15,6 +16,7 @@ import org.apache.commons.lang.StringUtils;
 import org.springframework.stereotype.Component;
 import org.talend.dataprep.api.dataset.ColumnMetadata;
 import org.talend.dataprep.api.type.Type;
+import org.talend.dataprep.number.BigDecimalParser;
 import org.talend.dataprep.transformation.api.action.metadata.common.ActionMetadata;
 import org.talend.dataprep.transformation.api.action.metadata.delete.AbstractDelete;
 import org.talend.dataprep.transformation.api.action.parameters.Parameter;
@@ -56,7 +58,7 @@ public class DeleteNegativeValues extends AbstractDelete {
             return false;
         }
         try {
-            BigDecimal bd = new BigDecimal(value.trim());
+            BigDecimal bd = BigDecimalParser.toBigDecimal(value.trim());
             return bd.compareTo(BigDecimal.ZERO) < 0;
         }
         catch (NumberFormatException exc){

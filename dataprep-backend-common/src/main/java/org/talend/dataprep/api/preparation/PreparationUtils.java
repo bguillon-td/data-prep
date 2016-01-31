@@ -10,14 +10,19 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
+import javax.annotation.Resource;
+
+import org.springframework.stereotype.Component;
 import org.talend.dataprep.exception.TDPException;
 import org.talend.dataprep.exception.error.CommonErrorCodes;
 import org.talend.dataprep.preparation.store.PreparationRepository;
 
+@Component
 public class PreparationUtils {
 
-    private PreparationUtils() {
-    }
+    /** The default root content. */
+    @Resource(name = "rootContent")
+    private PreparationActions rootContent;
 
     /**
      * Return a list of all steps ids from root step to the provided step
@@ -25,8 +30,8 @@ public class PreparationUtils {
      * @param repository    The identifiable repository
      * @return The list of step ids from root to step
      */
-    public static List<String> listStepsIds(final String stepId, final PreparationRepository repository) {
-        return listStepsIds(stepId, PreparationActions.ROOT_CONTENT.getId(), repository);
+    public List<String> listStepsIds(final String stepId, final PreparationRepository repository) {
+        return listStepsIds(stepId, rootContent.getId(), repository);
     }
 
     /**
@@ -36,7 +41,7 @@ public class PreparationUtils {
      * @param repository    The identifiable repository
      * @return The list of step ids from starting (limit) to step
      */
-    public static List<String> listStepsIds(final String stepId, final String limit, final PreparationRepository repository) {
+    public List<String> listStepsIds(final String stepId, final String limit, final PreparationRepository repository) {
         return listSteps(repository.get(stepId, Step.class), limit, repository).stream()
                 .map(Step::id)
                 .collect(toList());
@@ -55,8 +60,8 @@ public class PreparationUtils {
      * @see Step#id()
      * @see Step#getParent()
      */
-    public static List<Step> listSteps(String headStepId, PreparationRepository repository) {
-        return listSteps(repository.get(headStepId, Step.class), PreparationActions.ROOT_CONTENT.getId(), repository);
+    public List<Step> listSteps(String headStepId, PreparationRepository repository) {
+        return listSteps(repository.get(headStepId, Step.class), rootContent.getId(), repository);
     }
 
     /**
@@ -70,7 +75,7 @@ public class PreparationUtils {
      * @see Step#id()
      * @see Step#getParent()
      */
-    public static List<Step> listSteps(final Step step, final String limit, final PreparationRepository repository) {
+    public List<Step> listSteps(final Step step, final String limit, final PreparationRepository repository) {
         if (repository == null) {
             throw new IllegalArgumentException("Repository cannot be null.");
         }

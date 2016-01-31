@@ -6,6 +6,7 @@ import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.talend.dataprep.api.dataset.ColumnMetadata;
 import org.talend.dataprep.api.dataset.DataSetRow;
 import org.talend.dataprep.api.dataset.RowMetadata;
 import org.talend.dataprep.stream.ExtendedStream;
@@ -61,6 +62,26 @@ public class BaseTransformer {
                         // Only apply action if it hasn't indicated it's DONE.
                         current = action.apply(current, actionContext);
                     }
+                    // TODO Need transformation refactoring to better handle schema change propagation
+                    if (!current.getRowMetadata().equals(actionContext.getOutputRowMetadata())) {
+                        LOGGER.debug("Previous output schema changed in middle of transformation!");
+                        // Detect column name changes
+                        final List<ColumnMetadata> previousColumns = actionContext.getOutputRowMetadata().getColumns();
+                        final List<ColumnMetadata> transformedColumns = current.getRowMetadata().getColumns();
+                        if (previousColumns.size() == transformedColumns.size()) {
+                            boolean changedName = false;
+                            for (int i = 0; i < transformedColumns.size(); i++) {
+                                if (!transformedColumns.get(i).getName().equals(previousColumns.get(i).getName())) {
+                                    changedName = true;
+                                }
+                            }
+                            if (changedName) {
+                                LOGGER.debug("Detected column name change. Propagate change to next actions.");
+                                actionContext.setOutputRowMetadata(current.getRowMetadata());
+                            }
+                        }
+                    }
+                    // Remembers last output schema for chaining actions
                     current.setRowMetadata(actionContext.getOutputRowMetadata());
                     lastInputMetadata = actionContext.getOutputRowMetadata();
                     // Check whether we should continue using this action or not

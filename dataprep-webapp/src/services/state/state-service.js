@@ -32,6 +32,12 @@
             setNameEditionMode: PlaygroundStateService.setNameEditionMode,
             updateDatasetStatistics: PlaygroundStateService.updateDatasetStatistics,
 
+            //playground - dataset parameters
+            toggleDatasetParameters: PlaygroundStateService.toggleDatasetParameters,
+            hideDatasetParameters: PlaygroundStateService.hideDatasetParameters,
+            setIsSendingDatasetParameters: PlaygroundStateService.setIsSendingDatasetParameters,
+            setDatasetEncodings: PlaygroundStateService.setDatasetEncodings,
+
             //playground - recipe
             hideRecipe: PlaygroundStateService.hideRecipe,
             showRecipe: PlaygroundStateService.showRecipe,
@@ -42,11 +48,15 @@
 
             //playground - lookup
             setLookupActions: PlaygroundStateService.setLookupActions,
+            setLookupAddedActions: PlaygroundStateService.setLookupAddedActions,
+            setLookupDatasets: PlaygroundStateService.setLookupDatasets,
             setLookupAddMode: PlaygroundStateService.setLookupAddMode,
             setLookupSelectedColumn: PlaygroundStateService.setLookupSelectedColumn,
             setLookupUpdateMode: PlaygroundStateService.setLookupUpdateMode,
             setLookupVisibility: PlaygroundStateService.setLookupVisibility,
             updateLookupColumnsToAdd: PlaygroundStateService.updateLookupColumnsToAdd,
+            setLookupDatasetsSort: PlaygroundStateService.setLookupDatasetsSort,
+            setLookupDatasetsOrder: PlaygroundStateService.setLookupDatasetsOrder,
 
             //playground - filters
             addGridFilter: PlaygroundStateService.addGridFilter,
@@ -91,6 +101,10 @@
             //inventory
             setPreparations: InventoryStateService.setPreparations,
             removePreparation: InventoryStateService.removePreparation,
+            setDatasets: InventoryStateService.setDatasets,
+            removeDataset: InventoryStateService.removeDataset,
+            setDatasetsSort: InventoryStateService.setSort,
+            setDatasetsOrder: InventoryStateService.setOrder,
 
             //feedback
             showFeedback: FeedbackStateService.show,

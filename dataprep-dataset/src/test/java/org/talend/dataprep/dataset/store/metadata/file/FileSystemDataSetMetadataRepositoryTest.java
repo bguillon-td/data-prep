@@ -90,7 +90,7 @@ public class FileSystemDataSetMetadataRepositoryTest extends DataSetBaseTest {
         // when
         DataSetMetadata update = builder.build().readerFor(DataSetMetadata.class)
                 .readValue(this.getClass().getResourceAsStream("dataset_2.json"));
-        update = DataSetMetadata.Builder.metadata().copy(update).id(id).build();
+        update = metadataBuilder.metadata().copy(update).id(id).build();
 
         repository.add(update);
 
@@ -212,7 +212,7 @@ public class FileSystemDataSetMetadataRepositoryTest extends DataSetBaseTest {
     public DataSetMetadata getMetadata(String id) throws IOException {
         DataSetMetadata original = builder.build().readerFor(DataSetMetadata.class)
                 .readValue(this.getClass().getResourceAsStream("dataset.json"));
-        return DataSetMetadata.Builder.metadata().copy(original).id(id).build();
+        return metadataBuilder.metadata().copy(original).id(id).build();
     }
 
 }

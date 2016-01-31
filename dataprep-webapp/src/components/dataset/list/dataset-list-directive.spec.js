@@ -13,7 +13,8 @@ describe('DatasetList directive', function () {
             'author': 'anonymousUser',
             'created': '1437020219741',
             'type': 'text/csv',
-            'certificationStep': 'NONE'
+            'certificationStep': 'NONE',
+            'preparations': [{name:'US States prepa'}, {name:'US States prepa 2'}]
         },
         {
             'id': 'e93b9c92-e054-4f6a-a38f-ca52f22ead2b',
@@ -21,23 +22,42 @@ describe('DatasetList directive', function () {
             'author': 'anonymousUser',
             'created': '143702021974',
             'type': 'application/vnd.ms-excel',
-            'certificationStep': 'PENDING'
+            'certificationStep': 'PENDING',
+            'preparations': [{name:'Customers prepa'}]
         },
         {
             'id': 'e93b9c92-e054-4f6a-a38f-ca52f22ead3a',
             'name': 'Customers 2',
             'author': 'anonymousUser',
             'created': '14370202197',
-            'certificationStep': 'CERTIFIED'
+            'certificationStep': 'CERTIFIED',
+            'preparations': []
         }
     ];
 
+    var sortList = [
+        {id: 'name', name: 'NAME_SORT', property: 'name'},
+        {id: 'date', name: 'DATE_SORT', property: 'created'}
+    ];
+
+    var orderList = [
+        {id: 'asc', name: 'ASC_ORDER'},
+        {id: 'desc', name: 'DESC_ORDER'}
+    ];
+
     beforeEach(module('data-prep.dataset-list', function ($provide) {
-        stateMock = {folder: {
-                                currentFolderContent : {
-                                    datasets : datasets
-                                }
-                    }};
+        stateMock = {
+            folder: {
+                currentFolderContent: {
+                    datasets: datasets
+                }
+            },
+            inventory: {
+                datasets: [],
+                sortList: sortList,
+                orderList: orderList
+            }
+        };
         $provide.constant('state', stateMock);
     }));
 
@@ -82,6 +102,8 @@ describe('DatasetList directive', function () {
         createElement();
 
         //then
+        expect(element.find('.inventory-item').length).toBe(3);
+
         var icon = element.find('.inventory-icon').eq(0);
         var iconSrc = icon.find('> img')[0].src;
         var certificationIcon = icon.find('.pin');
@@ -119,5 +141,11 @@ describe('DatasetList directive', function () {
         //then
         var activeEl = document.activeElement;
         expect(angular.element(activeEl).attr('id')).toBe('new-name-input-id');
+    }));
+
+    it('should create related preparations list', inject(function(){
+        expect(element.find('.inventory-item').eq(0).find('.inventory-actions-related-item-menu > li').length).toBe(4);
+        expect(element.find('.inventory-item').eq(1).find('.inventory-actions-related-item-menu > li').length).toBe(3);
+        expect(element.find('.inventory-item').eq(2).find('.inventory-actions-related-item-menu > li').length).toBe(0);
     }));
 });

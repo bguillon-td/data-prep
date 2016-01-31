@@ -12,9 +12,11 @@ import javax.annotation.Nullable;
 import org.apache.commons.collections.IteratorUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 import org.talend.dataprep.api.dataset.DataSetMetadata;
+import org.talend.dataprep.api.dataset.DataSetMetadataBuilder;
 import org.talend.dataprep.dataset.store.metadata.DataSetMetadataRepository;
 import org.talend.dataprep.dataset.store.metadata.DataSetMetadataRepositoryAdapter;
 import org.talend.dataprep.lock.DistributedLock;
@@ -30,6 +32,9 @@ public class InMemoryDataSetMetadataRepository extends DataSetMetadataRepository
 
     /** This class' logger. */
     private static final Logger LOG = LoggerFactory.getLogger(InMemoryDataSetMetadataRepository.class);
+
+    @Autowired
+    private DataSetMetadataBuilder metadataBuilder;
 
     /** Where the DatasetMetadata is actually stored. */
     private final Map<String, DataSetMetadata> store = new HashMap<>();
@@ -111,7 +116,7 @@ public class InMemoryDataSetMetadataRepository extends DataSetMetadataRepository
             return null;
         }
         resetTransientValues(dataSetMetadata);
-        return dataSetMetadata.clone();
+        return metadataBuilder.metadata().copy(dataSetMetadata).build();
     }
 
     /**

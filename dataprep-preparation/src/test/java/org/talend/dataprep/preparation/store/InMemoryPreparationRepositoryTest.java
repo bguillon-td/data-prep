@@ -2,11 +2,15 @@ package org.talend.dataprep.preparation.store;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.test.util.ReflectionTestUtils;
+import org.talend.dataprep.api.preparation.Action;
 import org.talend.dataprep.api.preparation.Preparation;
+import org.talend.dataprep.api.preparation.PreparationActions;
 import org.talend.dataprep.api.preparation.Step;
 import org.talend.dataprep.preparation.store.inmemory.InMemoryPreparationRepository;
 
@@ -25,6 +29,10 @@ public class InMemoryPreparationRepositoryTest {
      */
     public InMemoryPreparationRepositoryTest() {
         repository = new InMemoryPreparationRepository();
+        String version = "1.0";
+        final PreparationActions rootContent = new PreparationActions(Collections.<Action> emptyList(), version);
+        ReflectionTestUtils.setField(repository, "rootContent", rootContent);
+        ReflectionTestUtils.setField(repository, "rootStep", new Step(null, rootContent.id(), version));
     }
 
     /**
@@ -78,7 +86,7 @@ public class InMemoryPreparationRepositoryTest {
      * Helper method that only generates a step but simplify code.
      */
     private Step getStep(String rootName) {
-        return new Step(rootName + "_parent", rootName + "_content");
+        return new Step(rootName + "_parent", rootName + "_content", "1.0.PE");
     }
 
     /**
@@ -99,7 +107,7 @@ public class InMemoryPreparationRepositoryTest {
      * @return a new Preparation.
      */
     private Preparation getPreparation(String datasetId, String rootName) {
-        Preparation preparation = new Preparation(datasetId, getStep(rootName).id());
+        Preparation preparation = new Preparation(datasetId, getStep(rootName).id(), "1.0");
         preparation.setName(rootName + "_name");
         return preparation;
     }

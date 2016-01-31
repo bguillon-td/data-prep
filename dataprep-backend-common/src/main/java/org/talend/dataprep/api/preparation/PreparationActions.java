@@ -13,40 +13,45 @@ import org.apache.commons.codec.digest.DigestUtils;
 import org.talend.dataprep.exception.TDPException;
 import org.talend.dataprep.exception.error.CommonErrorCodes;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+/**
+ * Models a list of actions for a step within a preparation.
+ */
 public class PreparationActions extends Identifiable implements Serializable {
 
     /** Serialization UID. */
     private static final long serialVersionUID = 1L;
 
-    public static final PreparationActions ROOT_CONTENT = new PreparationActions(Collections.<Action>emptyList());
-
+    /** The list of actions. */
     private final List<Action> actions;
 
+    /** The app version. */
+    @JsonProperty("app-version")
+    private String appVersion;
+
     /**
-     * Default empty constructor.
+     * Default constructor.
+     * 
+     * @param appVersion the current application version for this PreparationActions.
      */
-    public PreparationActions() {
-        this(Collections.emptyList());
+    public PreparationActions(String appVersion) {
+        this(Collections.emptyList(), appVersion);
     }
 
     /**
      * Create the PreparationActions with the given actions.
      * 
      * @param actions the actions for this preparation.
+     * @param appVersion the current application version for this PreparationActions.
      */
-    public PreparationActions(final List<Action> actions) {
+    @JsonCreator
+    public PreparationActions(@JsonProperty("actions")
+    final List<Action> actions, @JsonProperty("app-version") String appVersion) {
         this.actions = unmodifiableList(actions);
-    }
-
-    /**
-     * Return the immutable list of actions
-     * 
-     * @return - the list of actions
-     */
-    public List<Action> getActions() {
-        return actions;
+        this.appVersion = appVersion;
     }
 
     /**
@@ -59,7 +64,7 @@ public class PreparationActions extends Identifiable implements Serializable {
         final List<Action> appendedActions = new ArrayList<>(getActions().size() + newActions.size());
         appendedActions.addAll(actions);
         appendedActions.addAll(newActions);
-        return new PreparationActions(appendedActions);
+        return new PreparationActions(appendedActions, getAppVersion());
     }
 
     /**
@@ -91,6 +96,22 @@ public class PreparationActions extends Identifiable implements Serializable {
         // No op
     }
 
+    /**
+     * Return the immutable list of actions
+     *
+     * @return - the list of actions
+     */
+    public List<Action> getActions() {
+        return actions;
+    }
+
+    /**
+     * @return the AppVersion
+     */
+    public String getAppVersion() {
+        return appVersion;
+    }
+
     @Override
     public String toString() {
         String serializedActions;
@@ -99,12 +120,9 @@ public class PreparationActions extends Identifiable implements Serializable {
         } catch (IOException e) {
             serializedActions = "invalid actions";
         }
-        return "PreparationActions {" + "id:'" + id() + "', actions: " + serializedActions + '}';
+        return "PreparationActions {" + "id:'" + id() + "', version: " + appVersion + ", actions: " + serializedActions + '}';
     }
 
-    /**
-     * @see Object#equals(Object)
-     */
     @Override
     public boolean equals(Object o) {
         if (this == o)
@@ -112,14 +130,11 @@ public class PreparationActions extends Identifiable implements Serializable {
         if (o == null || getClass() != o.getClass())
             return false;
         PreparationActions that = (PreparationActions) o;
-        return Objects.equals(actions, that.actions);
+        return Objects.equals(actions, that.actions) && Objects.equals(appVersion, that.appVersion);
     }
 
-    /**
-     * @see Object#hashCode()
-     */
     @Override
     public int hashCode() {
-        return Objects.hash(actions);
+        return Objects.hash(actions, appVersion);
     }
 }

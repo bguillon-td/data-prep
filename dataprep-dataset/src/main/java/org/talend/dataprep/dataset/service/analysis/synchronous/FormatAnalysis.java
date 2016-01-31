@@ -5,7 +5,6 @@ import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.util.*;
 
-import org.apache.commons.collections.ListUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,16 +13,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.talend.dataprep.api.dataset.DataSetContent;
 import org.talend.dataprep.api.dataset.DataSetMetadata;
+import org.talend.dataprep.dataset.configuration.EncodingSupport;
 import org.talend.dataprep.dataset.store.content.ContentStoreRouter;
 import org.talend.dataprep.dataset.store.metadata.DataSetMetadataRepository;
 import org.talend.dataprep.exception.TDPException;
 import org.talend.dataprep.exception.error.DataSetErrorCodes;
 import org.talend.dataprep.lock.DistributedLock;
 import org.talend.dataprep.log.Markers;
-import org.talend.dataprep.schema.FormatGuess;
-import org.talend.dataprep.schema.FormatGuesser;
-import org.talend.dataprep.schema.SchemaParser;
-import org.talend.dataprep.schema.SchemaParserResult;
+import org.talend.dataprep.schema.*;
 import org.talend.dataprep.schema.unsupported.UnsupportedFormatGuess;
 import org.talend.dataprep.schema.unsupported.UnsupportedFormatGuesser;
 
@@ -39,17 +36,32 @@ import org.talend.dataprep.schema.unsupported.UnsupportedFormatGuesser;
 @Component
 public class FormatAnalysis implements SynchronousDataSetAnalyzer {
 
+    /** This class' header. */
     private static final Logger LOG = LoggerFactory.getLogger(FormatAnalysis.class);
 
+    /** DataSet Metadata repository. */
     @Autowired
     DataSetMetadataRepository repository;
 
+    /** DataSet content store. */
     @Autowired
     ContentStoreRouter store;
 
+    /** List of media type guessers. */
     @Autowired
     List<FormatGuesser> guessers = new LinkedList<>();
 
+    /** List of schema updaters. */
+    @Autowired
+    List<SchemaUpdater> updaters = new LinkedList<>();
+
+    /** Bean that list supported encodings. */
+    @Autowired
+    private EncodingSupport encodings;
+
+    /**
+     * @see SynchronousDataSetAnalyzer#analyze(String)
+     */
     @Override
     public void analyze(String dataSetId) {
 
@@ -92,9 +104,7 @@ public class FormatAnalysis implements SynchronousDataSetAnalyzer {
                 dataSetContent.setMediaType(bestGuess.getMediaType());
                 metadata.setEncoding(bestGuessResult.getEncoding());
 
-                LOG.debug(marker, "Parsing column information...");
                 parseColumnNameInformation(dataSetId, metadata, bestGuess);
-                LOG.debug(marker, "Parsed column information.");
 
                 repository.add(metadata);
                 LOG.debug(marker, "format analysed for dataset");
@@ -104,6 +114,33 @@ public class FormatAnalysis implements SynchronousDataSetAnalyzer {
         } finally {
             datasetLock.unlock();
         }
+    }
+
+    /**
+     * Update the dataset schema information from its metadata.
+     * 
+     * @param original the orginal dataset metadata.
+     * @param updated the dataset to update.
+     */
+    public void update(DataSetMetadata original, DataSetMetadata updated) {
+
+        final Marker marker = Markers.dataset(updated.getId());
+
+        // find the schema updater (if any)
+        final Optional<SchemaUpdater> optionalUpdater = updaters.stream().filter(u -> u.accept(updated)).findFirst();
+        if (!optionalUpdater.isPresent()) {
+            LOG.debug(marker, "no schema updater found");
+            return;
+        }
+
+        // update the schema
+        final SchemaUpdater updater = optionalUpdater.get();
+        updater.updateSchema(original, updated);
+
+        // update the columns information
+        parseColumnNameInformation(updated.getId(), updated, updater.getFormatGuess());
+
+        LOG.debug(marker, "format updated for dataset");
     }
 
     /**
@@ -125,7 +162,7 @@ public class FormatAnalysis implements SynchronousDataSetAnalyzer {
                 continue;
             }
             // Try to read content given certified encodings
-            final Collection<Charset> availableCharsets = ListUtils.union(getCertifiedCharsets(), getSupportedCharsets());
+            final Collection<Charset> availableCharsets = encodings.getSupportedCharsets();
             for (Charset charset : availableCharsets) {
                 try (InputStream content = store.getAsRaw(metadata)) {
                     LOG.debug(marker, "try reading with {} encoded in {}", guesser.getClass().getSimpleName(), charset.name());
@@ -144,31 +181,6 @@ public class FormatAnalysis implements SynchronousDataSetAnalyzer {
     }
 
     /**
-     * @return The list of supported encodings in data prep (could be {@link Charset#availableCharsets()}, but requires
-     * extensive tests, so a sub set is returned to ease testing).
-     * @see #getSupportedCharsets()
-     */
-    private List<Charset> getCertifiedCharsets() {
-        return Arrays.asList( //
-                Charset.forName("UTF-8"), //
-                Charset.forName("UTF-16"), //
-                Charset.forName("UTF-16LE"), //
-                Charset.forName("windows-1252"), //
-                Charset.forName("ISO-8859-1"), //
-                Charset.forName("x-MacRoman") //
-        );
-    }
-
-    /**
-     * @return The list of encodings in data prep may use but are without scope of extensive tests (supported, but not
-     * certified).
-     * @see #getCertifiedCharsets()
-     */
-    private List<Charset> getSupportedCharsets() {
-        return new ArrayList<>(Charset.availableCharsets().values());
-    }
-
-    /**
      * Parse and store column name information.
      *
      * @param dataSetId the dataset id.
@@ -176,6 +188,8 @@ public class FormatAnalysis implements SynchronousDataSetAnalyzer {
      * @param bestGuess the format guesser.
      */
     private void parseColumnNameInformation(String dataSetId, DataSetMetadata metadata, FormatGuess bestGuess) {
+        final Marker marker = Markers.dataset(dataSetId);
+        LOG.debug(marker, "Parsing column information...");
         try (InputStream content = store.getAsRaw(metadata)) {
             SchemaParser parser = bestGuess.getSchemaParser();
 
@@ -196,6 +210,7 @@ public class FormatAnalysis implements SynchronousDataSetAnalyzer {
         } catch (IOException e) {
             throw new TDPException(DataSetErrorCodes.UNABLE_TO_READ_DATASET_CONTENT, e);
         }
+        LOG.debug(marker, "Parsed column information.");
     }
 
     @Override

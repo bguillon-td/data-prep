@@ -174,9 +174,7 @@ public class StackedTransformer implements Transformer {
                 .forEach(r -> writeRecords(writer, processingRows, r));
             writer.endArray();
             //
-            if (!writer.requireMetadataForHeader()) {
-                writeMetadata(writer, processingRows.pop());
-            }
+            writeMetadata(writer, processingRows.pop());
             writer.endObject();
             writer.flush();
         } catch (IOException e) {
@@ -235,10 +233,6 @@ public class StackedTransformer implements Transformer {
 
     private DataSetRow startRecords(TransformerWriter writer, DataSetRow r) {
         try {
-            // Write metadata if writer asks for it
-            if (writer.requireMetadataForHeader()) {
-                writeMetadata(writer, r);
-            }
             // Now starts records
             writer.fieldName("records");
             writer.startArray();

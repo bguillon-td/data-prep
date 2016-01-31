@@ -56,7 +56,7 @@ public class FileSystemUserDataRepositoryTest {
     @Test
     public void shouldGetWhatWasAdded() {
 
-        UserData expected = new UserData("123");
+        UserData expected = new UserData("123", "1.0-SNAPSHOT");
         expected.addFavoriteDataset("dataset#987654");
         expected.addFavoriteDataset("dataset#lkj-sfdgs-63563-sfgsfg'");
 
@@ -69,7 +69,7 @@ public class FileSystemUserDataRepositoryTest {
     @Test
     public void saveTwiceShouldUpdateUserData() {
 
-        UserData expected = new UserData("123");
+        UserData expected = new UserData("123", "1.0-SNAPSHOT");
         expected.addFavoriteDataset("dataset#987654");
         expected.addFavoriteDataset("dataset#lkj-sfdgs-63563-sfgsfg'");
 
@@ -93,7 +93,7 @@ public class FileSystemUserDataRepositoryTest {
 
     @Test
     public void removeShouldRemoveFile() {
-        UserData userData = new UserData("123");
+        UserData userData = new UserData("123", "1.0-SNAPSHOT");
         userData.addFavoriteDataset("dataset#1");
         userData.addFavoriteDataset("dataset#2");
 
@@ -108,7 +108,7 @@ public class FileSystemUserDataRepositoryTest {
 
         int count = 24;
         for (int i = 0; i < count; i++) {
-            UserData userData = new UserData(String.valueOf(i));
+            UserData userData = new UserData(String.valueOf(i), "1.0-SNAPSHOT");
             userData.addFavoriteDataset("dataset#" + i);
             userData.addFavoriteDataset("dataset#" + i + 1);
             repository.save(userData);

@@ -2,7 +2,6 @@ package org.talend.dataprep.dataset.service.analysis.synchronous;
 
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.assertThat;
-import static org.talend.dataprep.api.dataset.DataSetMetadata.Builder.metadata;
 
 import java.util.stream.Stream;
 
@@ -29,7 +28,7 @@ public class FormatAnalysisTest extends DataSetBaseTest {
 
     @Test
     public void testCSVAnalysis() throws Exception {
-        final DataSetMetadata metadata = metadata().id("1234").build();
+        final DataSetMetadata metadata = metadataBuilder.metadata().id("1234").build();
         dataSetMetadataRepository.add(metadata);
         contentStore.storeAsRaw(metadata, DataSetServiceTests.class.getResourceAsStream("../avengers.csv"));
         formatAnalysis.analyze("1234");
@@ -42,7 +41,7 @@ public class FormatAnalysisTest extends DataSetBaseTest {
 
     @Test
     public void testEncodingDetection() throws Exception {
-        final DataSetMetadata metadata = metadata().id("1234").build();
+        final DataSetMetadata metadata = metadataBuilder.metadata().id("1234").build();
         dataSetMetadataRepository.add(metadata);
         contentStore.storeAsRaw(metadata, DataSetServiceTests.class.getResourceAsStream("../wave_lab_utf16_LE.txt"));
         formatAnalysis.analyze("1234");
@@ -56,7 +55,7 @@ public class FormatAnalysisTest extends DataSetBaseTest {
 
     @Test
     public void test_TDP_690() throws Exception {
-        final DataSetMetadata metadata = metadata().id("1234").build();
+        final DataSetMetadata metadata = metadataBuilder.metadata().id("1234").build();
         dataSetMetadataRepository.add(metadata);
         contentStore.storeAsRaw(metadata, DataSetServiceTests.class.getResourceAsStream("../wave_lab_utf16_LE.txt"));
         formatAnalysis.analyze("1234");
@@ -69,7 +68,7 @@ public class FormatAnalysisTest extends DataSetBaseTest {
 
     @Test
     public void testXLSXAnalysis() throws Exception {
-        final DataSetMetadata metadata = metadata().id("1234").build();
+        final DataSetMetadata metadata = metadataBuilder.metadata().id("1234").build();
         dataSetMetadataRepository.add(metadata);
         contentStore.storeAsRaw(metadata, DataSetServiceTests.class.getResourceAsStream("../tagada.xls"));
         formatAnalysis.analyze("1234");

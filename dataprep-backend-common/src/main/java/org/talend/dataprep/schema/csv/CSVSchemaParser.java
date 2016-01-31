@@ -7,13 +7,11 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.talend.dataprep.api.dataset.ColumnMetadata;
 import org.talend.dataprep.api.dataset.DataSetMetadata;
 import org.talend.dataprep.api.type.Type;
 import org.talend.dataprep.exception.TDPException;
@@ -78,44 +76,4 @@ public class CSVSchemaParser implements SchemaParser {
                 .draft(false).build();
     }
 
-    /**
-     * Parses the ten first lines and naively guess the data type of columns. TODO: it guesses according to the last
-     * line read instead of using all ten lines.
-     *
-     * @param reader the csv reader.
-     * @param sheetContents the sheet content.
-     * @throws IOException if an error occurs.
-     */
-    private void detectHeader(CSVReader reader, List<SchemaParserResult.SheetContent> sheetContents) throws IOException {
-
-        // Best guess (and naive) on data types
-        String[] line;
-        int lineNumber = 0;
-        // Performs naive check on the 10 first lines (quite time consuming to parse all for a naive guess).
-        while ((line = reader.readNext()) != null && lineNumber < 10) {
-            for (int i = 0; i < line.length; i++) {
-                String columnValue = line[i];
-                Optional<SchemaParserResult.SheetContent> content = sheetContents.stream() //
-                        .filter(sheetContent -> META_KEY.equals(sheetContent.getName())) //
-                        .findFirst();
-
-                List<ColumnMetadata> columns = content.get().getColumnMetadatas();
-                try {
-                    Integer.parseInt(columnValue);
-
-                    // in case there are more columns that in the header
-                    if (content.isPresent() && columns.size() > i) {
-                        columns.get(i).setType(Type.INTEGER.getName());
-                    }
-                } catch (NumberFormatException e) {
-                    // Not a number
-                }
-                if (("true".equalsIgnoreCase(columnValue.trim()) || "false".equalsIgnoreCase(columnValue.trim()))
-                        && columns.size() > i) {
-                    columns.get(i).setType(Type.BOOLEAN.getName());
-                }
-            }
-            lineNumber++;
-        }
-    }
 }

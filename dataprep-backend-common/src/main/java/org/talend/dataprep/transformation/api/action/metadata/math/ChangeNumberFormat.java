@@ -7,11 +7,12 @@ import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.NumberFormat;
-import java.text.ParseException;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.talend.dataprep.api.dataset.ColumnMetadata;
 import org.talend.dataprep.api.dataset.DataSetRow;
@@ -31,6 +32,8 @@ import org.talend.dataprep.transformation.api.action.parameters.SelectParameter;
 @Component(ChangeNumberFormat.ACTION_BEAN_PREFIX + ChangeNumberFormat.ACTION_NAME)
 public class ChangeNumberFormat extends ActionMetadata implements ColumnAction {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(ChangeNumberFormat.class);
+
     /** Action name. */
     public static final String ACTION_NAME = "change_number_format"; //$NON-NLS-1$
 
@@ -38,7 +41,7 @@ public class ChangeNumberFormat extends ActionMetadata implements ColumnAction {
      * Parameter to define original decimal & grouping separators.
      */
     public static final String FROM_SEPARATORS = "from_separators";
-    
+
     /**
      * The pattern shown to the user as a list. An item in this list is the value 'custom', which allow the user to
      * manually enter his pattern.
@@ -54,20 +57,30 @@ public class ChangeNumberFormat extends ActionMetadata implements ColumnAction {
      * Keys used in the values of different parameters:
      */
     protected static final String CUSTOM = "custom";
+
     protected static final String UNKNOWN_SEPARATORS = "unknown_separators";
+
     protected static final String US_SEPARATORS = "us_separators";
+
     protected static final String EU_SEPARATORS = "eu_separators";
+
     protected static final String US_PATTERN = "us_pattern";
+
     protected static final String EU_PATTERN = "eu_pattern";
+
     protected static final String SCIENTIFIC = "scientific";
 
     /**
      * Constants to build parameters name by concat:
      */
     protected static final String FROM = "from";
+
     protected static final String TARGET = "target";
+
     protected static final String GROUPING = "_grouping";
+
     protected static final String DECIMAL = "_decimal";
+
     protected static final String SEPARATOR = "_separator";
 
     /**
@@ -229,6 +242,7 @@ public class ChangeNumberFormat extends ActionMetadata implements ColumnAction {
 
         final String value = row.get(columnId);
         if (StringUtils.isBlank(value)) {
+            LOGGER.debug("Unable to parse {} value as Number, it is blank", value);
             return;
         }
 
@@ -261,8 +275,10 @@ public class ChangeNumberFormat extends ActionMetadata implements ColumnAction {
             String newValue = BigDecimalFormatter.format(bd, decimalTargetFormat);
 
             row.set(columnId, newValue);
-        } catch (ParseException e) {
-            // Do not change this value, not a number
+        }
+        catch (NumberFormatException e){
+            LOGGER.debug("Unable to parse {} value as Number", value);
+            return;
         }
     }
 

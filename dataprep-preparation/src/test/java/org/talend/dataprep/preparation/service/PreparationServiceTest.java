@@ -5,7 +5,6 @@ import static com.jayway.restassured.RestAssured.when;
 import static junit.framework.TestCase.assertTrue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
-import static org.talend.dataprep.api.preparation.Step.ROOT_STEP;
 import static org.talend.dataprep.test.SameJSONFile.sameJSONAsFile;
 import static uk.co.datumedge.hamcrest.json.SameJSONAs.sameJSONAs;
 
@@ -14,6 +13,8 @@ import java.io.InputStream;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+
+import javax.annotation.Resource;
 
 import org.apache.commons.io.IOUtils;
 import org.assertj.core.api.Assertions;
@@ -30,6 +31,7 @@ import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.talend.dataprep.api.preparation.*;
+import org.talend.dataprep.api.service.info.VersionService;
 import org.talend.dataprep.preparation.Application;
 import org.talend.dataprep.preparation.store.PreparationRepository;
 import org.talend.dataprep.transformation.api.action.metadata.common.ImplicitParameters;
@@ -57,6 +59,16 @@ public class PreparationServiceTest {
     @Autowired
     private Jackson2ObjectMapperBuilder builder;
 
+    @Autowired
+    private VersionService versionService;
+
+    /** The root step. */
+    @Resource(name = "rootStep")
+    private Step rootStep;
+
+    @Autowired
+    private PreparationUtils preparationUtils;
+
     @Before
     public void setUp() {
         RestAssured.port = port;
@@ -69,20 +81,19 @@ public class PreparationServiceTest {
 
     @Test
     public void CORSHeaders() throws Exception {
-        given().header("Origin", "fake.host.to.trigger.cors")
-                .when()
-                .get("/preparations").then().header("Access-Control-Allow-Origin", "fake.host.to.trigger.cors");
+        given().header("Origin", "fake.host.to.trigger.cors").when().get("/preparations").then()
+                .header("Access-Control-Allow-Origin", "fake.host.to.trigger.cors");
     }
 
-    //------------------------------------------------------------------------------------------------------------------
-    //------------------------------------------------------GETTER------------------------------------------------------
-    //------------------------------------------------------------------------------------------------------------------
+    // ------------------------------------------------------------------------------------------------------------------
+    // ------------------------------------------------------GETTER------------------------------------------------------
+    // ------------------------------------------------------------------------------------------------------------------
     @Test
     public void should_list_all_preparations() throws Exception {
         // given
         when().get("/preparations/all").then().statusCode(HttpStatus.OK.value()).body(sameJSONAs("[]"));
 
-        final Preparation preparation = new Preparation("1234", ROOT_STEP.id());
+        final Preparation preparation = new Preparation("1234", rootStep.id(), versionService.version().getVersionId());
         preparation.setCreationDate(0);
         preparation.setLastModificationDate(12345);
         repository.add(preparation);
@@ -92,13 +103,13 @@ public class PreparationServiceTest {
 
         // then
         response.then().statusCode(HttpStatus.OK.value())
-                .body(sameJSONAs("[{\"id\":\"ae242b07084aa7b8341867a8be1707f4d52501d1\"," + "\"dataSetId\":\"1234\","
+                .body(sameJSONAs("[{\"id\":\"8b6281c5e99c41313a83777c3ab43b06adda9e5c\"," + "\"dataSetId\":\"1234\","
                         + "\"author\":null," + "\"name\":null," + "\"creationDate\":0," + "\"lastModificationDate\":12345,"
                         + "\"steps\":[\"f6e172c33bdacbc69bca9d32b2bd78174712a171\"]," + "\"diff\":[]," + "\"actions\":[],"
                         + "\"metadata\":[]" + "}]"));
 
         // given
-        final Preparation preparation1 = new Preparation("5678", ROOT_STEP.id());
+        final Preparation preparation1 = new Preparation("5678", rootStep.id(), versionService.version().getVersionId());
         preparation1.setCreationDate(500);
         preparation1.setLastModificationDate(456789);
         repository.add(preparation1);
@@ -112,7 +123,7 @@ public class PreparationServiceTest {
                 .statusCode(HttpStatus.OK.value())
                 .body(sameJSONAs(
                         "[" +
-                         "{\"id\":\"ae242b07084aa7b8341867a8be1707f4d52501d1\"," +
+                         "{\"id\":\"8b6281c5e99c41313a83777c3ab43b06adda9e5c\"," +
                                 "\"dataSetId\":\"1234\"," +
                                 "\"author\":null," +
                                 "\"name\":null," +
@@ -123,7 +134,7 @@ public class PreparationServiceTest {
                                 "\"actions\":[]," +
                                 "\"metadata\":[]" +
                           "}," +
-                          "{\"id\":\"1de0ffaa4e00437dd0c7e1097caf5e5657440ee5\"," +
+                          "{\"id\":\"25a5cfab513118785e09519461e9745c5f6ab41a\"," +
                                 "\"dataSetId\":\"5678\"," +
                                 "\"author\":null," +
                                 "\"name\":null," +
@@ -142,58 +153,62 @@ public class PreparationServiceTest {
     @Test
     public void list() throws Exception {
         when().get("/preparations").then().statusCode(HttpStatus.OK.value()).body(sameJSONAs("[]"));
-        repository.add(new Preparation("1234", ROOT_STEP.id()));
+        final Preparation preparation1 = new Preparation("1234", rootStep.id(), versionService.version().getVersionId());
+        preparation1.setCreationDate(0);
+        repository.add(preparation1);
         when().get("/preparations").then().statusCode(HttpStatus.OK.value())
-                .body(sameJSONAs("[\"ae242b07084aa7b8341867a8be1707f4d52501d1\"]"));
-        repository.add(new Preparation("5678", ROOT_STEP.id()));
+                .body(sameJSONAs("[\"8b6281c5e99c41313a83777c3ab43b06adda9e5c\"]"));
+        final Preparation preparation2 = new Preparation("5678", rootStep.id(), versionService.version().getVersionId());
+        preparation2.setCreationDate(0);
+        repository.add(preparation2);
         List<String> list = when().get("/preparations").jsonPath().getList("");
-        assertThat(list, hasItems("ae242b07084aa7b8341867a8be1707f4d52501d1", "1de0ffaa4e00437dd0c7e1097caf5e5657440ee5"));
+        assertThat(list, hasItems("8b6281c5e99c41313a83777c3ab43b06adda9e5c", "909be8ec2a5e543d958b4e3892a7b9d8f2553a83"));
     }
 
     @Test
     public void get() throws Exception {
-        Preparation preparation = new Preparation("1234", ROOT_STEP.id());
-        preparation.setCreationDate( 0 );
-        preparation.setLastModificationDate( 12345 );
+        Preparation preparation = new Preparation("1234", rootStep.id(), versionService.version().getVersionId());
+        preparation.setCreationDate(0);
+        preparation.setLastModificationDate(12345);
         repository.add(preparation);
         String preparationDetails = when().get("/preparations/{id}", preparation.id()).asString();
-        InputStream expected = PreparationServiceTest.class.getResourceAsStream( "preparation_1234.json" );
-        assertThat(preparationDetails, sameJSONAsFile( expected ));
+        InputStream expected = PreparationServiceTest.class.getResourceAsStream("preparation_1234.json");
+        assertThat(preparationDetails, sameJSONAsFile(expected));
     }
 
     @Test
     public void cloning() throws Exception {
-        Preparation preparation = new Preparation("56789", ROOT_STEP.id());
+        Preparation preparation = new Preparation("56789", rootStep.id(), versionService.version().getVersionId());
         preparation.setName("beer");
         preparation.setCreationDate(1);
         preparation.setLastModificationDate(6789);
-        repository.add( preparation );
+        repository.add(preparation);
         String preparationDetails = when().get("/preparations/{id}", preparation.id()).asString();
 
-        InputStream expected = PreparationServiceTest.class.getResourceAsStream( "preparation_beer.json" );
+        InputStream expected = PreparationServiceTest.class.getResourceAsStream("preparation_beer.json");
         assertThat(preparationDetails, sameJSONAsFile(expected));
 
         ObjectMapper objectMapper = new ObjectMapper() //
-            .configure( DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, Boolean.FALSE );
+                .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, Boolean.FALSE);
 
-        Preparation result = objectMapper.readerFor( Preparation.class ).readValue(preparationDetails);
+        Preparation result = objectMapper.readerFor(Preparation.class).readValue(preparationDetails);
 
         Assertions.assertThat(result).isEqualToComparingOnlyGivenFields(preparation, //
                 "name", "lastModificationDate", "creationDate");
 
-        Response cloneResponse =  when().put("/preparations/clone/{id}", preparation.id());
+        Response cloneResponse = when().put("/preparations/clone/{id}", preparation.id());
 
         String cloneId = cloneResponse.asString();
 
         String preparationDetailsClone = when().get("/preparations/{id}", cloneId).asString();
 
-        Preparation clone = objectMapper.readerFor(Preparation.class ).readValue(preparationDetailsClone);
+        Preparation clone = objectMapper.readerFor(Preparation.class).readValue(preparationDetailsClone);
 
-        Assertions.assertThat( clone.getCreationDate() ).isGreaterThan( result.getCreationDate() );
-        Assertions.assertThat( clone.getLastModificationDate() ).isGreaterThan( result.getLastModificationDate() );
-        Assertions.assertThat( clone.getName() ).isEqualTo( result.getName() + " Copy" );
-        Assertions.assertThat( clone.getId() ).isNotEqualTo( result.getId() );
-        Assertions.assertThat( clone.getDataSetId() ).isEqualTo( result.getDataSetId() );
+        Assertions.assertThat(clone.getCreationDate()).isGreaterThan(result.getCreationDate());
+        Assertions.assertThat(clone.getLastModificationDate()).isGreaterThan(result.getLastModificationDate());
+        Assertions.assertThat(clone.getName()).isEqualTo(result.getName() + " Copy");
+        Assertions.assertThat(clone.getId()).isNotEqualTo(result.getId());
+        Assertions.assertThat(clone.getDataSetId()).isEqualTo(result.getDataSetId());
 
     }
 
@@ -238,26 +253,26 @@ public class PreparationServiceTest {
         }
     }
 
-    //------------------------------------------------------------------------------------------------------------------
-    //-----------------------------------------------------LIFECYCLE----------------------------------------------------
-    //------------------------------------------------------------------------------------------------------------------
+    // ------------------------------------------------------------------------------------------------------------------
+    // -----------------------------------------------------LIFECYCLE----------------------------------------------------
+    // ------------------------------------------------------------------------------------------------------------------
     @Test
     public void create() throws Exception {
         assertThat(repository.listAll(Preparation.class).size(), is(0));
         String preparationId = given().contentType(ContentType.JSON).body("{\"name\": \"test_name\", \"dataSetId\": \"1234\"}")
                 .when().put("/preparations").asString();
-        assertThat(preparationId, is(preparationId));
         assertThat(repository.listAll(Preparation.class).size(), is(1));
         Preparation preparation = repository.listAll(Preparation.class).iterator().next();
         assertThat(preparation.id(), is(preparationId));
         assertThat(preparation.getName(), is("test_name"));
+        assertThat(preparation.getAppVersion(), is(versionService.version().getVersionId()));
     }
 
     @Test
     public void createWithSpecialCharacters() throws Exception {
         assertThat(repository.listAll(Preparation.class).size(), is(0));
-        String preparationId = given().contentType(ContentType.JSON).body("{\"name\": \"éàçè\", \"dataSetId\": \"1234\"}".getBytes("UTF-8"))
-                .when().put("/preparations").asString();
+        String preparationId = given().contentType(ContentType.JSON)
+                .body("{\"name\": \"éàçè\", \"dataSetId\": \"1234\"}".getBytes("UTF-8")).when().put("/preparations").asString();
         assertThat(preparationId, is(preparationId));
         assertThat(repository.listAll(Preparation.class).size(), is(1));
         Preparation preparation = repository.listAll(Preparation.class).iterator().next();
@@ -270,7 +285,6 @@ public class PreparationServiceTest {
         assertThat(repository.listAll(Preparation.class).size(), is(0));
         String preparationId = given().contentType(ContentType.JSON).body("{\"name\": \"test_name\", \"dataSetId\": \"1234\"}")
                 .when().put("/preparations").asString();
-        assertThat(preparationId, is(preparationId));
         assertThat(repository.listAll(Preparation.class).size(), is(1));
         Preparation preparation = repository.listAll(Preparation.class).iterator().next();
         assertThat(preparation.id(), is(preparationId));
@@ -285,49 +299,52 @@ public class PreparationServiceTest {
         assertThat(repository.listAll(Preparation.class).size(), is(0));
         String preparationId = given().contentType(ContentType.JSON).body("{\"name\": \"test_name\", \"dataSetId\": \"1234\"}")
                 .when().put("/preparations").asString();
-        assertThat(preparationId, is(preparationId));
+
         Preparation preparation = repository.listAll(Preparation.class).iterator().next();
+        assertThat(preparationId, is(preparation.getId()));
+
         long oldModificationDate = preparation.getLastModificationDate();
 
         // Test preparation details update
-        preparationId = given().contentType(ContentType.JSON).body("{\"name\": \"test_name_updated\", \"dataSetId\": \"1234\"}")
+        String updatedId = given().contentType(ContentType.JSON)
+                .body("{\"name\": \"test_name_updated\", \"dataSetId\": \"1234\"}")
                 .when().put("/preparations/{id}", preparationId).asString();
 
-        // Preparation id should not change
-        assertThat(preparationId, is(preparationId));
+        // Preparation id should change
+        assertThat(updatedId, is(not(preparationId)));
         Collection<Preparation> preparations = repository.listAll(Preparation.class);
         assertThat(preparations.size(), is(1));
         preparation = preparations.iterator().next();
-        assertThat(preparation.id(), is(preparationId));
         assertThat(preparation.getName(), is("test_name_updated"));
         assertThat(preparation.getLastModificationDate(), is(greaterThan(oldModificationDate)));
+        assertThat(preparation.getAppVersion(), is(versionService.version().getVersionId()));
     }
 
     @Test
     public void updateWithSpecialArguments() throws Exception {
-        Preparation preparation = new Preparation();
+        Preparation preparation = new Preparation(versionService.version().getVersionId());
         preparation.setDataSetId("1234");
         preparation.setName("test_name");
         String preparationId = given().contentType(ContentType.JSON).body(builder.build().writer().writeValueAsBytes(preparation))
                 .when().put("/preparations").asString();
-        assertThat(preparationId, is(preparationId));
 
         // Test preparation details update
-        preparationId = given().contentType(ContentType.JSON).body("{\"name\": \"éàçè\", \"dataSetId\": \"1234\"}".getBytes("UTF-8"))
-                .when().put("/preparations/{id}", preparationId).asString();
+        String updatedId = given().contentType(ContentType.JSON)
+                .body("{\"name\": \"éàçè\", \"dataSetId\": \"1234\"}".getBytes("UTF-8")).when()
+                .put("/preparations/{id}", preparationId).asString();
 
         // Preparation id should change (new name)
-        assertThat(preparationId, is(preparationId));
+        assertThat(updatedId, is(not(preparationId)));
         Collection<Preparation> preparations = repository.listAll(Preparation.class);
         assertThat(preparations.size(), is(1));
         preparation = preparations.iterator().next();
-        assertThat(preparation.id(), is(preparationId));
+        assertThat(preparation.id(), is(updatedId));
         assertThat(preparation.getName(), is("éàçè"));
     }
 
     @Test
     public void should_change_preparation_head() throws Exception {
-        //given
+        // given
         final String preparationId = createPreparation("1234", "my preparation");
         final String firstStepId = applyTransformation(preparationId, "upper_case.json");
         final String secondStepId = applyTransformation(preparationId, "lower_case.json");
@@ -335,40 +352,41 @@ public class PreparationServiceTest {
         Preparation preparation = repository.get(preparationId, Preparation.class);
         assertThat(preparation.getHeadId(), is(secondStepId));
 
-        //when
+        // when
         given().when()//
                 .put("/preparations/{id}/head/{stepId}", preparationId, firstStepId)//
                 .then()//
                 .statusCode(200);
 
-        //then
+        // then
         preparation = repository.get(preparationId, Preparation.class);
         assertThat(preparation.getHeadId(), is(firstStepId));
     }
 
     @Test
     public void should_throw_exception_on_preparation_head_change_with_unknown_step() throws Exception {
-        //given
+        // given
         final String preparationId = createPreparation("1234", "my preparation");
         final String firstStepId = applyTransformation(preparationId, "upper_case.json");
 
         Preparation preparation = repository.get(preparationId, Preparation.class);
         assertThat(preparation.getHeadId(), is(firstStepId));
 
-        //when
+        // when
         final Response response = given().when()//
                 .put("/preparations/{id}/head/{stepId}", preparationId, "unknown_step_id");
 
-        //then
+        // then
         response.then()//
                 .statusCode(404)//
                 .assertThat()//
                 .body("code", is("TDP_PS_PREPARATION_STEP_DOES_NOT_EXIST"));
     }
 
-    //------------------------------------------------------------------------------------------------------------------
-    //---------------------------------------------------APPEND STEP----------------------------------------------------
-    //------------------------------------------------------------------------------------------------------------------
+    // ------------------------------------------------------------------------------------------------------------------
+    // ---------------------------------------------------APPEND
+    // STEP----------------------------------------------------
+    // ------------------------------------------------------------------------------------------------------------------
     @Test
     public void should_add_action_step_after_head() throws Exception {
         // given
@@ -376,7 +394,7 @@ public class PreparationServiceTest {
         Preparation preparation = repository.get(preparationId, Preparation.class);
         final long oldModificationDate = preparation.getLastModificationDate();
 
-        assertThat(preparation.getHeadId(), is(ROOT_STEP.getId()));
+        assertThat(preparation.getHeadId(), is(rootStep.getId()));
 
         // when
         applyTransformation(preparationId, "copy_lastname.json");
@@ -401,7 +419,7 @@ public class PreparationServiceTest {
         Preparation preparation = repository.get(preparationId, Preparation.class);
         final long oldModificationDate = preparation.getLastModificationDate();
 
-        assertThat(preparation.getHeadId(), is(ROOT_STEP.getId()));
+        assertThat(preparation.getHeadId(), is(rootStep.getId()));
 
         // when
         applyTransformation(preparationId, "copy_lastname_filter.json");
@@ -418,7 +436,8 @@ public class PreparationServiceTest {
         assertThat(headAction.getActions(), hasSize(1));
         final Action copyAction = headAction.getActions().get(0);
         assertThat(copyAction.getAction(), is("copy"));
-        assertThat(copyAction.getParameters().get(ImplicitParameters.FILTER.getKey()), is("{\"eq\":{\"field\":\"0001\",\"value\":\"value\"}}"));
+        assertThat(copyAction.getParameters().get(ImplicitParameters.FILTER.getKey()),
+                is("{\"eq\":{\"field\":\"0001\",\"value\":\"value\"}}"));
     }
 
     @Test
@@ -427,7 +446,7 @@ public class PreparationServiceTest {
         final String preparationId = createPreparation("1234", "my preparation");
         final Preparation preparation = repository.get(preparationId, Preparation.class);
 
-        assertThat(preparation.getHeadId(), is(ROOT_STEP.getId()));
+        assertThat(preparation.getHeadId(), is(rootStep.getId()));
 
         // when
         applyTransformation(preparationId, "copy_lastname.json");
@@ -435,32 +454,34 @@ public class PreparationServiceTest {
         // then
         final String expectedStepId = "907741a33bba6e7b3c6c2e4e7d1305c6bd0644b8";
         final Step head = repository.get(expectedStepId, Step.class);
-        assertThat(head.getParent(), is(ROOT_STEP.getId()));
+        assertThat(head.getParent(), is(rootStep.getId()));
         assertThat(head.getDiff().getCreatedColumns(), hasSize(1));
         assertThat(head.getDiff().getCreatedColumns(), hasItem("0006"));
     }
 
     @Test
     public void should_return_error_when_scope_is_not_consistent_on_append_transformation() throws Exception {
-        //given
+        // given
         final String preparationId = createPreparation("1234", "my preparation");
 
-        //when
-        final Response request = given().body(IOUtils.toString(PreparationServiceTest.class.getResourceAsStream("incomplete_transformation_params.json")))//
+        // when
+        final Response request = given()
+                .body(IOUtils.toString(PreparationServiceTest.class.getResourceAsStream("incomplete_transformation_params.json")))//
                 .contentType(ContentType.JSON)//
                 .when()//
                 .post("/preparations/{id}/actions", preparationId);
 
-        //then
+        // then
         request.then()//
                 .statusCode(400)//
                 .assertThat()//
                 .body("code", is("TDP_ALL_MISSING_ACTION_SCOPE"));
     }
 
-    //------------------------------------------------------------------------------------------------------------------
-    //---------------------------------------------------UPDATE STEP----------------------------------------------------
-    //------------------------------------------------------------------------------------------------------------------
+    // ------------------------------------------------------------------------------------------------------------------
+    // ---------------------------------------------------UPDATE
+    // STEP----------------------------------------------------
+    // ------------------------------------------------------------------------------------------------------------------
     @Test
     public void should_modify_single_action() throws Exception {
         // given
@@ -484,7 +505,7 @@ public class PreparationServiceTest {
         assertThat(preparation.getLastModificationDate(), is(greaterThan(oldModificationDate)));
 
         final Step head = repository.get(expectedStepId, Step.class);
-        assertThat(head.getParent(), is(ROOT_STEP.getId()));
+        assertThat(head.getParent(), is(rootStep.getId()));
     }
 
     @Test
@@ -500,8 +521,7 @@ public class PreparationServiceTest {
 
         // when : update second (last) step
         given().body(IOUtils.toString(PreparationServiceTest.class.getResourceAsStream("upper_case_modified.json")))
-                .contentType(ContentType.JSON).when()
-                .put("/preparations/{id}/actions/{action}", preparationId, secondStepId);
+                .contentType(ContentType.JSON).when().put("/preparations/{id}/actions/{action}", preparationId, secondStepId);
 
         // then
         final String expectedStepId = "3086490ebc8ac72475d249010b0ff67c38ae3454";
@@ -542,7 +562,7 @@ public class PreparationServiceTest {
         assertThat(head.getParent(), is(expectedFirstStepId));
 
         final Step first = repository.get(expectedFirstStepId, Step.class);
-        assertThat(first.getParent(), is(ROOT_STEP.getId()));
+        assertThat(first.getParent(), is(rootStep.getId()));
     }
 
     @Test
@@ -563,12 +583,11 @@ public class PreparationServiceTest {
 
         // when : +1 column
         given().body(IOUtils.toString(PreparationServiceTest.class.getResourceAsStream("update/1bis.split_3_columns.json")))
-                .contentType(ContentType.JSON).when()
-                .put("/preparations/{id}/actions/{action}", preparationId, step1);
+                .contentType(ContentType.JSON).when().put("/preparations/{id}/actions/{action}", preparationId, step1);
 
         // then
         final Preparation preparation = repository.get(preparationId, Preparation.class);
-        final List<String> stepIds = PreparationUtils.listStepsIds(preparation.getHeadId(), repository);
+        final List<String> stepIds = preparationUtils.listStepsIds(preparation.getHeadId(), repository);
         assertThatStepHasCreatedColumns(stepIds.get(1), "0007"); // id < 0009 : do not change
         assertThatStepHasCreatedColumns(stepIds.get(2), "0008", "0009", "0010"); // +1 column
         assertThatStepHasCreatedColumns(stepIds.get(3), "0011"); // id >= 0009 : shift +1
@@ -578,26 +597,28 @@ public class PreparationServiceTest {
 
     @Test
     public void should_return_error_when_scope_is_not_consistent_on_transformation_update() throws Exception {
-        //given
+        // given
         final String preparationId = createPreparation("1234", "my preparation");
         final String stepId = applyTransformation(preparationId, "upper_case.json");
 
-        //when
-        final Response request = given().body(IOUtils.toString(PreparationServiceTest.class.getResourceAsStream("incomplete_transformation_params.json")))//
+        // when
+        final Response request = given()
+                .body(IOUtils.toString(PreparationServiceTest.class.getResourceAsStream("incomplete_transformation_params.json")))//
                 .contentType(ContentType.JSON)//
                 .when()//
                 .put("/preparations/{id}/actions/{action}", preparationId, stepId);
 
-        //then
+        // then
         request.then()//
                 .statusCode(400)//
                 .assertThat()//
                 .body("code", is("TDP_ALL_MISSING_ACTION_SCOPE"));
     }
 
-    //------------------------------------------------------------------------------------------------------------------
-    //---------------------------------------------------DELETE STEP----------------------------------------------------
-    //------------------------------------------------------------------------------------------------------------------
+    // ------------------------------------------------------------------------------------------------------------------
+    // ---------------------------------------------------DELETE
+    // STEP----------------------------------------------------
+    // ------------------------------------------------------------------------------------------------------------------
     @Test
     public void should_delete_single_step() throws Exception {
         // given
@@ -698,16 +719,18 @@ public class PreparationServiceTest {
         assertThat(headActions.getActions().get(3).getAction(), is("lowercase"));
 
         final Map<String, String> renameColumnFirstnameParameters = headActions.getActions().get(2).getParameters();
-        assertThat(renameColumnFirstnameParameters.get("column_name"), is("firstname")); //check we have the rename firstname action
-        assertThat(renameColumnFirstnameParameters.get("column_id"), is("0006")); //shifted id, was 0007
+        assertThat(renameColumnFirstnameParameters.get("column_name"), is("firstname")); // check we have the rename
+                                                                                         // firstname action
+        assertThat(renameColumnFirstnameParameters.get("column_id"), is("0006")); // shifted id, was 0007
 
         final Map<String, String> copyColumnFirstnameParameters = headActions.getActions().get(1).getParameters();
-        assertThat(copyColumnFirstnameParameters.get("column_name"), is("firstname")); //check we have the copy firstname action
+        assertThat(copyColumnFirstnameParameters.get("column_name"), is("firstname")); // check we have the copy
+                                                                                       // firstname action
 
         final Step renameCopyFirstnameStep = repository.get(head.getParent(), Step.class);
         final Step copyFirstnameStep = repository.get(renameCopyFirstnameStep.getParent(), Step.class);
         assertThat(copyFirstnameStep.getDiff().getCreatedColumns(), hasSize(1));
-        assertThat(copyFirstnameStep.getDiff().getCreatedColumns(), hasItem("0006")); //shifted id, was 0007
+        assertThat(copyFirstnameStep.getDiff().getCreatedColumns(), hasItem("0006")); // shifted id, was 0007
     }
 
     @Test
@@ -718,13 +741,10 @@ public class PreparationServiceTest {
         applyTransformation(preparationId, "lower_case.json");
 
         // when: delete ROOT
-        final Response response = when().delete("/preparations/{id}/actions/{action}", preparationId, ROOT_STEP.getId());
+        final Response response = when().delete("/preparations/{id}/actions/{action}", preparationId, rootStep.getId());
 
-        //then
-        response.then()
-                .statusCode(403)
-                .assertThat()
-                .body("code", is("TDP_PS_PREPARATION_ROOT_STEP_CANNOT_BE_DELETED"));
+        // then
+        response.then().statusCode(403).assertThat().body("code", is("TDP_PS_PREPARATION_ROOT_STEP_CANNOT_BE_DELETED"));
     }
 
     @Test
@@ -737,11 +757,8 @@ public class PreparationServiceTest {
         // when : delete unknown step
         final Response response = when().delete("/preparations/{id}/actions/{action}", preparationId, "azerty");
 
-        //then
-        response.then()
-.statusCode(404)
-                .assertThat()
-                .body("code", is("TDP_PS_PREPARATION_STEP_DOES_NOT_EXIST"));
+        // then
+        response.then().statusCode(404).assertThat().body("code", is("TDP_PS_PREPARATION_STEP_DOES_NOT_EXIST"));
     }
 
     @Test
@@ -762,16 +779,17 @@ public class PreparationServiceTest {
         assertThat(oldModificationDate, lessThan(preparation.getLastModificationDate()));
     }
 
-    //------------------------------------------------------------------------------------------------------------------
-    //------------------------------------------------------UTILS-------------------------------------------------------
-    //------------------------------------------------------------------------------------------------------------------
+    // ------------------------------------------------------------------------------------------------------------------
+    // ------------------------------------------------------UTILS-------------------------------------------------------
+    // ------------------------------------------------------------------------------------------------------------------
     /**
      * Create a new preparation with the given name
+     *
      * @param name The preparation name
      * @return The preparation id
      */
     private String createPreparation(final String datasetId, final String name) {
-        final Preparation preparation = new Preparation(datasetId, ROOT_STEP.id());
+        final Preparation preparation = new Preparation(datasetId, rootStep.id(), versionService.version().getVersionId());
         preparation.setName(name);
         preparation.setCreationDate(0);
         repository.add(preparation);
@@ -781,6 +799,7 @@ public class PreparationServiceTest {
 
     /**
      * Append an action to a preparation
+     *
      * @param preparationId The preparation id
      * @param transformationFilePath The transformation json file path
      * @return The created step id
@@ -799,21 +818,23 @@ public class PreparationServiceTest {
 
     /**
      * Assert that step has exactly the wanted created columns ids
-     * @param stepId        The step id
-     * @param columnsIds    The created columns ids
+     *
+     * @param stepId The step id
+     * @param columnsIds The created columns ids
      */
     private void assertThatStepHasCreatedColumns(final String stepId, final String... columnsIds) {
         final Step head = repository.get(stepId, Step.class);
         assertThat(head.getDiff().getCreatedColumns(), hasSize(columnsIds.length));
-        for(final String columnId : columnsIds) {
+        for (final String columnId : columnsIds) {
             assertThat(head.getDiff().getCreatedColumns(), hasItem(columnId));
         }
     }
 
     /**
      * Assert that the step is on the wanted column id
-     * @param stepId    The step id
-     * @param columnId  The column id
+     *
+     * @param stepId The step id
+     * @param columnId The column id
      */
     private void assertThatStepIsOnColumn(final String stepId, final String columnId) {
         final Step step = repository.get(stepId, Step.class);

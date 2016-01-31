@@ -1,7 +1,6 @@
 package org.talend.dataprep.transformation.format;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.fail;
 
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
@@ -56,8 +55,8 @@ public class CSVWriterTest extends BaseFormatTest {
         row.set("0002", "the Strokes");
 
         // when
-        tabWriter.write(new RowMetadata(columns));
         tabWriter.write(row);
+        tabWriter.write(new RowMetadata(columns));
         tabWriter.flush();
 
         // then
@@ -82,19 +81,12 @@ public class CSVWriterTest extends BaseFormatTest {
     }
 
     @Test
-    public void write_should_throw_exception_when_write_columns_have_not_been_called() throws Exception {
+    public void write_should_not_throw_exception_when_write_columns_have_not_been_called() throws Exception {
         // given
         final DataSetRow row = new DataSetRow(Collections.emptyMap());
 
         // when
-        try {
-            writer.write(row);
-            fail("should have thrown UnsupportedOperationException");
-        }
-        // then
-        catch (final UnsupportedOperationException e) {
-            assertThat(e.getMessage()).isEqualTo("Write columns should be called before to init column list");
-        }
+        writer.write(row);
     }
 
     @Test
@@ -111,8 +103,8 @@ public class CSVWriterTest extends BaseFormatTest {
         final String expectedCsv = "\"id\";\"firstname\"\n" + "\"64a5456ac148b64524ef165\";\"Superman\"\n";
 
         // when
-        writer.write(new RowMetadata(columns));
         writer.write(row);
+        writer.write(new RowMetadata(columns));
         writer.flush();
 
         // then

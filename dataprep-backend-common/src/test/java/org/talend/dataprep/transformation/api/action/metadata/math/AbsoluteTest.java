@@ -79,12 +79,12 @@ public class AbsoluteTest {
 
     @Test
     public void testAbsoluteFloatWithPositiveFloat() {
-        //given
+        // given
         final Map<String, String> values = new HashMap<>();
         values.put(FLOAT_COLUMN, "5.42"); //$NON-NLS-1$
         final DataSetRow row = new DataSetRow(values);
 
-        //when
+        // when
         ActionTestWorkbench.test(row, absolute.create(absFloatParameters).getRowAction());
 
         // then
@@ -101,7 +101,7 @@ public class AbsoluteTest {
         // when
         ActionTestWorkbench.test(row, absolute.create(absFloatParameters).getRowAction());
 
-        //then
+        // then
         assertEquals("12345678.1", row.get(FLOAT_COLUMN)); //$NON-NLS-1$
     }
 
@@ -121,211 +121,253 @@ public class AbsoluteTest {
 
     @Test
     public void testAbsoluteIntWithPositiveFloat() {
-        //given
+        // given
         final Map<String, String> values = new HashMap<>();
         values.put(INT_COLUMN, "5.42"); //$NON-NLS-1$
         final DataSetRow row = new DataSetRow(values);
 
-        //when
+        // when
         ActionTestWorkbench.test(row, absolute.create(absIntParameters).getRowAction());
 
-        //then
+        // then
         assertEquals("5.42", row.get(INT_COLUMN)); //$NON-NLS-1$
     }
 
     @Test
     public void testAbsoluteFloatWithNegativeFloat() {
-        //given
+        // given
         final Map<String, String> values = new HashMap<>();
         values.put(FLOAT_COLUMN, "-5.42"); //$NON-NLS-1$
         final DataSetRow row = new DataSetRow(values);
 
-        //when
+        // when
         ActionTestWorkbench.test(row, absolute.create(absFloatParameters).getRowAction());
 
-        //then
+        // then
         assertEquals("5.42", row.get(FLOAT_COLUMN)); //$NON-NLS-1$
     }
 
     @Test
+    public void testAbsoluteFloatWithNegative_big_number() {
+        // given
+        final Map<String, String> values = new HashMap<>();
+        values.put(FLOAT_COLUMN, "-891234567898"); //$NON-NLS-1$
+        final DataSetRow row = new DataSetRow(values);
+
+        // when
+        ActionTestWorkbench.test(row, absolute.create(absFloatParameters).getRowAction());
+
+        // then
+        assertEquals("891234567898", row.get(FLOAT_COLUMN)); //$NON-NLS-1$
+    }
+
+    @Test
+    public void testAbsoluteFloatWithNegativeFloat_alt_decimal_sep() {
+        // given
+        final Map<String, String> values = new HashMap<>();
+        values.put(FLOAT_COLUMN, "-5,42"); //$NON-NLS-1$
+        final DataSetRow row = new DataSetRow(values);
+
+        // when
+        ActionTestWorkbench.test(row, absolute.create(absFloatParameters).getRowAction());
+
+        // then
+        assertEquals("5.42", row.get(FLOAT_COLUMN)); //$NON-NLS-1$
+    }
+
+    @Test
+    public void testAbsoluteFloatWithNegativeScientific() {
+        // given
+        final Map<String, String> values = new HashMap<>();
+        values.put(FLOAT_COLUMN, "-1.2E3"); //$NON-NLS-1$
+        final DataSetRow row = new DataSetRow(values);
+
+        // when
+        ActionTestWorkbench.test(row, absolute.create(absFloatParameters).getRowAction());
+
+        // then
+        assertEquals("1200", row.get(FLOAT_COLUMN)); //$NON-NLS-1$
+    }
+
+    @Test
     public void testAbsoluteIntWithNegativeFloat() {
-        //given
+        // given
         final Map<String, String> values = new HashMap<>();
         values.put(INT_COLUMN, "-5.42"); //$NON-NLS-1$
         final DataSetRow row = new DataSetRow(values);
 
-        //when
+        // when
         ActionTestWorkbench.test(row, absolute.create(absIntParameters).getRowAction());
 
-        //then
+        // then
         assertEquals("5.42", row.get(INT_COLUMN)); //$NON-NLS-1$
     }
 
     @Test
     public void testAbsoluteFloatWithPositiveInt() {
-        //given
+        // given
         final Map<String, String> values = new HashMap<>();
         values.put(FLOAT_COLUMN, "42"); //$NON-NLS-1$
         final DataSetRow row = new DataSetRow(values);
 
-        //when
+        // when
         ActionTestWorkbench.test(row, absolute.create(absFloatParameters).getRowAction());
 
-        //then
+        // then
         assertEquals("42", row.get(FLOAT_COLUMN)); //$NON-NLS-1$
     }
 
     @Test
     public void testAbsoluteIntWithPositiveInt() {
-        //given
+        // given
         final Map<String, String> values = new HashMap<>();
         values.put(INT_COLUMN, "42"); //$NON-NLS-1$
         final DataSetRow row = new DataSetRow(values);
 
-        //when
+        // when
         ActionTestWorkbench.test(row, absolute.create(absIntParameters).getRowAction());
 
-        //then
+        // then
         assertEquals("42", row.get(INT_COLUMN)); //$NON-NLS-1$
     }
 
     @Test
     public void testAbsoluteFloatWithNegativeInt() {
-        //given
+        // given
         final Map<String, String> values = new HashMap<>();
         values.put(FLOAT_COLUMN, "-542"); //$NON-NLS-1$
         final DataSetRow row = new DataSetRow(values);
 
-        //when
+        // when
         ActionTestWorkbench.test(row, absolute.create(absFloatParameters).getRowAction());
 
-        //then
+        // then
         assertEquals("542", row.get(FLOAT_COLUMN)); //$NON-NLS-1$
     }
 
     @Test
     public void testAbsoluteIntWithNegativeInt() {
-        //given
+        // given
         final Map<String, String> values = new HashMap<>();
         values.put(INT_COLUMN, "-542"); //$NON-NLS-1$
         final DataSetRow row = new DataSetRow(values);
 
-        //when
+        // when
         ActionTestWorkbench.test(row, absolute.create(absIntParameters).getRowAction());
 
-        //then
+        // then
         assertEquals("542", row.get(INT_COLUMN)); //$NON-NLS-1$
     }
 
     @Test
     public void testAbsoluteFloatWithNegativeZero() {
-        //given
+        // given
         final Map<String, String> values = new HashMap<>();
         values.put(FLOAT_COLUMN, "-0"); //$NON-NLS-1$
         final DataSetRow row = new DataSetRow(values);
 
-        //when
+        // when
         ActionTestWorkbench.test(row, absolute.create(absFloatParameters).getRowAction());
 
-        //then
+        // then
         assertEquals("0", row.get(FLOAT_COLUMN)); //$NON-NLS-1$
     }
 
     @Test
     public void testAbsoluteIntWithNegativeZero() {
-        //given
+        // given
         final Map<String, String> values = new HashMap<>();
         values.put(INT_COLUMN, "-0"); //$NON-NLS-1$
         final DataSetRow row = new DataSetRow(values);
 
-        //when
+        // when
         ActionTestWorkbench.test(row, absolute.create(absIntParameters).getRowAction());
 
-        //then
+        // then
         assertEquals("0", row.get(INT_COLUMN)); //$NON-NLS-1$
     }
 
     @Test
     public void testAbsoluteFloatWithEmpty() {
-        //given
+        // given
         final Map<String, String> values = new HashMap<>();
         values.put(FLOAT_COLUMN, ""); //$NON-NLS-1$
         final DataSetRow row = new DataSetRow(values);
 
-        //when
+        // when
         ActionTestWorkbench.test(row, absolute.create(absFloatParameters).getRowAction());
 
-        //then
+        // then
         assertEquals("", row.get(FLOAT_COLUMN)); //$NON-NLS-1$
     }
 
     @Test
     public void testAbsoluteIntWithEmpty() {
-        //given
+        // given
         final Map<String, String> values = new HashMap<>();
         values.put(INT_COLUMN, ""); //$NON-NLS-1$
         final DataSetRow row = new DataSetRow(values);
 
-        //when
+        // when
         ActionTestWorkbench.test(row, absolute.create(absIntParameters).getRowAction());
 
-        //then
+        // then
         assertEquals("", row.get(INT_COLUMN)); //$NON-NLS-1$
     }
 
     @Test
     public void testAbsoluteFloatWithNonNumeric() {
-        //given
+        // given
         final Map<String, String> values = new HashMap<>();
         values.put(FLOAT_COLUMN, "foobar"); //$NON-NLS-1$
         final DataSetRow row = new DataSetRow(values);
 
-        //when
+        // when
         ActionTestWorkbench.test(row, absolute.create(absFloatParameters).getRowAction());
 
-        //then
+        // then
         assertEquals("foobar", row.get(FLOAT_COLUMN)); //$NON-NLS-1$
     }
 
     @Test
     public void testAbsoluteIntWithNonNumeric() {
-        //given
+        // given
         final Map<String, String> values = new HashMap<>();
         values.put(INT_COLUMN, "foobar"); //$NON-NLS-1$
         final DataSetRow row = new DataSetRow(values);
 
-        //when
+        // when
         ActionTestWorkbench.test(row, absolute.create(absIntParameters).getRowAction());
 
-        //then
+        // then
         assertEquals("foobar", row.get(INT_COLUMN)); //$NON-NLS-1$
     }
 
     @Test
     public void testAbsoluteFloatWithMissingColumn() {
-        //given
+        // given
         final Map<String, String> values = new HashMap<>();
         values.put("wrong_column", "-12"); //$NON-NLS-1$ //$NON-NLS-2$
         final DataSetRow row = new DataSetRow(values);
 
-        //when
+        // when
         ActionTestWorkbench.test(row, absolute.create(absFloatParameters).getRowAction());
 
-        //then
+        // then
         assertEquals("-12", row.get("wrong_column")); //$NON-NLS-1$ //$NON-NLS-2$
     }
 
     @Test
     public void testAbsoluteIntWithMissingColumn() {
-        //given
+        // given
         final Map<String, String> values = new HashMap<>();
         values.put("wrong_column", "-13"); //$NON-NLS-1$ //$NON-NLS-2$
         final DataSetRow row = new DataSetRow(values);
 
-        //when
+        // when
         ActionTestWorkbench.test(row, absolute.create(absFloatParameters).getRowAction());
 
-        //then
+        // then
         assertEquals("-13", row.get("wrong_column")); //$NON-NLS-1$ //$NON-NLS-2$
     }
 

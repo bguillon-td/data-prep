@@ -12,12 +12,7 @@
       @include flex-shrink(0);
 
       .title{
-        width: 320px;
-        display: inline-block;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        vertical-align: bottom;
+        @include ellipsis(320px);
       }
     }
 

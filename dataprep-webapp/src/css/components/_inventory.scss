@@ -85,10 +85,8 @@ $border-color: #CECECE;
       @include flex-grow(1);
 
       @include flex-column();
+      @include ellipsis();
       padding-left: 10px;
-
-      text-overflow: ellipsis;
-      white-space: nowrap;
 
       &.inventory-folder {
         padding-top: 15px;
@@ -131,10 +129,6 @@ $border-color: #CECECE;
       right: 0;
       top: 15px;
       height: 40px;
-
-      button {
-        margin: 0 5px;
-      }
     }
   }
 }

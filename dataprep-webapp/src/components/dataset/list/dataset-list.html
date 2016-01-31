@@ -8,8 +8,8 @@
         <div translate-once="SORTED_BY"></div>
         <div class="button-switch">
             <talend-button-switch
-                    values="datasetListCtrl.sortList"
-                    current-value="datasetListCtrl.sortSelected"
+                    values="datasetListCtrl.state.inventory.sortList"
+                    current-value="datasetListCtrl.state.inventory.sort"
                     display-key="name"
                     change-action="datasetListCtrl.updateSortBy(selected)">
             </talend-button-switch>
@@ -17,8 +17,8 @@
         <div translate-once="SORT_IN"> </div>
         <div class="button-switch">
             <talend-button-switch
-                    values="datasetListCtrl.orderList"
-                    current-value="datasetListCtrl.sortOrderSelected"
+                    values="datasetListCtrl.state.inventory.orderList"
+                    current-value="datasetListCtrl.state.inventory.order"
                     display-key="name"
                     change-action="datasetListCtrl.updateSortOrder(selected)">
             </talend-button-switch>
@@ -27,7 +27,7 @@
     </div>
 
     <div class="inventory-list" id="datasets-list">
-        <div class="inventory-entry" ng-repeat="folder in datasetListCtrl.currentFolderContent.folders track by folder.id">
+        <div class="inventory-entry" ng-repeat="folder in datasetListCtrl.state.folder.currentFolderContent.folders track by folder.id">
             <div class="inventory-icon inventory-folder" ng-click="datasetListCtrl.goToFolder(folder)">
                 <img src="assets/images/folder/folder-icon.png"/>
             </div>
@@ -35,7 +35,8 @@
                 <talend-editable-text text="folder.name"
                                       text-class="inventory-title"
                                       on-text-click="datasetListCtrl.goToFolder(folder)"
-                                      on-validate="datasetListCtrl.renameFolder(folder, text)"></talend-editable-text>
+                                      on-validate="datasetListCtrl.renameFolder(folder, text)"
+                                      text-title="{{folder.name}}"></talend-editable-text>
             </div>
             <div class="inventory-actions">
                 <a data-icon="e"
@@ -45,21 +46,23 @@
                    ng-click="datasetListCtrl.removeFolder(folder)"></a>
             </div>
         </div>
-        <div ng-repeat="dataset in datasetListCtrl.currentFolderContent.datasets track by dataset.id" id="dataset_{{$index}}">
+        <div ng-repeat="dataset in datasetListCtrl.state.folder.currentFolderContent.datasets track by dataset.id" id="dataset_{{$index}}">
             <inventory-item
-                    class="inventory-entry"
-                    type="dataset"
-                    item="dataset"
-                    actions-enabled="true"
-                    open="datasetListCtrl.uploadWorkflowService.openDataset"
-                    rename="datasetListCtrl.rename"
-                    copy="datasetListCtrl.openFolderSelection"
-                    details="INVENTORY_DETAILS"
-                    file-model="datasetListCtrl.updateDatasetFile"
-                    process-certification="datasetListCtrl.processCertification"
-                    remove="datasetListCtrl.remove"
-                    toggle-favorite="datasetListCtrl.datasetService.toggleFavorite"
-                    update="datasetListCtrl.uploadUpdatedDatasetFile">
+                class="inventory-entry"
+                copy="datasetListCtrl.openFolderSelection"
+                details="INVENTORY_DETAILS"
+                file-model="datasetListCtrl.updateDatasetFile"
+                item="dataset"
+                open="datasetListCtrl.uploadWorkflowService.openDataset"
+                open-related-inv="datasetListCtrl.openPreparation"
+                process-certification="datasetListCtrl.processCertification"
+                remove="datasetListCtrl.remove"
+                rename="datasetListCtrl.rename"
+                related-inventories="dataset.preparations"
+                related-inventories-type="preparation"
+                toggle-favorite="datasetListCtrl.datasetService.toggleFavorite"
+                type="dataset"
+                update="datasetListCtrl.uploadUpdatedDatasetFile">
             </inventory-item>
         </div>
     </div>
@@ -74,7 +77,7 @@
             <input type="text"
                    ng-model="datasetListCtrl.folderName"
                    ng-model-options="{debounce: { default: 300, blur: 0 }}"
-                   unique-folder="datasetListCtrl.currentFolderContent.folders"/>
+                   unique-folder="datasetListCtrl.state.folder.currentFolderContent.folders"/>
 
             <div class="modal-buttons">
                 <button type="button" class="talend-modal-close btn-secondary modal-secondary-button" translate-once="CANCEL">

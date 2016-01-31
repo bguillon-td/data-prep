@@ -3,7 +3,6 @@ package org.talend.dataprep.dataset.service.analysis.synchronous;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertThat;
-import static org.talend.dataprep.api.dataset.DataSetMetadata.Builder.metadata;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -38,7 +37,7 @@ public class QualityAnalysisTest extends DataSetBaseTest {
 
     @Test
     public void testAnalysis() throws Exception {
-        final DataSetMetadata metadata = metadata().id("1234").build();
+        final DataSetMetadata metadata = metadataBuilder.metadata().id("1234").build();
         dataSetMetadataRepository.add(metadata);
         contentStore.storeAsRaw(metadata, DataSetServiceTests.class.getResourceAsStream("../avengers.csv"));
         formatAnalysis.analyze("1234");
@@ -60,7 +59,7 @@ public class QualityAnalysisTest extends DataSetBaseTest {
     @Test
     public void testAnalysisWithInvalidValues() throws Exception {
         String dsId = "4321";
-        final DataSetMetadata metadata = metadata().id(dsId).build();
+        final DataSetMetadata metadata = metadataBuilder.metadata().id(dsId).build();
         dataSetMetadataRepository.add(metadata);
         contentStore.storeAsRaw(metadata, DataSetServiceTests.class.getResourceAsStream("../dataset_with_invalid_records.csv"));
         formatAnalysis.analyze(dsId);

@@ -2,7 +2,6 @@ package org.talend.dataprep.schema.xls;
 
 import static org.junit.Assert.assertThat;
 import static org.talend.dataprep.api.dataset.ColumnMetadata.Builder.column;
-import static org.talend.dataprep.api.dataset.DataSetMetadata.Builder.metadata;
 import static uk.co.datumedge.hamcrest.json.SameJSONAs.sameJSONAs;
 
 import java.io.InputStream;
@@ -21,6 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.talend.dataprep.api.dataset.ColumnMetadata;
 import org.talend.dataprep.api.dataset.DataSetMetadata;
+import org.talend.dataprep.api.dataset.DataSetMetadataBuilder;
 import org.talend.dataprep.api.type.Type;
 import org.talend.dataprep.schema.AbstractSchemaTestUtils;
 import org.talend.dataprep.schema.FormatGuess;
@@ -34,6 +34,9 @@ import com.fasterxml.jackson.databind.type.CollectionType;
 public class XlsFormatTest extends AbstractSchemaTestUtils {
 
     private final static Logger logger = LoggerFactory.getLogger(XlsFormatTest.class);
+
+    @Autowired
+    private DataSetMetadataBuilder metadataBuilder;
 
     @Qualifier("formatGuesser#xls")
     @Autowired
@@ -147,7 +150,7 @@ public class XlsFormatTest extends AbstractSchemaTestUtils {
 
         FormatGuess formatGuess;
 
-        DataSetMetadata dataSetMetadata = DataSetMetadata.Builder.metadata().id("beer").build();
+        DataSetMetadata dataSetMetadata = metadataBuilder.metadata().id("beer").build();
 
         try (InputStream inputStream = this.getClass().getResourceAsStream(fileName)) {
             formatGuess = formatGuesser.guess(getRequest(inputStream, "#4"), "UTF-8").getFormatGuess();
@@ -208,7 +211,7 @@ public class XlsFormatTest extends AbstractSchemaTestUtils {
 
         FormatGuess formatGuess;
 
-        DataSetMetadata dataSetMetadata = DataSetMetadata.Builder.metadata().id("beer").build();
+        DataSetMetadata dataSetMetadata = metadataBuilder.metadata().id("beer").build();
 
         try (InputStream inputStream = this.getClass().getResourceAsStream(fileName)) {
             formatGuess = formatGuesser.guess(getRequest(inputStream, "#5"), "UTF-8").getFormatGuess();
@@ -263,7 +266,7 @@ public class XlsFormatTest extends AbstractSchemaTestUtils {
 
         FormatGuess formatGuess;
 
-        DataSetMetadata dataSetMetadata = DataSetMetadata.Builder.metadata().id("beer").build();
+        DataSetMetadata dataSetMetadata = metadataBuilder.metadata().id("beer").build();
 
         try (InputStream inputStream = this.getClass().getResourceAsStream(fileName)) {
             formatGuess = formatGuesser.guess(getRequest(inputStream, "#6"), "UTF-8").getFormatGuess();
@@ -323,7 +326,7 @@ public class XlsFormatTest extends AbstractSchemaTestUtils {
             Assert.assertEquals(XlsFormatGuess.MEDIA_TYPE, formatGuess.getMediaType());
         }
 
-        DataSetMetadata dataSetMetadata = DataSetMetadata.Builder.metadata().id("beer").sheetName("sheet-1").build();
+        DataSetMetadata dataSetMetadata = metadataBuilder.metadata().id("beer").sheetName("sheet-1").build();
 
         try (InputStream inputStream = this.getClass().getResourceAsStream(fileName)) {
 
@@ -378,7 +381,7 @@ public class XlsFormatTest extends AbstractSchemaTestUtils {
      */
     @Test
     public void testGeneralNumberFormat_TDP_222() throws Exception {
-        final DataSetMetadata metadata = metadata().id("1234")
+        final DataSetMetadata metadata = metadataBuilder.metadata().id("1234")
                 .row(column().name("id").id(0).type(Type.INTEGER), column().name("value1").id(1).type(Type.INTEGER)).build();
         FormatGuess formatGuess;
         try (InputStream inputStream = this.getClass().getResourceAsStream("excel_numbers.xls")) {
@@ -458,7 +461,7 @@ public class XlsFormatTest extends AbstractSchemaTestUtils {
             Assert.assertEquals(XlsFormatGuess.MEDIA_TYPE, formatGuess.getMediaType());
         }
 
-        DataSetMetadata dataSetMetadata = DataSetMetadata.Builder.metadata().id("beer").sheetName(sheetName).build();
+        DataSetMetadata dataSetMetadata = metadataBuilder.metadata().id("beer").sheetName(sheetName).build();
 
         try (InputStream inputStream = this.getClass().getResourceAsStream(fileName)) {
 

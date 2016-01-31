@@ -28,7 +28,7 @@ describe('Preparation Service', function () {
         preparationConsolidation = $q.when(true);
         datasetConsolidation = $q.when(datasets);
 
-        spyOn(DatasetListService, 'refreshDefaultPreparation').and.returnValue(datasetConsolidation);
+        spyOn(DatasetListService, 'refreshPreparations').and.returnValue(datasetConsolidation);
         spyOn(PreparationListService, 'refreshMetadataInfos').and.returnValue(preparationConsolidation);
 
         spyOn(PreparationListService, 'refreshPreparations').and.returnValue($q.when(preparations));
@@ -51,7 +51,7 @@ describe('Preparation Service', function () {
         spyOn(StorageService, 'removeAllAggregations').and.returnValue();
         spyOn(StorageService, 'moveAggregations').and.returnValue();
 
-        spyOn(FolderService, 'refreshDefaultPreparation').and.returnValue();
+        spyOn(FolderService, 'refreshPreparations').and.returnValue();
     }));
 
     describe('getter/refresher', function () {
@@ -86,9 +86,9 @@ describe('Preparation Service', function () {
             $rootScope.$digest();
 
             //then
-            expect(DatasetListService.refreshDefaultPreparation).toHaveBeenCalledWith(preparations);
+            expect(DatasetListService.refreshPreparations).toHaveBeenCalledWith(preparations);
             expect(PreparationListService.refreshMetadataInfos).toHaveBeenCalledWith(datasets);
-            expect(FolderService.refreshDefaultPreparation).toHaveBeenCalled();
+            expect(FolderService.refreshPreparations).toHaveBeenCalled();
         }));
 
         it('should not refresh but return a promise resolving existing preparations if they are already fetched', inject(function ($rootScope, PreparationService) {
@@ -116,9 +116,9 @@ describe('Preparation Service', function () {
             $rootScope.$digest();
 
             //then
-            expect(DatasetListService.refreshDefaultPreparation).not.toHaveBeenCalled();
+            expect(DatasetListService.refreshPreparations).not.toHaveBeenCalled();
             expect(PreparationListService.refreshMetadataInfos).not.toHaveBeenCalled();
-            expect(FolderService.refreshDefaultPreparation).not.toHaveBeenCalled();
+            expect(FolderService.refreshPreparations).not.toHaveBeenCalled();
         }));
 
         it('should fetch preparations if they are not already fetched', inject(function ($rootScope, PreparationService) {
@@ -147,7 +147,7 @@ describe('Preparation Service', function () {
             $rootScope.$digest();
 
             //then
-            expect(DatasetListService.refreshDefaultPreparation).toHaveBeenCalledWith(preparations);
+            expect(DatasetListService.refreshPreparations).toHaveBeenCalledWith(preparations);
             expect(PreparationListService.refreshMetadataInfos).toHaveBeenCalledWith(datasets);
         }));
     });
@@ -204,7 +204,7 @@ describe('Preparation Service', function () {
                 $rootScope.$digest();
 
                 //then
-                expect(DatasetListService.refreshDefaultPreparation).toHaveBeenCalledWith(preparations);
+                expect(DatasetListService.refreshPreparations).toHaveBeenCalledWith(preparations);
                 expect(PreparationListService.refreshMetadataInfos).toHaveBeenCalledWith(datasets);
             }));
 
@@ -259,7 +259,7 @@ describe('Preparation Service', function () {
                 $rootScope.$digest();
 
                 //then
-                expect(DatasetListService.refreshDefaultPreparation).toHaveBeenCalledWith(preparations);
+                expect(DatasetListService.refreshPreparations).toHaveBeenCalledWith(preparations);
                 expect(PreparationListService.refreshMetadataInfos).toHaveBeenCalledWith(datasets);
             }));
         });
@@ -283,7 +283,7 @@ describe('Preparation Service', function () {
                 $rootScope.$digest();
 
                 //then
-                expect(DatasetListService.refreshDefaultPreparation).toHaveBeenCalledWith(preparations);
+                expect(DatasetListService.refreshPreparations).toHaveBeenCalledWith(preparations);
                 expect(PreparationListService.refreshMetadataInfos).toHaveBeenCalledWith(datasets);
             }));
 
@@ -502,7 +502,7 @@ describe('Preparation Service', function () {
             $rootScope.$digest();
 
             //then
-            expect(DatasetListService.refreshDefaultPreparation).toHaveBeenCalledWith(preparations);
+            expect(DatasetListService.refreshPreparations).toHaveBeenCalledWith(preparations);
             expect(PreparationListService.refreshMetadataInfos).toHaveBeenCalledWith(datasets);
         }));
     });

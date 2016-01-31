@@ -1,8 +1,21 @@
 (function () {
     'use strict';
 
+    var sortList = [
+        {id: 'name', name: 'NAME_SORT', property: 'name'},
+        {id: 'date', name: 'DATE_SORT', property: 'created'}
+    ];
+
+    var orderList = [
+        {id: 'asc', name: 'ASC_ORDER'},
+        {id: 'desc', name: 'DESC_ORDER'}
+    ];
+
+
     var lookupState = {
-        actions: [],                                                // the lookup actions (1 action per dataset)
+        actions: [],                                                // Actions list to add to the lookup  (1 action per dataset)
+        addedActions: [],                                           // Actions already added to the lookup
+        datasets: [],                                               // Datasets list to add to the lookup
         columnCheckboxes: [],                                       // column checkboxes model
         columnsToAdd: [],                                           // columns that are checked
         dataset: null,                                              // loaded lookup action (on a lookup dataset)
@@ -10,12 +23,16 @@
         dataView: new Slick.Data.DataView({inlineFilters: false}),  // grid view that hold the dataset data
         selectedColumn: null,                                       // selected column
         visibility: false,                                          // visibility flag
-        step: null                                                  // lookup step
+        step: null,                                                  // lookup step
+        sort: sortList[1],
+        order: orderList[1],
+        sortList: sortList,
+        orderList: orderList
     };
 
     /**
      * @ngdoc service
-     * @name data-prep.services.state.service:GridStateService
+     * @name data-prep.services.state.service:LookupStateService
      * @description Lookup state service.
      */
     function LookupStateService() {
@@ -29,10 +46,51 @@
 
             //init lookup
             setActions: setActions,
+            setAddedActions: setAddedActions,
+            setDatasets: setDatasets,
             setAddMode: setAddMode,
-            setUpdateMode: setUpdateMode
-
+            setUpdateMode: setUpdateMode,
+            setSort: setSort,
+            setOrder: setOrder
         };
+
+
+        /**
+         * @ngdoc method
+         * @name sortDatasets
+         * @description Sort lookup datasets
+         */
+        function sortDatasets() {
+            lookupState.datasets =_.sortBy(lookupState.datasets,
+                function (dataset) {
+                    return _.isNumber(dataset[lookupState.sort.property]) ? dataset[lookupState.sort.property] : dataset[lookupState.sort.property].toLowerCase();
+                });
+            if(lookupState.order.id === 'desc'){
+                lookupState.datasets = lookupState.datasets.reverse();
+            }
+        }
+
+        /**
+         * @ngdoc method
+         * @name setSort
+         * @methodOf data-prep.services.state.service:LookupStateService
+         * @description Set the sort type of the lookup datasets
+         */
+        function setSort(sort) {
+            lookupState.sort = sort;
+            sortDatasets();
+        }
+
+        /**
+         * @ngdoc method
+         * @name setOrder
+         * @methodOf data-prep.services.state.service:LookupStateService
+         * @description Set the order type of the lookup datasets
+         */
+        function setOrder(order) {
+            lookupState.order = order;
+            sortDatasets();
+        }
 
         /**
          * @ngdoc method
@@ -53,6 +111,29 @@
          */
         function setDataset(lookupAction) {
             lookupState.dataset = lookupAction;
+        }
+
+        /**
+         * @ngdoc method
+         * @name setDatasets
+         * @methodOf data-prep.services.state.service:LookupStateService
+         * @param {object} datasets The datasets to add to the lookup
+         * @description Sets the current datasets added to the lookup
+         */
+        function setDatasets(datasets) {
+            lookupState.datasets = datasets;
+            sortDatasets();
+        }
+
+        /**
+         * @ngdoc method
+         * @name setAddedActions
+         * @methodOf data-prep.services.state.service:LookupStateService
+         * @param {object} actions The actions to add to the lookup
+         * @description Sets the current actions added to the lookup
+         */
+        function setAddedActions(actions) {
+            lookupState.addedActions = actions;
         }
 
         /**
@@ -177,6 +258,8 @@
          */
         function reset() {
             lookupState.actions = [];
+            lookupState.addedActions = [];
+            lookupState.datasets = [];
             lookupState.columnsToAdd = [];
             lookupState.columnCheckboxes = [];
             lookupState.dataset = null;

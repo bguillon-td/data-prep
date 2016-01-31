@@ -34,12 +34,16 @@ public class UserData implements Serializable {
 
     /** Favorites datasets. */
     @JsonProperty(value = "favoritedDS", required = false)
-    Set<String> favoritesDatasets = new HashSet<>();
+    private Set<String> favoritesDatasets = new HashSet<>();
 
     /** User id. */
     @JsonProperty(value = "userId", required = true)
     @Id
-    String userId;
+    private String userId;
+
+    /** Application version used for versionning. */
+    @JsonProperty("app-version")
+    private String appVersion;
 
     /**
      * Constructor.
@@ -47,8 +51,9 @@ public class UserData implements Serializable {
      * @param userId the used id.
      */
     @JsonCreator
-    public UserData(@JsonProperty("userId") String userId) {
+    public UserData(@JsonProperty("userId") String userId, @JsonProperty("app-version") String appVersion) {
         this.userId = userId;
+        this.appVersion = appVersion;
     }
 
     /**
@@ -88,16 +93,21 @@ public class UserData implements Serializable {
     }
 
     /**
-     * @see Object#toString()
+     * @return the AppVersion
      */
-    @Override
-    public String toString() {
-        return "UserData{" + "favoritesDatasets=" + favoritesDatasets + ", userId='" + userId + '\'' + '}';
+    public String getAppVersion() {
+        return appVersion;
     }
 
-    /**
-     * @see Object#equals(Object)
-     */
+    @Override
+    public String toString() {
+        return "UserData{" + //
+                "userId='" + userId + '\'' + //
+                ", appVersion='" + appVersion + '\'' + //
+                ", favoritesDatasets=" + favoritesDatasets + //
+                '}';
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o)
@@ -105,15 +115,12 @@ public class UserData implements Serializable {
         if (o == null || getClass() != o.getClass())
             return false;
         UserData userData = (UserData) o;
-        return Objects.equals(favoritesDatasets, userData.favoritesDatasets) && Objects.equals(userId, userData.userId);
+        return Objects.equals(favoritesDatasets, userData.favoritesDatasets) && Objects.equals(userId, userData.userId)
+                && Objects.equals(appVersion, userData.appVersion);
     }
 
-    /**
-     * @see Object#hashCode()
-     */
     @Override
     public int hashCode() {
-        return Objects.hash(favoritesDatasets, userId);
+        return Objects.hash(favoritesDatasets, userId, appVersion);
     }
-
 }

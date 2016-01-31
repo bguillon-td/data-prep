@@ -11,28 +11,11 @@ import org.apache.commons.io.IOUtils;
 import org.apache.http.client.HttpClient;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.talend.dataprep.api.dataset.DataSetMetadata;
 import org.talend.dataprep.api.dataset.DataSetMoveRequest;
 import org.talend.dataprep.api.service.command.common.HttpResponse;
-import org.talend.dataprep.api.service.command.dataset.CloneDataSet;
-import org.talend.dataprep.api.service.command.dataset.CreateDataSet;
-import org.talend.dataprep.api.service.command.dataset.CreateOrUpdateDataSet;
-import org.talend.dataprep.api.service.command.dataset.DataSetDelete;
-import org.talend.dataprep.api.service.command.dataset.DataSetGet;
-import org.talend.dataprep.api.service.command.dataset.DataSetGetMetadata;
-import org.talend.dataprep.api.service.command.dataset.DataSetList;
-import org.talend.dataprep.api.service.command.dataset.DataSetPreview;
-import org.talend.dataprep.api.service.command.dataset.DatasetCertification;
-import org.talend.dataprep.api.service.command.dataset.MoveDataSet;
-import org.talend.dataprep.api.service.command.dataset.SetFavorite;
-import org.talend.dataprep.api.service.command.dataset.UpdateColumn;
-import org.talend.dataprep.api.service.command.dataset.UpdateDataSet;
+import org.talend.dataprep.api.service.command.dataset.*;
 import org.talend.dataprep.api.service.command.transformation.SuggestDataSetActions;
 import org.talend.dataprep.api.service.command.transformation.SuggestLookupActions;
 import org.talend.dataprep.exception.TDPException;
@@ -187,7 +170,6 @@ public class DataSetAPI extends APIService {
      * @param id the dataset id to clone
      * @param folderPath the folder path to clone the dataset
      * @param cloneName the name of the dataset clone
-     * @return The dataset id.
      */
     @RequestMapping(value = "/api/datasets/clone/{id}", method = PUT, produces = TEXT_PLAIN_VALUE)
     @ApiOperation(value = "Create a data set", produces = TEXT_PLAIN_VALUE, notes = "Clone a data set based the id provided.")
@@ -214,10 +196,10 @@ public class DataSetAPI extends APIService {
     }
 
     /**
-     * Move a data set to an other folder
+     * Move a data set to an other folder.
      *
-     * @param dataSetId
-     * @param dataSetMoveRequest
+     * @param dataSetId the dataset id to move.
+     * @param dataSetMoveRequest the move request.
      */
     @RequestMapping(value = "/api/datasets/move/{id}", method = PUT, consumes = MediaType.ALL_VALUE, produces = MediaType.TEXT_PLAIN_VALUE)
     @ApiOperation(value = "Clone a data set", produces = MediaType.TEXT_PLAIN_VALUE, consumes = MediaType.ALL_VALUE, notes = "Move a data set to an other folder.")
@@ -364,4 +346,22 @@ public class DataSetAPI extends APIService {
         return result;
     }
 
+    @RequestMapping(value = "/api/datasets/encodings", method = GET, produces = APPLICATION_JSON_VALUE)
+    @ApiOperation(value = "List supported dataset encodings.", notes = "Returns the supported dataset encodings.")
+    @Timed
+    public void listEncodings(final OutputStream output) {
+
+        // Get dataset metadata
+        HystrixCommand<InputStream> retrieveEncodings = getCommand(DataSetGetEncodings.class, getClient());
+
+        try (InputStream content = retrieveEncodings.execute()) {
+            IOUtils.copyLarge(content, output);
+            output.flush();
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Listing datasets (pool: {}) done.", getConnectionStats());
+            }
+        } catch (IOException e) {
+            throw new TDPException(CommonErrorCodes.UNEXPECTED_EXCEPTION, e);
+        }
+    }
 }

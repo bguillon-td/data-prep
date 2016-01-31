@@ -1,15 +1,14 @@
 package org.talend.dataprep.exception.error;
 
+import static org.springframework.http.HttpStatus.*;
+
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-import org.springframework.http.HttpStatus;
 import org.talend.daikon.exception.error.ErrorCode;
 import org.talend.dataprep.api.dataset.DataSetLifecycle;
-
-import static org.springframework.http.HttpStatus.*;
 
 
 /**
@@ -87,7 +86,12 @@ public enum DataSetErrorCodes implements ErrorCode {
     /**
      * Error return when the uploaded content is mal formatted .
      */
-    MALFORMATTED_CONTENT(BAD_REQUEST.value());
+    MALFORMATTED_CONTENT(BAD_REQUEST.value()),
+                                                    /**
+                                                     * Error returned when there's an error fetching the list of
+                                                     * supported encodings.
+                                                     */
+    UNABLE_TO_LIST_SUPPORTED_ENCODINGS(INTERNAL_SERVER_ERROR.value());
 
     /** The http status to use. */
     private int httpStatus;

@@ -13,7 +13,8 @@ describe('Recipe Bullet service', function () {
         $provide.constant('state', stateMock);
     }));
 
-    beforeEach(inject(function ($rootScope, $controller, $q, $timeout, RecipeBulletService, RecipeService, PlaygroundService, PreparationService, PreviewService) {
+    beforeEach(inject(function ($rootScope, $controller, $q, $timeout,
+                                PlaygroundService, RecipeBulletService, RecipeService, PreparationService, PreviewService) {
         scope = $rootScope.$new();
 
         createController = function () {

@@ -15,6 +15,7 @@ package org.talend.dataprep.api.dataset.statistics.number;
 import java.util.List;
 
 import org.apache.commons.lang.NotImplementedException;
+import org.talend.dataprep.number.BigDecimalParser;
 import org.talend.dataquality.statistics.numeric.NumericalStatisticsAnalyzer;
 import org.talend.dataquality.statistics.type.DataTypeEnum;
 import org.talend.dataquality.statistics.type.TypeInferenceUtils;
@@ -61,7 +62,7 @@ public class StreamNumberHistogramAnalyzer extends NumericalStatisticsAnalyzer<S
             if (!TypeInferenceUtils.isValid(types[index], value)) {
                 continue;
             }
-            stats.get(index).add(Double.valueOf(value));
+            stats.get(index).add(BigDecimalParser.toBigDecimal(value).doubleValue());
         }
         return true;
     }

@@ -5,13 +5,14 @@
      * @ngdoc service
      * @name data-prep.services.dataset.service:DatasetService
      * @description Dataset general service. This service manage the operations that touches the datasets
+     * @requires data-prep.services.state.service:StateService
      * @requires data-prep.services.dataset.service:DatasetListService
      * @requires data-prep.services.dataset.service:DatasetRestService
      * @requires data-prep.services.preparation.service:PreparationListService
      * @requires data-prep.services.utils.service:StorageService
      *
      */
-    function DatasetService (state, DatasetListService, DatasetRestService, PreparationListService, StorageService) {
+    function DatasetService ($q, state, StateService, DatasetListService, DatasetRestService, PreparationListService, StorageService) {
         return {
             //lifecycle
             import: importRemoteDataset,
@@ -31,13 +32,16 @@
             getContent: DatasetRestService.getContent,
 
             //dataset getters
-            datasetsList: datasetsList,         //cached datasets list
             getDatasets: getDatasets,           //promise that resolves datasets list
             refreshDatasets: refreshDatasets,   //force refresh datasets list
             getDatasetById: getDatasetById,     //retrieve dataset by id
             getDatasetByName: getDatasetByName, //retrieve dataset by name
             getSheetPreview: getSheetPreview,
+
+            //dataset update
             setDatasetSheet: setDatasetSheet,
+            updateParameters: updateParameters,
+            refreshSupportedEncodings: refreshSupportedEncodings,
 
             //utils
             getUniqueName: getUniqueName,
@@ -151,17 +155,7 @@
         //--------------------------------------------------------------------------------------------------------------
         //---------------------------------------------------Metadata---------------------------------------------------
         //--------------------------------------------------------------------------------------------------------------
-        /**
-         * @ngdoc method
-         * @name datasetsList
-         * @methodOf data-prep.services.dataset.service:DatasetService
-         * @description Return the datasets list. See {@link data-prep.services.dataset.service:DatasetListService
-         *     DatasetListService}.datasets
-         * @returns {object[]} The datasets list
-         */
-        function datasetsList () {
-            return DatasetListService.datasets;
-        }
+
 
         /**
          * @ngdoc method
@@ -170,8 +164,8 @@
          * @description [PRIVATE] Refresh the metadata within the preparations
          */
         function consolidatePreparationsAndDatasets (response) {
-            PreparationListService.refreshMetadataInfos(DatasetListService.datasets)
-                .then(DatasetListService.refreshDefaultPreparation);
+            PreparationListService.refreshMetadataInfos(state.inventory.datasets)
+                .then(DatasetListService.refreshPreparations);
 
             return response;
         }
@@ -223,9 +217,11 @@
          * @returns {promise} The pending POST promise
          */
         function toggleFavorite (dataset) {
-            return DatasetRestService.toggleFavorite(dataset).then(function () {
-                dataset.favorite = !dataset.favorite;
-            });
+            return DatasetRestService.toggleFavorite(dataset)
+                .then(function () {
+                    dataset.favorite = !dataset.favorite; //update currentFolderContent.datasets
+                    refreshDatasets(); //update inventory.datasets
+                });
         }
         
         /**
@@ -333,6 +329,65 @@
         function setDatasetSheet (metadata, sheetName) {
             metadata.sheetName = sheetName;
             return DatasetRestService.updateMetadata(metadata);
+        }
+
+        //--------------------------------------------------------------------------------------------------------------
+        //---------------------------------------------Dataset Parameters-----------------------------------------------
+        //--------------------------------------------------------------------------------------------------------------
+        function extractOriginalParameters(metadata) {
+            return {
+                //TODO remove this and review the datasets model to NOT change the original object. This is done here to avoid cyclic ref
+                defaultPreparation: metadata.defaultPreparation,
+                preparations: metadata.preparations,
+
+                separator: metadata.parameters.SEPARATOR,
+                encoding: metadata.encoding
+            };
+        }
+
+        function setParameters(metadata, parameters) {
+            //TODO remove this and review the datasets model to NOT change the original object. This is done here to avoid cyclic ref
+            metadata.defaultPreparation = parameters.defaultPreparation;
+            metadata.preparations = parameters.preparations;
+
+            metadata.parameters.SEPARATOR = parameters.separator;
+            metadata.encoding = parameters.encoding;
+        }
+
+        /**
+         * @ngdoc method
+         * @name updateParameters
+         * @methodOf data-prep.services.dataset.service:DatasetService
+         * @param {object} metadata The dataset metadata
+         * @param {object} parameters The new parameters
+         * @description Set the new parameters
+         * @returns {Promise} The process Promise
+         */
+        function updateParameters (metadata, parameters) {
+            var originalParameters = extractOriginalParameters(metadata);
+            setParameters(metadata, parameters);
+
+            return DatasetRestService.updateMetadata(metadata)
+                .then(function() {
+                    metadata.defaultPreparation = originalParameters.defaultPreparation;
+                    metadata.preparations = originalParameters.preparations;
+                })
+                .catch(function(error) {
+                    setParameters(metadata, originalParameters);
+                    return $q.reject(error);
+                });
+        }
+
+        /**
+         * @ngdoc method
+         * @name refreshEncodings
+         * @methodOf data-prep.services.dataset.service:DatasetService
+         * @description Refresh the supported encodings list
+         * @returns {Promise} The process Promise
+         */
+        function refreshSupportedEncodings() {
+            return DatasetRestService.getEncodings()
+                .then(StateService.setDatasetEncodings);
         }
     }
 

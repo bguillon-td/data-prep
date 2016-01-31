@@ -17,11 +17,7 @@
     }
 
     .moreText {
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      display: inline-block;
-      width: 95%;
+      @include ellipsis(95%);
     }
 
     .column-profile-aggregation-list {

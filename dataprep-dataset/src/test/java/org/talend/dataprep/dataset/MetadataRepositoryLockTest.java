@@ -21,7 +21,6 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.talend.dataprep.api.dataset.DataSetMetadata;
-import org.talend.dataprep.api.dataset.RowMetadata;
 import org.talend.dataprep.dataset.store.metadata.DataSetMetadataRepository;
 import org.talend.dataprep.lock.DistributedLock;
 
@@ -35,9 +34,16 @@ public class MetadataRepositoryLockTest extends DataSetBaseTest {
         // I am not sure of the validity of this test as it tests the DistributedLock that is already provided by a
         // third party lib.
         DataSetMetadataRepository metadataRepository = appContext.getBean(DataSetMetadataRepository.class);
-        DataSetMetadata dsm1 = new DataSetMetadata("1", "one", "jim", 12, new RowMetadata()); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-        DataSetMetadata dsm2 = new DataSetMetadata("1", "theone", "jimmy", 12, new RowMetadata()); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-        dsm2.setRowMetadata(new RowMetadata());
+        DataSetMetadata dsm1 = metadataBuilder.metadata() //
+                .id("1") //
+                .name("one") //
+                .author("jim") //
+                .created(12).build();
+        DataSetMetadata dsm2 = metadataBuilder.metadata() //
+                .id("1") //
+                .name("theone") //
+                .author("jimmy") //
+                .created(12).build();
         final AtomicLong threadCount = new AtomicLong(2);
         new Thread(() -> {
             try {

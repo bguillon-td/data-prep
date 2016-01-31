@@ -8,8 +8,10 @@
      * <b style="color: red;">WARNING : do NOT use this service directly.
      * {@link data-prep.services.dataset.service:DatasetService DatasetService} must be the only entry point for datasets</b>
      * @requires data-prep.services.dataset.service:DatasetRestService
+     * @requires data-prep.services.state.service:StateService
+     * @requires data-prep.services.utils.service:StorageService
      */
-    function DatasetListService($q, DatasetRestService, DatasetListSortService) {
+    function DatasetListService(state, $q, DatasetRestService, StateService) {
 
         var deferredCancel;
         var datasetsPromise;
@@ -23,10 +25,9 @@
             update : update,
             processCertification : processCertification,
             delete : deleteDataset,
-            refreshDefaultPreparation : refreshDefaultPreparation,
+            refreshPreparations : refreshPreparations,
             getDatasetsPromise : getDatasetsPromise,
-            hasDatasetsPromise: hasDatasetsPromise,
-            datasets: null
+            hasDatasetsPromise: hasDatasetsPromise
         };
 
         return service;
@@ -53,14 +54,14 @@
          */
         function refreshDatasets() {
             cancelPendingGetRequest();
-            var sort = DatasetListSortService.getSort();
-            var order = DatasetListSortService.getOrder();
+            var sort = state.inventory.sort.id;
+            var order = state.inventory.order.id;
 
             deferredCancel = $q.defer();
             datasetsPromise = DatasetRestService.getDatasets(sort, order, deferredCancel)
                 .then(function(res) {
-                    service.datasets = res.data;
-                    return service.datasets;
+                    StateService.setDatasets(res.data);
+                    return res.data;
                 });
             return datasetsPromise;
         }
@@ -194,20 +195,19 @@
         function deleteDataset(dataset) {
             return DatasetRestService.delete(dataset)
                 .then(function() {
-                    var index = service.datasets.indexOf(dataset);
-                    service.datasets.splice(index, 1);
+                    StateService.removeDataset(dataset);
                 });
         }
 
         /**
          * @ngdoc method
-         * @name refreshDefaultPreparation
+         * @name refreshPreparations
          * @methodOf data-prep.services.dataset.service:DatasetListService
          * @param {object[]} preparations The preparations to use
          * @description [PRIVATE] Set the default preparation to each dataset
          * @returns {promise} The process promise
          */
-        function refreshDefaultPreparation(preparations) {
+        function refreshPreparations(preparations) {
             return getDatasetsPromise()
                 .then(function(datasets) {
                         // group preparation per dataset
@@ -218,7 +218,8 @@
                         // reset default preparation for all datasets
                         _.forEach(datasets, function(dataset){
                             var preparations = datasetPreps[dataset.id];
-                            dataset.defaultPreparation = preparations && preparations.length === 1 ?  preparations[0] : null;
+                            dataset.preparations = preparations || [];
+                            dataset.preparations = _.sortByOrder(dataset.preparations, 'lastModificationDate', false);
                         });
 
                         return datasets;

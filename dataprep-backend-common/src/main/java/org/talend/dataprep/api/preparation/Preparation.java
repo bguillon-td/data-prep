@@ -10,6 +10,9 @@ import java.util.Objects;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang.StringUtils;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class Preparation extends Identifiable implements Serializable {
 
     /** Serialization UID. */
@@ -33,15 +36,23 @@ public class Preparation extends Identifiable implements Serializable {
     /** The head id. */
     private String headId;
 
+    /** Version of the app */
+    @JsonProperty("app-version")
+    private String appVersion;
+
     /** List of the steps id for this preparation. */
     private List<String> steps;
 
     /**
-     * Default empty constructor.
+     * Default constructor.
+     * 
+     * @param appVersion the application version to store within the preparation.
      */
-    public Preparation() {
+    @JsonCreator
+    public Preparation(@JsonProperty("app-version") String appVersion) {
         this.creationDate = System.currentTimeMillis();
         this.lastModificationDate = this.creationDate;
+        this.appVersion = appVersion;
     }
 
     /**
@@ -49,20 +60,12 @@ public class Preparation extends Identifiable implements Serializable {
      *
      * @param dataSetId the dataset id.
      * @param headId the head step id.
+     * @param appVersion the application version to store within the preparation.
      */
-    public Preparation(String dataSetId, String headId) {
-        this();
+    public Preparation(String dataSetId, String headId, String appVersion) {
+        this(appVersion);
         this.dataSetId = dataSetId;
         this.headId = headId;
-    }
-
-    /**
-     * Creates a default preparation (no author) for <code>dataSetId</code> at {@link Step#ROOT_STEP}.
-     * @param dataSetId A data set id.
-     * @return A {@link Preparation preparation} where head is set to {@link Step#ROOT_STEP root step}.
-     */
-    public static Preparation defaultPreparation(String dataSetId) {
-        return new Preparation(dataSetId, Step.ROOT_STEP.id());
     }
 
     public List<String> getSteps() {
@@ -135,9 +138,23 @@ public class Preparation extends Identifiable implements Serializable {
     @Override
     public String getId() {
         if (StringUtils.isEmpty(name)) {
-            return DigestUtils.sha1Hex(dataSetId + author);
+            return DigestUtils.sha1Hex(dataSetId + author + creationDate);
         }
-        return DigestUtils.sha1Hex(dataSetId + author + name);
+        return DigestUtils.sha1Hex(dataSetId + author + name + creationDate);
+    }
+
+    /**
+     * @return the AppVersion
+     */
+    public String getAppVersion() {
+        return appVersion;
+    }
+
+    /**
+     * @param appVersion the appVersion to set.
+     */
+    public void setAppVersion(String appVersion) {
+        this.appVersion = appVersion;
     }
 
     @Override
@@ -161,7 +178,7 @@ public class Preparation extends Identifiable implements Serializable {
     }
 
     public Preparation merge(Preparation other) {
-        Preparation merge = new Preparation();
+        Preparation merge = new Preparation(other.getAppVersion());
         merge.dataSetId = other.dataSetId != null ? other.dataSetId : dataSetId;
         merge.author = other.author != null ? other.author : author;
         merge.name = other.name != null ? other.name : name;

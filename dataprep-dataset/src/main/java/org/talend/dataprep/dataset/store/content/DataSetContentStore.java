@@ -74,7 +74,7 @@ public abstract class DataSetContentStore {
 
         // deal with dataset size limit (ignored if limit is <= 0)
         final Optional<Long> limit = dataSetMetadata.getContent().getLimit();
-        if (limit.isPresent() && limit.get() <= 0) {
+        if (limit.isPresent() && limit.get() > 0) {
             dataSetRowStream = dataSetRowStream.limit(limit.get());
         }
 

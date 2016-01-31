@@ -3,51 +3,29 @@ describe('Folder services', function () {
 
     var stateMock, datasets, preparations;
 
-    var datasetResult = {
-        'id': 'de3cc32a-b624-484e-b8e7-dab9061a009c',
-        'name': 'customers_jso_light',
-        'author': 'anonymousUser',
-        'records': 15,
-        'nbLinesHeader': 1,
-        'nbLinesFooter': 0,
-        'created': '03-30-2015 08:06',
-        'defaultPreparation': {
-            'id': 'ab136cbf0923a7f11bea713adb74ecf919e05cfa',
-            'dataSetId': 'de3cc32a-b624-484e-b8e7-dab9061a009c',
-            'author': 'anonymousUser',
-            'creationDate': 1427447300300,
-            'steps': [
-                '35890aabcf9115e4309d4ce93367bf5e4e77b82a',
-                '4ff5d9a6ca2e75ebe3579740a4297fbdb9b7894f',
-                '8a1c49d1b64270482e8db8232357c6815615b7cf',
-                '599725f0e1331d5f8aae24f22cd1ec768b10348d'
-            ],
-            'actions': [
-                {
-                    'action': 'lowercase',
-                    'parameters': {
-                        'column_name': 'birth'
-                    }
-                },
-                {
-                    'action': 'uppercase',
-                    'parameters': {
-                        'column_name': 'country'
-                    }
-                },
-                {
-                    'action': 'cut',
-                    'parameters': {
-                        'pattern': '.',
-                        'column_name': 'first_item'
-                    }
-                }
-            ]
-        }
-    };
+    var sortList = [
+        {id: 'name', name: 'NAME_SORT', property: 'name'},
+        {id: 'date', name: 'DATE_SORT', property: 'created'}
+    ];
+
+    var orderList = [
+        {id: 'asc', name: 'ASC_ORDER'},
+        {id: 'desc', name: 'DESC_ORDER'}
+    ];
 
     beforeEach(module('data-prep.services.folder', function ($provide) {
-        stateMock = {folder: {currentFolderContent: {}}};
+        stateMock = {
+            folder: {
+                currentFolderContent: {}
+            },
+            inventory: {
+                datasets: [],
+                sortList: sortList,
+                orderList: orderList,
+                sort: sortList[0],
+                order: orderList[0]
+            }
+        };
         $provide.constant('state', stateMock);
     }));
 
@@ -136,7 +114,7 @@ describe('Folder services', function () {
                 'id': 'fbaa18e82e913e97e5f0e9d40f04413412be1126',
                 'dataSetId': datasets[2].id,
                 'author': 'anonymousUser',
-                'creationDate': 1427447330693,
+                'lastModificationDate': 1427447330693,
                 'steps': [
                     '47e2444dd1301120b539804507fd307072294048',
                     'ae1aebf4b3fa9b983c895486612c02c766305410',
@@ -170,7 +148,7 @@ describe('Folder services', function () {
                 'id': 'ds3f51sf3q1df35qsf412qdsf15ds3ff454qg8r4qr',
                 'dataSetId': datasets[2].id,
                 'author': 'anonymousUser',
-                'creationDate': 1437487330692,
+                'lastModificationDate': 1437487330692,
                 'steps': [
                     '87e38cv438dth4yd6k84x3dr84htryj84xc3k21u'
                 ],
@@ -255,7 +233,7 @@ describe('Folder services', function () {
 
     describe('content', function () {
         var content;
-        beforeEach(inject(function ($q, StateService, FolderRestService, DatasetListSortService, PreparationListService) {
+        beforeEach(inject(function ($q, StateService, FolderRestService, PreparationListService) {
             content = {
                 data: {
                     folders: [{id: 'toto', path: 'toto', name: 'toto'}],
@@ -263,9 +241,6 @@ describe('Folder services', function () {
                 }
             };
             spyOn(FolderRestService, 'getContent').and.returnValue($q.when(content));
-
-            spyOn(DatasetListSortService, 'getSort').and.returnValue('name');
-            spyOn(DatasetListSortService, 'getOrder').and.returnValue('asc');
             spyOn(StateService, 'setFoldersStack').and.returnValue();
             spyOn(StateService, 'setCurrentFolder').and.returnValue();
             spyOn(StateService, 'setCurrentFolderContent').and.returnValue();
@@ -343,17 +318,18 @@ describe('Folder services', function () {
         }));
     });
 
-    describe('default preparation', function () {
-        it('should set default preparation in current folder datasets', inject(function (FolderService) {
+    describe('related preparations', function () {
+        it('should set related preparation in current folder datasets', inject(function (FolderService) {
             //given
-            stateMock.folder.currentFolderContent.datasets = [datasets[0]];
-            expect(stateMock.folder.currentFolderContent.datasets[0].defaultPreparation).toBeFalsy();
+            stateMock.folder.currentFolderContent.datasets = [datasets[2]];
+            expect(stateMock.folder.currentFolderContent.datasets[0].preparations).toBeFalsy();
 
             //when
-            FolderService.refreshDefaultPreparation(preparations);
+            FolderService.refreshPreparations(preparations);
 
             //then
-            expect(stateMock.folder.currentFolderContent.datasets[0].defaultPreparation.id).toBe(datasetResult.defaultPreparation.id);
+            expect(stateMock.folder.currentFolderContent.datasets[0].preparations.length).toBe(2);
+            expect(stateMock.folder.currentFolderContent.datasets[0].preparations[0].id).toBe(preparations[2].id);//due to sort process
         }));
 
         it('should not set default preparation on dataset that has no preparation', inject(function ($q, $rootScope, FolderService) {
@@ -368,13 +344,13 @@ describe('Folder services', function () {
                 'created': '03-30-2015 08:06'
             };
             stateMock.folder.currentFolderContent.datasets = [datasetWithoutPreparation];
-            expect(stateMock.folder.currentFolderContent.datasets[0].defaultPreparation).toBeFalsy();
+            expect(stateMock.folder.currentFolderContent.datasets[0].preparations).toBeFalsy();
 
             //when
-            FolderService.refreshDefaultPreparation(preparations);
+            FolderService.refreshPreparations(preparations);
 
             //then
-            expect(stateMock.folder.currentFolderContent.datasets[0].defaultPreparation).toBeFalsy();
+            expect(stateMock.folder.currentFolderContent.datasets[0].preparations).toEqual([]);
         }));
     });
 });

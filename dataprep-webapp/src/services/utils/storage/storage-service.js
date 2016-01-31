@@ -8,6 +8,11 @@
      */
     function StorageService($window) {
         var PREFIX = 'org.talend.dataprep.';
+        var LOOKUP_DATASETS_KEY = 'org.talend.dataprep.lookup_datasets';
+        var LOOKUP_DATASETS_SORT_KEY = 'org.talend.dataprep.lookup_datasets_sort';
+        var LOOKUP_DATASETS_ORDER_KEY = 'org.talend.dataprep.lookup_datasets_order';
+        var DATASETS_SORT_KEY = 'org.talend.dataprep.datasets.sort';
+        var DATASETS_ORDER_KEY = 'org.talend.dataprep.datasets.order';
         var FEEDBACK_USER_MAIL_KEY = 'org.talend.dataprep.feedback_user_mail';
 
         return {
@@ -17,8 +22,22 @@
             removeAllAggregations: removeAllAggregations,
             savePreparationAggregationsFromDataset: savePreparationAggregationsFromDataset,
             moveAggregations: moveAggregations,
+            
             getFeedbackUserMail: getFeedbackUserMail,
-            saveFeedbackUserMail: saveFeedbackUserMail
+            saveFeedbackUserMail: saveFeedbackUserMail,
+            
+            getLookupDatasets: getLookupDatasets,
+            setLookupDatasets: setLookupDatasets,
+
+            getDatasetsOrder: getDatasetsOrder,
+            setDatasetsOrder: setDatasetsOrder,
+            getDatasetsSort: getDatasetsSort,
+            setDatasetsSort: setDatasetsSort,
+            
+            getLookupDatasetsSort: getLookupDatasetsSort,
+            setLookupDatasetsSort: setLookupDatasetsSort,
+            getLookupDatasetsOrder: getLookupDatasetsOrder,
+            setLookupDatasetsOrder: setLookupDatasetsOrder
         };
 
         //--------------------------------------------------------------------------------------------------------------
@@ -226,6 +245,107 @@
                 setAggregation(datasetId, newPreparationId, aggregDef.columnId, aggregDef.aggregation);
                 removeAggregation(datasetId, oldPreparationId, aggregDef.columnId);
             });
+        }
+
+        /**
+         * @ngdoc method
+         * @name getLookupDatasets
+         * @methodOf data-prep.services.utils.service:StorageService
+         * @description Get the lookup datasets from localStorage
+         */
+        function getLookupDatasets() {
+            var params = $window.localStorage.getItem(LOOKUP_DATASETS_KEY);
+            return params ? JSON.parse(params) : [];
+        }
+
+        /**
+         * @ngdoc method
+         * @name setLookupDatasets
+         * @methodOf data-prep.services.utils.service:StorageService
+         * @description Save the lookup datasets in localStorage
+         */
+        function setLookupDatasets(datasets) {
+            $window.localStorage.setItem(LOOKUP_DATASETS_KEY, JSON.stringify(datasets));
+        }
+
+        /**
+         * @ngdoc method
+         * @name getDatasetsSort
+         * @methodOf data-prep.services.utils.service:StorageService
+         * @description Get the datasets sort from localStorage
+         */
+        function getDatasetsSort() {
+            return $window.localStorage.getItem(DATASETS_SORT_KEY);
+        }
+
+        /**
+         * @ngdoc method
+         * @name setDatasetsSort
+         * @methodOf data-prep.services.utils.service:StorageService
+         * @description Save the datasets sort in localStorage
+         */
+        function setDatasetsSort(sort) {
+            $window.localStorage.setItem(DATASETS_SORT_KEY, sort);
+        }
+
+        /**
+         * @ngdoc method
+         * @name getDatasetsOrder
+         * @methodOf data-prep.services.utils.service:StorageService
+         * @description Get the datasets order from localStorage
+         */
+        function getDatasetsOrder() {
+            return $window.localStorage.getItem(DATASETS_ORDER_KEY);
+        }
+
+        /**
+         * @ngdoc method
+         * @name setDatasetsOrder
+         * @methodOf data-prep.services.utils.service:StorageService
+         * @description Save the datasets order in localStorage
+         */
+        function setDatasetsOrder(order) {
+            $window.localStorage.setItem(DATASETS_ORDER_KEY, order);
+        }
+
+        /**
+         * @ngdoc method
+         * @name getLookupDatasetsSort
+         * @methodOf data-prep.services.utils.service:StorageService
+         * @description Get the Lookup datasets sort from localStorage
+         */
+        function getLookupDatasetsSort() {
+            return $window.localStorage.getItem(LOOKUP_DATASETS_SORT_KEY);
+        }
+
+        /**
+         * @ngdoc method
+         * @name setLookupDatasetsSort
+         * @methodOf data-prep.services.utils.service:StorageService
+         * @description Save the Lookup datasets sort in localStorage
+         */
+        function setLookupDatasetsSort(sort) {
+            $window.localStorage.setItem(LOOKUP_DATASETS_SORT_KEY, sort);
+        }
+
+        /**
+         * @ngdoc method
+         * @name getLookupDatasetsOrder
+         * @methodOf data-prep.services.utils.service:StorageService
+         * @description Get the Lookup datasets order from localStorage
+         */
+        function getLookupDatasetsOrder() {
+            return $window.localStorage.getItem(LOOKUP_DATASETS_ORDER_KEY);
+        }
+
+        /**
+         * @ngdoc method
+         * @name setLookupDatasetsOrder
+         * @methodOf data-prep.services.utils.service:StorageService
+         * @description Save the Lookup datasets order in localStorage
+         */
+        function setLookupDatasetsOrder(order) {
+            $window.localStorage.setItem(LOOKUP_DATASETS_ORDER_KEY, order);
         }
     }
 

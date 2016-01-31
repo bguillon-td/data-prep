@@ -4,7 +4,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertThat;
-import static org.talend.dataprep.api.dataset.DataSetMetadata.Builder.metadata;
 
 import java.io.InputStream;
 import java.util.Random;
@@ -170,7 +169,7 @@ public class SchemaAnalysisTest extends DataSetBaseTest {
      */
     private DataSetMetadata initializeDataSetMetadata(InputStream content) {
         String id = String.valueOf(random.nextInt(10000));
-        final DataSetMetadata metadata = metadata().id(id).build();
+        final DataSetMetadata metadata = metadataBuilder.metadata().id(id).build();
         dataSetMetadataRepository.add(metadata);
         contentStore.storeAsRaw(metadata, content);
         formatAnalysis.analyze(id);

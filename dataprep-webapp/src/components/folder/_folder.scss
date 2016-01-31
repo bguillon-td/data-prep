@@ -14,6 +14,8 @@
     a {
       font-size: 1em;
       color: $black;
+      @include ellipsis(300px);
+      vertical-align: top;
 
       &:hover {
         cursor: pointer;
@@ -62,7 +64,9 @@
 
   .dropdown-menu{
     li{
+      @include ellipsis(300px);
       display: list-item;
+
       @include media($medium-screen) {
         font-size: 1em;
         padding: 0px 30px 0px 10px;
@@ -74,7 +78,7 @@
     }
 
     li:hover{
-      background-color: $dark-green;
+      background-color: $light-gray;
     }
     &:focus {
       outline: none;

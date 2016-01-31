@@ -52,7 +52,7 @@ public class XlsWriterTest extends BaseFormatTest {
                 exporter.transform(dataSet, configuration);
             }
         }
-        DataSetMetadata metadata = DataSetMetadata.Builder.metadata().id("123").build();
+        DataSetMetadata metadata = metadataBuilder.metadata().id("123").build();
         SchemaParser.Request request = new SchemaParser.Request(Files.newInputStream(path), metadata);
         Workbook workbook = XlsUtils.getWorkbook(request);
         assertThat(workbook).isNotNull();

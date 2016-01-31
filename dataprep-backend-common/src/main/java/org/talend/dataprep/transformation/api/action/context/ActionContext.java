@@ -108,6 +108,10 @@ public class ActionContext {
         return "col#" + name;
     }
 
+    public boolean has(String key) {
+        return context.containsKey(key);
+    }
+
     /**
      * Return the object from the context or use the supplier to create it and cache it.
      *
@@ -214,6 +218,10 @@ public class ActionContext {
         if (this.actionStatus == ActionStatus.CANCELED && actionStatus == ActionStatus.OK) {
             // Don't allow transition from CANCELLED to OK.
             return;
+        }
+        if (this.actionStatus != actionStatus && actionStatus == ActionStatus.DONE) {
+            // When action is marked as DONE, prevent further modifications to context.
+            parent.freezeActionContext(this);
         }
         this.actionStatus = actionStatus;
     }

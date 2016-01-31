@@ -8,6 +8,8 @@ import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.elasticsearch.common.lang3.StringUtils;
+
 /**
  * Main goal of this class is to provide BigDecimal instance from a String.
  */
@@ -33,34 +35,36 @@ public class BigDecimalParser {
     public static DecimalFormat EU_DECIMAL_PATTERN = new DecimalFormat("#,##0.##",
             DecimalFormatSymbols.getInstance(Locale.FRENCH));
 
-    public static DecimalFormat EU_SCIENTIFIC_DECIMAL_PATTERN = new DecimalFormat("0.###E0", DecimalFormatSymbols.getInstance(Locale.FRENCH));
+    public static DecimalFormat EU_SCIENTIFIC_DECIMAL_PATTERN = new DecimalFormat("0.###E0",
+            DecimalFormatSymbols.getInstance(Locale.FRENCH));
 
-    public static DecimalFormat US_SCIENTIFIC_DECIMAL_PATTERN = new DecimalFormat("0.###E0", DecimalFormatSymbols.getInstance(Locale.US));
+    public static DecimalFormat US_SCIENTIFIC_DECIMAL_PATTERN = new DecimalFormat("0.###E0",
+            DecimalFormatSymbols.getInstance(Locale.US));
 
     private BigDecimalParser() {
     }
 
     /**
-     * Parse the given sting to a BigDecimal with default BigDecimal(String) constructor.
+     * Parses the given string to a BigDecimal with default BigDecimal(String) constructor.
      * <p>
      * This is useful when the number is standard US format (decimal separator='.' and grouping separator in {'', ',', '
      * '}) and for scientific notation.
      *
      * @param from string to convert to BigDecimal
      * @return an instance of BigDecimal
-     * @throws ParseException if <code>from</code> can not be parsed as a number or if <code>from</code> is
-     * <code>null</code>.
+     * @throws NumberFormatException if <code>from</code> can not be parsed as a number or if <code>from</code> is
+     * <code>null</code> or empty
      */
-    public static BigDecimal toBigDecimal(String from) throws ParseException {
-        if (from == null) {
-            throw new ParseException("null is not a valid number", 0);
+    public static BigDecimal toBigDecimal(String from) throws NumberFormatException {
+        if (StringUtils.isEmpty(from)) {
+            throw new NumberFormatException("null or empty is not a valid number");
         }
         final DecimalFormatSymbols decimalFormatSymbols = guessSeparators(from);
         return toBigDecimal(from, decimalFormatSymbols.getDecimalSeparator(), decimalFormatSymbols.getGroupingSeparator());
     }
 
     /**
-     * Parse the given string to a BigDecimal with decimal separator explicitly defined.
+     * Parses the given string to a BigDecimal with decimal separator explicitly defined.
      * <p>
      * Useful only when decimal separator is different than '.' or grouping separator is different than {'', ',' }.
      *
@@ -68,11 +72,12 @@ public class BigDecimalParser {
      * @param decimalSeparator the character used for decimal sign
      * @param groupingSeparator the grouping separator
      * @return an instance of BigDecimal
-     * @throws ParseException if <code>from</code> can not be parsed as a number with the given separators
+     * @throws NumberFormatException if <code>from</code> can not be parsed as a number with the given separators
      */
-    public static BigDecimal toBigDecimal(String from, char decimalSeparator, char groupingSeparator) throws ParseException {
-        if (from == null) {
-            throw new ParseException("null is not a valid number", 0);
+    public static BigDecimal toBigDecimal(String from, char decimalSeparator, char groupingSeparator)
+            throws NumberFormatException {
+        if (StringUtils.isEmpty(from)) {
+            throw new NumberFormatException("null or empty is not a valid number");
         }
         // Remove grouping separators:
         from = from.replaceAll("[" + groupingSeparator + "]", "");
@@ -93,7 +98,7 @@ public class BigDecimalParser {
                     // nothing to do, just test next format
                 }
             }
-            throw new ParseException("'" + from + "' can not parsed as a number", 0);
+            throw new NumberFormatException("'" + from + "' can not parsed as a number");
         }
     }
 

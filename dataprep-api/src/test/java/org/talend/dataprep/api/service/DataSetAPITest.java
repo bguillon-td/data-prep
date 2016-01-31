@@ -35,6 +35,7 @@ import org.talend.dataprep.api.dataset.DataSetMoveRequest;
 import org.talend.dataprep.api.folder.FolderContent;
 import org.talend.dataprep.exception.error.DataSetErrorCodes;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -748,9 +749,23 @@ public class DataSetAPITest extends ApiServiceTestBase {
         response = given().when().get("/api/datasets/preview/{id}", datasetId);
 
         assertThat(response.getStatusCode(), is(200));
-
     }
 
+    @Test
+    public void should_list_encodings() throws Exception {
+
+        // then
+        String json = given() //
+                .expect().statusCode(200).log().ifError() //
+                .when().get("/api/datasets/encodings").asString();
+
+        List<String> encodings = builder.build().readValue(json, new TypeReference<List<String>>() {
+        });
+
+        assertThat(encodings.isEmpty(), is(false));
+        assertThat(encodings.get(0), is("UTF-8"));
+        assertThat(encodings.get(1), is("UTF-16"));
+    }
 
 
 }

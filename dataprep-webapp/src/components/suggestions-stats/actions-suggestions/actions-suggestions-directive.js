@@ -1,6 +1,14 @@
 (function () {
     'use strict';
 
+    /**
+     * @ngdoc directive
+     * @name data-prep.actions-suggestions.directive:actionsSuggestions
+     * @description Actions and suggestions list element
+     * @restrict E
+     * @usage
+     *     <actions-suggestions></actions-suggestions>
+     * */
     function ActionsSuggestions($timeout) {
         return {
             restrict: 'E',

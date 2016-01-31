@@ -10,7 +10,7 @@ describe('Export controller', function() {
             'id': 'CSV',
             'needParameters': 'true',
             'defaultExport': 'false',
-            'enabled': 'true',
+            'enabled': true,
             'parameters': [{
                 'name': 'csvSeparator',
                 'labelKey': 'CHOOSE_SEPARATOR',
@@ -34,7 +34,7 @@ describe('Export controller', function() {
             'id': 'TABLEAU',
             'needParameters': 'false',
             'defaultExport': 'false',
-            'enabled': 'true'
+            'enabled': true
         },
         {
             'mimeType': 'application/vnd.ms-excel',
@@ -42,7 +42,7 @@ describe('Export controller', function() {
             'id': 'XLSX',
             'needParameters': 'false',
             'defaultExport': 'true',
-            'enabled': 'true'
+            'enabled': true
         }
     ];
     var currentParameters = {exportType: 'XLSX'};
@@ -71,10 +71,6 @@ describe('Export controller', function() {
             return ctrl;
         };
 
-        spyOn(ExportService, 'refreshTypes').and.callFake(function() {
-            ExportService.exportTypes = exportTypes;
-            return $q.when(exportTypes);
-        });
         spyOn(ExportService, 'getParameters').and.returnValue(currentParameters);
         spyOn(ExportService, 'setParameters').and.returnValue();
         spyOn(form, 'submit').and.returnValue();
@@ -114,9 +110,8 @@ describe('Export controller', function() {
         it('should bind exportTypes getter to ExportService', inject(function(ExportService) {
             //given
             var ctrl = createController();
-            expect(ctrl.exportTypes).toBe(exportTypes);
-
             var newTypes = [];
+            expect(ctrl.exportTypes).not.toBe(newTypes);
 
             //when
             ExportService.exportTypes = newTypes;
@@ -124,40 +119,6 @@ describe('Export controller', function() {
             //then
             expect(ctrl.exportTypes).toBe(newTypes);
         }));
-    });
-
-    describe('on creation', function() {
-        it('should init export types', inject(function(ExportService) {
-            //when
-            createController();
-
-            //then
-            expect(ExportService.refreshTypes).toHaveBeenCalled();
-        }));
-
-        it('should init current export type and parameter', function() {
-            //when
-            var ctrl = createController();
-            scope.$digest();
-
-            //then
-            expect(ctrl.exportService.currentExportType).toBeFalsy();
-            expect(ctrl.exportService.currentExportParameters).toBeFalsy();
-        });
-    });
-
-    it('should reset params with saved one and reset current export type accordingly', function() {
-        //given
-        var ctrl = createController();
-        ctrl.exportService.currentExportType = {exportType: 'XLSX'} ;
-        ctrl.exportService.currentExportParameters = {filename: 'test'};
-
-        //when
-        ctrl.exportService.reset();
-
-        //then
-        expect(ctrl.exportService.currentExportType).toBeFalsy();
-        expect(ctrl.exportService.currentExportParameters).toBeFalsy();
     });
 
     describe('on new type selection', function() {
@@ -218,6 +179,38 @@ describe('Export controller', function() {
 
             //then
             expect(ctrl.showModal).toBe(true);
+            expect(form.submit).not.toHaveBeenCalled();
+        });
+
+        it('should do nothing when export type is not enable', function() {
+            //given
+            var ctrl = createController();
+            scope.$apply();
+            expect(ctrl.showModal).toBeFalsy();
+
+            var oldType = exportTypes[0];
+            ctrl.exportService.currentExportType = oldType;
+            var disabledType = {
+                'mimeType': 'application/tde',
+                'extension': '.tde',
+                'id': 'TABLEAU',
+                'needParameters': 'false',
+                'defaultExport': 'false',
+                'enabled': false,
+                'parameters': [{
+                    'name': 'fileName',
+                    'labelKey': 'EXPORT_FILENAME"',
+                    'type': 'text',
+                    'defaultValue': {'value': ';', 'labelKey': 'EXPORT_FILENAME_DEFAULT'}
+                }]
+            };
+
+            //when
+            ctrl.changeTypeAndExport(disabledType);
+
+            //then
+            expect(ctrl.showModal).toBeFalsy();
+            expect(ctrl.exportService.currentExportType).toBe(oldType);
             expect(form.submit).not.toHaveBeenCalled();
         });
     });

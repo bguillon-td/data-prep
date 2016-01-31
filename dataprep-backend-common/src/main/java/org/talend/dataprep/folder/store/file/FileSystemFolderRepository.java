@@ -1,5 +1,7 @@
 package org.talend.dataprep.folder.store.file;
 
+import static java.util.Collections.emptyList;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -12,7 +14,6 @@ import java.nio.file.Paths;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
@@ -33,11 +34,9 @@ import org.talend.dataprep.api.folder.Folder;
 import org.talend.dataprep.api.folder.FolderEntry;
 import org.talend.dataprep.folder.store.FolderRepository;
 import org.talend.dataprep.folder.store.FolderRepositoryAdapter;
-
-import com.google.common.collect.Lists;
 import org.talend.dataprep.folder.store.NotEmptyFolderException;
 
-import static java.util.Collections.emptyList;
+import com.google.common.collect.Lists;
 
 @Component("folderRepository#file")
 @ConditionalOnProperty(name = "folder.store", havingValue = "file", matchIfMissing = false)
@@ -86,24 +85,26 @@ public class FileSystemFolderRepository extends FolderRepositoryAdapter implemen
             if (Files.notExists(folderPath)) {
                 return emptyList();
             }
-            Stream<Path> childrenStream = Files.list(folderPath);
-            List<Folder> children = new ArrayList<>();
-            childrenStream.forEach(path -> { //
-                if (Files.isDirectory(path)) {
-                    String pathStr = pathAsString(path);
-                    try {
-                        BasicFileAttributes attr = Files.readAttributes(path, BasicFileAttributes.class);
-                        children.add(Folder.Builder.folder() //
-                                .path(pathStr) //
-                                .name(extractName(pathStr)) //
-                                .modificationDate(attr.lastModifiedTime().to(TimeUnit.MILLISECONDS))//
-                                .creationDate(attr.creationTime().to(TimeUnit.MILLISECONDS)).build());
-                    } catch (IOException e) {
-                        throw new RuntimeException(e.getMessage(), e);
+            try (Stream<Path> childrenStream = Files.list(folderPath)) {
+
+                List<Folder> children = new ArrayList<>();
+                childrenStream.forEach(path -> { //
+                    if (Files.isDirectory(path)) {
+                        String pathStr = pathAsString(path);
+                        try {
+                            BasicFileAttributes attr = Files.readAttributes(path, BasicFileAttributes.class);
+                            children.add(Folder.Builder.folder() //
+                                    .path(pathStr) //
+                                    .name(extractName(pathStr)) //
+                                    .modificationDate(attr.lastModifiedTime().to(TimeUnit.MILLISECONDS))//
+                                    .creationDate(attr.creationTime().to(TimeUnit.MILLISECONDS)).build());
+                        } catch (IOException e) {
+                            throw new RuntimeException(e.getMessage(), e);
+                        }
                     }
-                }
-            });
-            return children;
+                });
+                return children;
+            }
         } catch (IOException e) {
             throw new RuntimeException(e.getMessage(), e);
         }
@@ -216,26 +217,26 @@ public class FileSystemFolderRepository extends FolderRepositoryAdapter implemen
             List<String> pathParts = Lists.newArrayList(StringUtils.split(folderPath, PATH_SEPARATOR));
             Path path = Paths.get(getRootFolder().toString(), pathParts.toArray(new String[pathParts.size()]));
 
-            Files.list(path) //
-                    .filter(pathFound -> !Files.isDirectory(pathFound)) //
-                    .forEach(pathFile -> {
-                        try {
-                            try (InputStream inputStream = Files.newInputStream(pathFile)) {
-                                Properties properties = new Properties();
-                                properties.load(inputStream);
-                                if (StringUtils.equalsIgnoreCase(properties.getProperty("contentType"), //
-                                        contentType) && //
-                                        StringUtils.equalsIgnoreCase(properties.getProperty("contentId"), //
-                                                contentId)) {
-                                    Files.delete(pathFile);
+            try (Stream<Path> paths = Files.list(path)) {
+                paths.filter(pathFound -> !Files.isDirectory(pathFound)) //
+                        .forEach(pathFile -> {
+                            try {
+                                try (InputStream inputStream = Files.newInputStream(pathFile)) {
+                                    Properties properties = new Properties();
+                                    properties.load(inputStream);
+                                    if (StringUtils.equalsIgnoreCase(properties.getProperty("contentType"), //
+                                            contentType) && //
+                                            StringUtils.equalsIgnoreCase(properties.getProperty("contentId"), //
+                                                    contentId)) {
+                                        Files.delete(pathFile);
+                                    }
                                 }
+
+                            } catch (IOException e) {
+                                throw new RuntimeException(e.getMessage(), e);
                             }
-
-                        } catch (IOException e) {
-                            throw new RuntimeException(e.getMessage(), e);
-                        }
-                    });
-
+                        });
+            }
         } catch (IOException e) {
             throw new RuntimeException(e.getMessage(), e);
         }
@@ -248,6 +249,7 @@ public class FileSystemFolderRepository extends FolderRepositoryAdapter implemen
         final List<FolderEntry> folderEntries = new ArrayList<>();
 
         final FoldersConsumer foldersConsumer = new FoldersConsumer() {
+
             @Override
             public Collection<Folder> getFolders() {
                 return emptyList();
@@ -305,32 +307,33 @@ public class FileSystemFolderRepository extends FolderRepositoryAdapter implemen
         }
 
         try {
-            List<FolderEntry> folderEntries = new ArrayList<>();
-            Files.list(path) //
-                    .filter(pathFound -> !Files.isDirectory(pathFound)) //
-                    .forEach(pathFile -> {
-                        try {
-                            try (InputStream inputStream = Files.newInputStream(pathFile)) {
-                                Properties properties = new Properties();
-                                properties.load(inputStream);
-                                if (StringUtils.equalsIgnoreCase(properties.getProperty("contentType"), //
-                                        contentType)) {
+            try (Stream<Path> paths = Files.list(path)) {
+                List<FolderEntry> folderEntries = new ArrayList<>();
+                paths.filter(pathFound -> !Files.isDirectory(pathFound)) //
+                        .forEach(pathFile -> {
+                            try {
+                                try (InputStream inputStream = Files.newInputStream(pathFile)) {
+                                    Properties properties = new Properties();
+                                    properties.load(inputStream);
+                                    if (StringUtils.equalsIgnoreCase(properties.getProperty("contentType"), //
+                                            contentType)) {
 
-                                    FolderEntry folderEntry = new FolderEntry();
-                                    folderEntry.setId(properties.getProperty("id"));
-                                    folderEntry.setPath(folder);
-                                    folderEntry.setContentType(contentType);
-                                    folderEntry.setContentId(properties.getProperty("contentId"));
-                                    folderEntries.add(folderEntry);
+                                        FolderEntry folderEntry = new FolderEntry();
+                                        folderEntry.setId(properties.getProperty("id"));
+                                        folderEntry.setPath(folder);
+                                        folderEntry.setContentType(contentType);
+                                        folderEntry.setContentId(properties.getProperty("contentId"));
+                                        folderEntries.add(folderEntry);
+                                    }
                                 }
+
+                            } catch (IOException e) {
+                                throw new RuntimeException(e.getMessage(), e);
                             }
+                        });
 
-                        } catch (IOException e) {
-                            throw new RuntimeException(e.getMessage(), e);
-                        }
-                    });
-
-            return folderEntries;
+                return folderEntries;
+            }
         } catch (IOException e) {
             throw new RuntimeException(e.getMessage(), e);
         }
@@ -347,9 +350,11 @@ public class FileSystemFolderRepository extends FolderRepositoryAdapter implemen
                 public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
                     final AtomicBoolean filesFound = new AtomicBoolean(false);
 
-                    Files.list(dir).forEach(path -> {
-                        filesFound.set(true);
-                    });
+                    try (Stream<Path> paths = Files.list(dir)) {
+                        paths.forEach(path -> {
+                            filesFound.set(true);
+                        });
+                    }
 
                     return filesFound.get() ? FileVisitResult.CONTINUE : FileVisitResult.SKIP_SUBTREE;
                 }
@@ -400,6 +405,7 @@ public class FileSystemFolderRepository extends FolderRepositoryAdapter implemen
         Set<Folder> folders = new HashSet<>();
 
         FoldersConsumer foldersConsumer = new FoldersConsumer() {
+
             @Override
             public Collection<Folder> getFolders() {
                 return folders;
@@ -463,7 +469,6 @@ public class FileSystemFolderRepository extends FolderRepositoryAdapter implemen
         return folders;
     }
 
-
     protected void visitFolders(final FoldersConsumer foldersConsumer, final Path startFolder) {
 
         try {
@@ -471,7 +476,9 @@ public class FileSystemFolderRepository extends FolderRepositoryAdapter implemen
 
                 @Override
                 public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
-                    Files.list(dir).forEach(foldersConsumer);
+                    try (Stream<Path> paths = Files.list(dir)) {
+                        paths.forEach(foldersConsumer);
+                    }
                     return FileVisitResult.CONTINUE;
                 }
 
@@ -496,6 +503,7 @@ public class FileSystemFolderRepository extends FolderRepositoryAdapter implemen
     }
 
     private interface FoldersConsumer extends Consumer<Path> {
+
         Collection<Folder> getFolders();
 
         Collection<FolderEntry> getFolderEntries();
@@ -528,7 +536,7 @@ public class FileSystemFolderRepository extends FolderRepositoryAdapter implemen
 
         try {
 
-            Path destinationFile = Paths.get(path.toString(), buildFileName( folderEntry ));
+            Path destinationFile = Paths.get(path.toString(), buildFileName(folderEntry));
             Files.move(originFile, destinationFile);
         } catch (IOException e) {
             throw new RuntimeException(e.getMessage(), e);

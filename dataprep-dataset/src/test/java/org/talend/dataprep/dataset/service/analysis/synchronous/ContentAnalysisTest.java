@@ -2,7 +2,6 @@ package org.talend.dataprep.dataset.service.analysis.synchronous;
 
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
-import static org.talend.dataprep.api.dataset.DataSetMetadata.Builder.metadata;
 
 import java.util.Optional;
 
@@ -32,7 +31,7 @@ public class ContentAnalysisTest extends DataSetBaseTest {
 
     @Test
     public void testAnalysisNoHeaderParameter() {
-        final DataSetMetadata metadata = metadata().id("1234").build();
+        final DataSetMetadata metadata = metadataBuilder.metadata().id("1234").build();
         createCsvDataSet(metadata, "5_lines.csv");
 
         contentAnalysis.analyze(metadata.getId());
@@ -45,7 +44,7 @@ public class ContentAnalysisTest extends DataSetBaseTest {
 
     @Test
     public void testAnalysisWithHeaderParameter() {
-        final DataSetMetadata metadata = metadata() //
+        final DataSetMetadata metadata = metadataBuilder.metadata() //
                 .id("1234") //
                 .parameter(CSVFormatGuess.HEADER_NB_LINES_PARAMETER, "56").build();
         createCsvDataSet(metadata, "5_lines.csv");
@@ -60,7 +59,7 @@ public class ContentAnalysisTest extends DataSetBaseTest {
 
     @Test
     public void testAnalysisWithLimit() {
-        final DataSetMetadata metadata = metadata().id("3548").build();
+        final DataSetMetadata metadata = metadataBuilder.metadata().id("3548").build();
         createCsvDataSet(metadata, "100_lines.csv");
 
         final Long newLimit = 16L;
@@ -78,7 +77,7 @@ public class ContentAnalysisTest extends DataSetBaseTest {
 
     @Test
     public void testAnalysisWithoutLimit() {
-        final DataSetMetadata metadata = metadata().id("8520").build();
+        final DataSetMetadata metadata = metadataBuilder.metadata().id("8520").build();
         createCsvDataSet(metadata, "5_lines.csv");
 
         contentAnalysis.analyze(metadata.getId());

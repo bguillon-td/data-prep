@@ -21,6 +21,16 @@ describe('Dataset list controller', function () {
         $translateProvider.preferredLanguage('en');
     }));
 
+    var sortList = [
+        {id: 'name', name: 'NAME_SORT', property: 'name'},
+        {id: 'date', name: 'DATE_SORT', property: 'created'}
+    ];
+
+    var orderList = [
+        {id: 'asc', name: 'ASC_ORDER'},
+        {id: 'desc', name: 'DESC_ORDER'}
+    ];
+
     beforeEach(module('data-prep.dataset-list', function ($provide) {
         stateMock = {
             folder: {
@@ -28,12 +38,19 @@ describe('Dataset list controller', function () {
                 currentFolderContent: {
                     datasets: [datasets[0]]
                 }
+            },
+            inventory: {
+                datasets: [],
+                sortList: sortList,
+                orderList: orderList,
+                sort: sortList[0],
+                order: orderList[0]
             }
         };
         $provide.constant('state', stateMock);
     }));
 
-    beforeEach(inject(function ($rootScope, $controller, $q, $state, DatasetService, PlaygroundService, MessageService, DatasetListSortService, StateService) {
+    beforeEach(inject(function ($rootScope, $controller, $q, $state, DatasetService, PlaygroundService, MessageService, StorageService, StateService) {
         var datasetsValues = [datasets, refreshedDatasets];
         scope = $rootScope.$new();
 
@@ -48,10 +65,11 @@ describe('Dataset list controller', function () {
             return $q.when(datasetsValues.shift());
         });
 
-        spyOn(DatasetListSortService, 'setSort').and.returnValue();
-        spyOn(DatasetListSortService, 'setOrder').and.returnValue();
+        spyOn(StorageService, 'setDatasetsSort').and.returnValue();
+        spyOn(StorageService, 'setDatasetsOrder').and.returnValue();
 
         spyOn(PlaygroundService, 'initPlayground').and.returnValue($q.when(true));
+        spyOn(PlaygroundService, 'load').and.returnValue($q.when(true));
         spyOn(StateService, 'showPlayground').and.returnValue();
         spyOn(MessageService, 'error').and.returnValue();
         spyOn($state, 'go').and.returnValue();
@@ -110,8 +128,7 @@ describe('Dataset list controller', function () {
             it('should refresh dataset when sort is changed', inject(function ($q, FolderService) {
                 //given
                 var ctrl = createController();
-                ctrl.sortSelected = {id: 'date', name: 'DATE_SORT'};
-                var newSort = {id: 'name', name: 'NAME_SORT'};
+                var newSort = {id: 'date', name: 'DATE_SORT'};
 
                 //when
                 ctrl.updateSortBy(newSort);
@@ -123,8 +140,7 @@ describe('Dataset list controller', function () {
             it('should refresh dataset when order is changed', inject(function ($q, FolderService) {
                 //given
                 var ctrl = createController();
-                ctrl.selectedOrder = {id: 'desc', name: 'DESC_ORDER'};
-                var newSortOrder = {id: 'asc', name: 'ASC_ORDER'};
+                var newSortOrder = {id: 'desc', name: 'DESC_ORDER'};
 
                 //when
                 ctrl.updateSortOrder(newSortOrder);
@@ -136,10 +152,11 @@ describe('Dataset list controller', function () {
             it('should not refresh dataset when requested sort is already the selected one', inject(function (FolderService) {
                 //given
                 var ctrl = createController();
-                var newSort = {id: 'name', name: 'NAME_SORT'};
+                var newSort = {id: 'date', name: 'DATE_SORT'};
 
                 //when
                 ctrl.updateSortBy(newSort);
+                stateMock.inventory.sort = newSort;
                 ctrl.updateSortBy(newSort);
 
                 //then
@@ -149,80 +166,83 @@ describe('Dataset list controller', function () {
             it('should not refresh dataset when requested order is already the selected one', inject(function (FolderService) {
                 //given
                 var ctrl = createController();
-                var newSortOrder = {id: 'desc', name: 'ASC_ORDER'};
+                var newSortOrder = {id: 'desc', name: 'DESC_ORDER'};
 
                 //when
                 ctrl.updateSortOrder(newSortOrder);
+                stateMock.inventory.order = newSortOrder;
                 ctrl.updateSortOrder(newSortOrder);
 
                 //then
                 expect(FolderService.getContent.calls.count()).toBe(1);
             }));
 
-            it('should update sort parameter', inject(function (DatasetService, DatasetListSortService) {
+            it('should update sort parameter', inject(function (DatasetService, StorageService) {
                 //given
                 var ctrl = createController();
-                var newSort = {id: 'name', name: 'NAME'};
+                var newSort = {id: 'date', name: 'DATE'};
 
                 //when
                 ctrl.updateSortBy(newSort);
 
                 //then
-                expect(DatasetListSortService.setSort).toHaveBeenCalledWith('name');
+                expect(StorageService.setDatasetsSort).toHaveBeenCalledWith('date');
             }));
 
-            it('should update order parameter', inject(function (DatasetService, DatasetListSortService) {
+            it('should update order parameter', inject(function (DatasetService, StorageService) {
                 //given
                 var ctrl = createController();
-                var newSortOrder = {id: 'asc', name: 'ASC_ORDER'};
+                var newSortOrder = {id: 'desc', name: 'DESC_ORDER'};
 
                 //when
                 ctrl.updateSortOrder(newSortOrder);
 
                 //then
-                expect(DatasetListSortService.setOrder).toHaveBeenCalledWith('asc');
+                expect(StorageService.setDatasetsOrder).toHaveBeenCalledWith('desc');
             }));
 
         });
 
         describe('with dataset refresh failure', function () {
-            beforeEach(inject(function ($q, FolderService) {
+            beforeEach(inject(function ($q, FolderService, StateService) {
                 spyOn(FolderService, 'getContent').and.returnValue($q.reject(false));
+                spyOn(StateService, 'setDatasetsSort');
+                spyOn(StateService, 'setDatasetsOrder');
             }));
 
-            it('should set the old sort parameter', function () {
+            it('should set the old sort parameter', inject(function (StateService) {
                 //given
-                var previousSelectedSort = {id: 'date', name: 'DATE'};
-                var newSort = {id: 'name', name: 'NAME_SORT'};
+                var newSort = {id: 'date', name: 'DATE'};
+                var previousSelectedSort = {id: 'name', name: 'NAME_SORT'};
 
                 var ctrl = createController();
-                ctrl.sortSelected = previousSelectedSort;
+                stateMock.inventory.sort = previousSelectedSort;
 
                 //when
                 ctrl.updateSortBy(newSort);
-                expect(ctrl.sortSelected).toBe(newSort);
+                expect(StateService.setDatasetsSort).toHaveBeenCalledWith(newSort);
                 scope.$digest();
 
                 //then
-                expect(ctrl.sortSelected).toBe(previousSelectedSort);
-            });
+                expect(StateService.setDatasetsSort).toHaveBeenCalledWith(previousSelectedSort);
+            }));
 
-            it('should set the old order parameter', function () {
+            it('should set the old order parameter', inject(function (StateService) {
                 //given
-                var previousSelectedOrder = {id: 'desc', name: 'DESC'};
-                var newSortOrder = {id: 'asc', name: 'ASC_ORDER'};
+                var newSortOrder = {id: 'desc', name: 'DESC'};
+                var previousSelectedOrder = {id: 'asc', name: 'ASC_ORDER'};
 
                 var ctrl = createController();
-                ctrl.sortOrderSelected = previousSelectedOrder;
+                stateMock.inventory.order = previousSelectedOrder;
 
                 //when
                 ctrl.updateSortOrder(newSortOrder);
-                expect(ctrl.sortOrderSelected).toBe(newSortOrder);
+                expect(StateService.setDatasetsOrder).toHaveBeenCalledWith(newSortOrder);
                 scope.$digest();
 
                 //then
-                expect(ctrl.sortOrderSelected).toBe(previousSelectedOrder);
-            });
+                expect(StateService.setDatasetsOrder).toHaveBeenCalledWith(previousSelectedOrder);
+            }));
         });
     });
 
@@ -283,17 +303,6 @@ describe('Dataset list controller', function () {
     });
 
     describe('bindings', function () {
-
-        it('should bind datasets getter to datasetListService.datasets', inject(function (DatasetService, DatasetListService) {
-            //given
-            var ctrl = createController();
-
-            //when
-            DatasetListService.datasets = refreshedDatasets;
-
-            //then
-            expect(ctrl.datasets).toBe(refreshedDatasets);
-        }));
 
         it('should reset parameters when click on add folder button', inject(function () {
             //given
@@ -584,6 +593,28 @@ describe('Dataset list controller', function () {
 
             //then
             expect(UpdateWorkflowService.updateDataset).toHaveBeenCalledWith(existingDataset, newDataSet);
+        }));
+    });
+
+    describe('related preparations', function () {
+
+        it('should load preparation and show playground', inject(function ($timeout, PlaygroundService, StateService) {
+            //given
+            var ctrl = createController();
+            var preparation = {
+                id: 'de618c62ef97b3a95b5c171bc077ffe22e1d6f79',
+                dataSetId: 'dacd45cf-5bd0-4768-a9b7-f6c199581efc',
+                author: 'anonymousUser'
+            };
+
+            //when
+            ctrl.openPreparation(preparation);
+            scope.$digest();
+            $timeout.flush();
+
+            //then
+            expect(PlaygroundService.load).toHaveBeenCalledWith(preparation);
+            expect(StateService.showPlayground).toHaveBeenCalled();
         }));
     });
 });

@@ -4,8 +4,6 @@ import org.elasticsearch.common.lang3.StringUtils;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.boot.test.IntegrationTest;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -23,8 +21,6 @@ import org.talend.dataprep.i18n.MessagesBundle;
 @IntegrationTest
 @WebAppConfiguration
 public class ErrorCodeMessagesTest {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(ErrorCodeMessagesTest.class);
 
     /**
      * Asserts that the specified errorCode exits in the error_message properties.

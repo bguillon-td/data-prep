@@ -2,18 +2,21 @@ package org.talend.dataprep.transformation.format;
 
 import static org.talend.dataprep.transformation.format.CSVFormat.CSV;
 
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.util.Arrays;
+import java.io.*;
+import java.util.Collections;
 import java.util.Map;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import org.talend.dataprep.api.dataset.ColumnMetadata;
 import org.talend.dataprep.api.dataset.DataSetRow;
 import org.talend.dataprep.api.dataset.RowMetadata;
+import org.talend.dataprep.exception.TDPException;
+import org.talend.dataprep.exception.error.TransformationErrorCodes;
 import org.talend.dataprep.format.export.ExportFormat;
 import org.talend.dataprep.transformation.api.transformer.TransformerWriter;
 
@@ -30,12 +33,15 @@ public class CSVWriter implements TransformerWriter {
     /** Separator argument name. */
     public static final String SEPARATOR_PARAM_NAME = ExportFormat.PREFIX + "csvSeparator";
 
-    /** The CSV writer. */
-    private final au.com.bytecode.opencsv.CSVWriter writer;
+    private static final Logger LOGGER = LoggerFactory.getLogger(CSVWriter.class);
 
-    /** the columns ids. */
-    private String[] columnIds;
+    private final OutputStream output;
 
+    private final char separator;
+
+    private final File bufferFile;
+
+    private final au.com.bytecode.opencsv.CSVWriter recordsWriter;
 
     /**
      * Simple constructor with default separator value.
@@ -43,7 +49,7 @@ public class CSVWriter implements TransformerWriter {
      * @param output where this writer should... write !
      */
     public CSVWriter(final OutputStream output) {
-        writer = new au.com.bytecode.opencsv.CSVWriter(new OutputStreamWriter(output), DEFAULT_SEPARATOR);
+        this(output, Collections.emptyMap());
     }
 
     /**
@@ -53,11 +59,19 @@ public class CSVWriter implements TransformerWriter {
      * @param parameters parameters to get the separator from.
      */
     public CSVWriter(final OutputStream output, Map<String, String> parameters) {
-        String actualSeparator = parameters.get(SEPARATOR_PARAM_NAME);
-        if (actualSeparator == null || StringUtils.isEmpty(actualSeparator) || actualSeparator.length() > 1) {
-            actualSeparator = String.valueOf(DEFAULT_SEPARATOR);
+        try {
+            this.output = output;
+            String separatorParameter = parameters.get(SEPARATOR_PARAM_NAME);
+            if (separatorParameter == null || StringUtils.isEmpty(separatorParameter) || separatorParameter.length() > 1) {
+                this.separator = String.valueOf(DEFAULT_SEPARATOR).charAt(0);
+            } else {
+                this.separator = separatorParameter.charAt(0);
+            }
+            bufferFile = File.createTempFile("csvWriter", ".csv");
+            recordsWriter = new au.com.bytecode.opencsv.CSVWriter(new FileWriter(bufferFile), separator);
+        } catch (IOException e) {
+            throw new TDPException(TransformationErrorCodes.UNABLE_TO_USE_EXPORT, e);
         }
-        writer = new au.com.bytecode.opencsv.CSVWriter(new OutputStreamWriter(output), actualSeparator.charAt(0));
     }
 
     /**
@@ -67,10 +81,18 @@ public class CSVWriter implements TransformerWriter {
     public void write(final RowMetadata rowMetadata) throws IOException {
         // write the columns names
         String[] columnsName = rowMetadata.getColumns().stream().map(ColumnMetadata::getName).toArray(String[]::new);
-        writer.writeNext(columnsName);
+        au.com.bytecode.opencsv.CSVWriter csvWriter = //
+        new au.com.bytecode.opencsv.CSVWriter(new OutputStreamWriter(output), separator);
+        csvWriter.writeNext(columnsName);
+        csvWriter.flush();
+        // Write buffered records
+        recordsWriter.flush();
+        try (InputStream input = new FileInputStream(bufferFile)) {
+            IOUtils.copy(input, output);
+        } finally {
+            recordsWriter.close();
+        }
 
-        // and store the columns ids for the rows.
-        columnIds = rowMetadata.getColumns().stream().map(ColumnMetadata::getId).toArray(String[]::new);
     }
 
     /**
@@ -79,11 +101,8 @@ public class CSVWriter implements TransformerWriter {
      */
     @Override
     public void write(final DataSetRow row) throws IOException {
-        if (columnIds == null) {
-            throw new UnsupportedOperationException("Write columns should be called before to init column list");
-        }
-        final String[] csvRow = Arrays.stream(columnIds).map(row::get).toArray(String[]::new);
-        writer.writeNext(csvRow);
+        // values need to be written in the same order as the columns
+        recordsWriter.writeNext(row.order().toArray(DataSetRow.SKIP_TDP_ID));
     }
 
     /**
@@ -91,11 +110,12 @@ public class CSVWriter implements TransformerWriter {
      */
     @Override
     public void flush() throws IOException {
-        writer.flush();
+        output.flush();
+        if (bufferFile.exists()) {
+            if (!bufferFile.delete()) {
+                LOGGER.warn("Unable to delete temporary file '{}'", bufferFile);
+            }
+        }
     }
 
-    @Override
-    public boolean requireMetadataForHeader() {
-        return true;
-    }
 }

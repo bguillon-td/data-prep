@@ -1,0 +1,16 @@
+{
+  "actions": [
+    {
+      "action": "split",
+      "parameters": {
+        "limit": 2,
+        "separator": "other (string)",
+        "manual_separator_string": " ",
+        "scope": "column",
+        "column_id": "0000",
+        "column_name": "name",
+        "row_id": 1
+      }
+    }
+  ]
+}

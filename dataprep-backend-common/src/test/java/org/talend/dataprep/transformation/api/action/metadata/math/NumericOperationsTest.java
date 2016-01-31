@@ -139,6 +139,11 @@ public class NumericOperationsTest extends AbstractMetadataBaseTest {
         assertEquals("1.9", action.compute("4", "/", "2.1"));
     }
 
+    @Test
+    public void testComputeAltFormat() {
+        assertEquals("5.15", action.compute("3,05", "+", "2.1"));
+        assertEquals("6300", action.compute("3 000", "x", "2.1"));
+    }
 
     @Test
     public void testComputeScientificOperand() {

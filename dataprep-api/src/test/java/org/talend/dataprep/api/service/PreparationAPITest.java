@@ -4,7 +4,6 @@ import static com.jayway.restassured.RestAssured.given;
 import static com.jayway.restassured.RestAssured.when;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
-import static org.talend.dataprep.api.preparation.Step.ROOT_STEP;
 import static org.talend.dataprep.test.SameJSONFile.sameJSONAsFile;
 import static uk.co.datumedge.hamcrest.json.SameJSONAs.sameJSONAs;
 
@@ -12,20 +11,26 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 
+import javax.annotation.Resource;
+
 import org.apache.commons.io.IOUtils;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.talend.dataprep.api.preparation.Preparation;
 import org.talend.dataprep.api.preparation.Step;
+import org.talend.dataprep.security.Security;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.restassured.http.ContentType;
 import com.jayway.restassured.path.json.JsonPath;
 import com.jayway.restassured.response.Response;
-import org.talend.dataprep.security.Security;
 
 public class PreparationAPITest extends ApiServiceTestBase {
+
+    /** The root step. */
+    @Resource(name = "rootStep")
+    private Step rootStep;
 
     @Autowired
     private Security security;
@@ -134,7 +139,7 @@ public class PreparationAPITest extends ApiServiceTestBase {
         final List<String> steps = given().get("/api/preparations/{preparation}/details", preparationId).jsonPath()
                 .getList("steps");
         assertThat(steps.size(), is(2));
-        assertThat(steps.get(0), is(ROOT_STEP.id()));
+        assertThat(steps.get(0), is(rootStep.id()));
         assertThat(steps.get(1), is("c19c0f82ff8c2296acb4da9c485e6dc83ead6c45"));
     }
 
@@ -180,7 +185,7 @@ public class PreparationAPITest extends ApiServiceTestBase {
 
         List<String> steps = given().get("/api/preparations/{preparation}/details", preparationId).jsonPath().getList("steps");
         assertThat(steps.size(), is(3));
-        assertThat(steps.get(0), is(ROOT_STEP.id()));
+        assertThat(steps.get(0), is(rootStep.id()));
         assertThat(steps.get(1), is("81d219222e99d73b6a762cf2b0ec74261196df75")); // <- transformation/upper_case_lastname
         assertThat(steps.get(2), is("3505adaabdcdb1d7fd4e7d2898a2782ec572401d")); // <- upper_case_firstname
 
@@ -194,7 +199,7 @@ public class PreparationAPITest extends ApiServiceTestBase {
         // then : Steps id should have changed due to update
         steps = given().get("/api/preparations/{preparation}/details", preparationId).jsonPath().getList("steps");
         assertThat(steps.size(), is(3));
-        assertThat(steps.get(0), is(ROOT_STEP.id()));
+        assertThat(steps.get(0), is(rootStep.id()));
         assertThat(steps.get(1), is("434e7fc9005014ea6636a5c0803932db9dcc0943"));
         assertThat(steps.get(2), is("ef5c618b0648b5a9888e92c20424d00b7bbda180"));
     }
@@ -265,7 +270,7 @@ public class PreparationAPITest extends ApiServiceTestBase {
         // then : Steps id should have changed due to update
         steps = given().get("/api/preparations/{preparation}/details", preparationId).jsonPath().getList("steps");
         assertThat(steps.size(), is(2));
-        assertThat(steps.get(0), is(ROOT_STEP.id()));
+        assertThat(steps.get(0), is(rootStep.id()));
         assertThat(steps.get(1), is("c19c0f82ff8c2296acb4da9c485e6dc83ead6c45"));
     }
 
@@ -340,7 +345,7 @@ public class PreparationAPITest extends ApiServiceTestBase {
         List<String> steps = preparation.getSteps();
 
         assertThat(steps.size(), is(1));
-        assertThat(steps.get(0), is(ROOT_STEP.id()));
+        assertThat(steps.get(0), is(rootStep.id()));
 
         // when
         applyActionFromFile(preparationId, "transformation/upper_case_firstname.json");
@@ -348,7 +353,7 @@ public class PreparationAPITest extends ApiServiceTestBase {
         // then
         steps = given().get("/api/preparations/{preparation}/details", preparationId).jsonPath().getList("steps");
         assertThat(steps.size(), is(2));
-        assertThat(steps.get(0), is(ROOT_STEP.id()));
+        assertThat(steps.get(0), is(rootStep.id()));
 
         // Request preparation content at different versions (preparation has 2 steps -> Root + Upper Case).
         assertThat(when().get("/api/preparations/{id}/content", preparationId).asString(),
@@ -361,7 +366,7 @@ public class PreparationAPITest extends ApiServiceTestBase {
                 sameJSONAsFile(PreparationAPITest.class.getResourceAsStream("dataset/expected_dataset_firstname_uppercase_with_column.json")));
         assertThat(when().get("/api/preparations/{id}/content?version=origin", preparationId).asString(),
                 sameJSONAsFile(PreparationAPITest.class.getResourceAsStream("dataset/expected_dataset_with_columns.json")));
-        assertThat(when().get("/api/preparations/{id}/content?version=" + ROOT_STEP.id(), preparationId).asString(),
+        assertThat(when().get("/api/preparations/{id}/content?version=" + rootStep.id(), preparationId).asString(),
                 sameJSONAsFile(PreparationAPITest.class.getResourceAsStream("dataset/expected_dataset_with_columns.json")));
     }
 

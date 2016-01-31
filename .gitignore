@@ -16,5 +16,7 @@ dataprep-webapp/src/assets/fonts/font_dl_from_google.sh
 devENV.sh
 dataprep-webapp/run.sh
 
+npm-debug.log
+
 #generated folders
 ./cache/

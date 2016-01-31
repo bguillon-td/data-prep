@@ -8,10 +8,10 @@
      * @requires data-prep.services.state.constant:state
      * @requires data-prep.services.state.service:StateService
      * @requires data-prep.services.folder.service:FolderRestService
-     * @requires data-prep.services.dataset.service:DatasetListSortService
+     * @requires data-prep.services.dataset.service:DatasetListService
      * @requires data-prep.services.preparation.service:PreparationListService
      */
-    function FolderService($translate, state, StateService, FolderRestService, DatasetListSortService, PreparationListService) {
+    function FolderService($translate, state, StateService, FolderRestService, DatasetListService, PreparationListService) {
 
         var ROOT_FOLDER = {
             id: '/',
@@ -30,7 +30,7 @@
             remove: FolderRestService.remove,
             search: FolderRestService.search,
             getContent: getContent,
-            refreshDefaultPreparation: refreshDefaultPreparation,
+            refreshPreparations: refreshPreparations,
 
             // shared folder ui mngt
             populateMenuChildren: populateMenuChildren
@@ -84,12 +84,12 @@
 
         /**
          * @ngdoc method
-         * @name refreshDefaultPreparation
+         * @name refreshPreparations
          * @methodOf data-prep.folder.controller:FolderCtrl
          * @description Inject the default preparation in the current folder datasets
          * @param {object} preparations The whole list of preparations
          */
-        function refreshDefaultPreparation(preparations) {
+        function refreshPreparations(preparations) {
             // group preparation per dataset
             var datasetPreps = _.groupBy(preparations, function (preparation) {
                 return preparation.dataSetId;
@@ -98,7 +98,8 @@
             // reset default preparation for all datasets
             _.forEach(state.folder.currentFolderContent.datasets, function (dataset) {
                 var preparations = datasetPreps[dataset.id];
-                dataset.defaultPreparation = preparations && preparations.length === 1 ? preparations[0] : null;
+                dataset.preparations = preparations || [];
+                dataset.preparations = _.sortByOrder(dataset.preparations, 'lastModificationDate', false);
             });
 
             return preparations;
@@ -112,8 +113,8 @@
          * @returns {Promise} The GET promise
          */
         function getContent(folder) {
-            var sort = DatasetListSortService.getSort();
-            var order = DatasetListSortService.getOrder();
+            var sort = state.inventory.sort.id;
+            var order = state.inventory.order.id;
             var promise = FolderRestService.getContent(folder && folder.id, sort, order);
 
             promise.then(function (result) {
@@ -126,7 +127,7 @@
                     StateService.setFoldersStack(foldersStack);
                 })
                 .then(PreparationListService.getPreparationsPromise)
-                .then(refreshDefaultPreparation);
+                .then(refreshPreparations);
             return promise;
         }
     }

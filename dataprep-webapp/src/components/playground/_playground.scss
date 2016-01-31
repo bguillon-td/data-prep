@@ -5,11 +5,20 @@
     position: relative;
     @extend .flex-center;
 
-    #filter-bar {
-      margin: 10px 10px 5px 10px;
+    #playground-dataset-parameters {
+      > * {
+        margin: 10px;
+      }
+
+      @include slidable-top(130px, 0px);
+      box-shadow: 3px 3px 18px 3px transparentize(black, 0.8);
     }
 
-    .datagrid-container {
+    #playground-filter-bar > * {
+      margin: 10px;
+    }
+
+    #playground-datagrid-container {
       margin: 10px;
       @include calc(height, "100vh - 130px");
     }
@@ -19,20 +28,8 @@
 //-----------------------------------------------------------------------------------------------------------
 //-----------------------------------------------------HEADER------------------------------------------------
 //-----------------------------------------------------------------------------------------------------------
-.left-header {
-  float: left;
-
-  .file-lines-count {
-    color: $dark-green;
-  }
-}
-
-.right-header {
-  float: right;
-  margin-right: 51px;
-
-  #playground-onboarding-icon,
-  #playground-feedback-icon {
+.playground-header {
+  .icon {
     color: darken($white, 10%);
     padding-left: 10px;
     padding-right: 10px;
@@ -43,32 +40,57 @@
     }
   }
 
-  .preview {
+  .left-header {
+    float: left;
 
-    .previewBadge {
-      line-height: 36px;
-      height: 36px;
-      padding: 0 5px;
-      border-radius: 5px;
-      background: rgba(255, 255, 255, 0.5);
+    .file-lines-count {
+      color: $dark-green;
+      @include ellipsis(300px);
+      vertical-align: top;
+    }
 
-      .previewBadgeElement {
+    .playground-dataset-name {
+      @include ellipsis(500px);
+      vertical-align: top;
+    }
+
+    #playground-gear-icon {
+      font-size: 0.6em;
+      vertical-align: top;
+    }
+  }
+
+  .right-header {
+    float: right;
+    margin-right: 51px;
+
+    .preview {
+
+      .previewBadge {
+        line-height: 36px;
+        height: 36px;
         padding: 0 5px;
+        border-radius: 5px;
+        background: rgba(255, 255, 255, 0.5);
+
+        .previewBadgeElement {
+          padding: 0 5px;
+          vertical-align: middle;
+        }
+      }
+    }
+
+    #playground-lookup-icon {
+      padding: 8px;
+
+      > img {
         vertical-align: middle;
       }
     }
-  }
 
-  #playground-lookup-icon {
-    padding: 8px;
-
-    > img {
-      vertical-align: middle;
+    .pressed {
+      @include background(linear-gradient(#4D4D50, #6E6D71) left repeat);
     }
-  }
-
-  .pressed {
-    @include background(linear-gradient(#4D4D50, #6E6D71) left repeat);
   }
 }
 
@@ -85,7 +107,8 @@
       padding: 5px;
     }
 
-    .editable-text-text{
+    .steps-header-preparation-text{
+      @include ellipsis(85%);
       padding: 2px 0;
       font-size: 1.2em;
       font-weight: 600;

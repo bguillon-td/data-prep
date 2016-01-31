@@ -64,7 +64,7 @@ public class FillWithDateTest extends AbstractMetadataBaseTest {
         ActionTestWorkbench.test(row, action.create(parameters).getRowAction());
 
         // then
-        Assert.assertEquals("01/01/1970 10:00:00", row.get("0002"));
+        Assert.assertEquals("1/1/1970 10:00:00", row.get("0002"));
         Assert.assertEquals("David Bowie", row.get("0001"));
     }
 
@@ -91,7 +91,7 @@ public class FillWithDateTest extends AbstractMetadataBaseTest {
         ActionTestWorkbench.test(row, action.create(parameters).getRowAction());
 
         // then
-        Assert.assertEquals("01/01/1970 10:00:00", row.get("0002"));
+        Assert.assertEquals("1/1/1970 10:00:00", row.get("0002"));
         Assert.assertEquals("David Bowie", row.get("0001"));
     }
 

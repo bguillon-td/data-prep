@@ -1,13 +1,14 @@
 package org.talend.dataprep.api.preparation.json;
 
 import static java.util.stream.Collectors.toList;
-import static org.talend.dataprep.api.preparation.Step.ROOT_STEP;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.function.Predicate;
+
+import javax.annotation.Resource;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,6 +32,13 @@ public class PreparationDetailsJsonSerializer extends JsonSerializer<Preparation
     /** This class' logger. */
     private static final Logger LOGGER = LoggerFactory.getLogger(PreparationDetailsJsonSerializer.class);
 
+    /** The root step. */
+    @Resource(name = "rootStep")
+    private Step rootStep;
+
+    @Autowired
+    private PreparationUtils preparationUtils;
+
     /** Where to find the preparations. */
     @Autowired(required = false)
     @Lazy
@@ -40,7 +48,7 @@ public class PreparationDetailsJsonSerializer extends JsonSerializer<Preparation
     @Autowired
     private Collection<ActionMetadata> actionMetadata;
 
-    final Predicate<Step> isNotRootStep = step -> !ROOT_STEP.id().equals(step.id());
+    final Predicate<Step> isNotRootStep = step -> !rootStep.id().equals(step.id());
 
     /**
      * @see JsonSerializer#serialize(Object, JsonGenerator, SerializerProvider)
@@ -59,7 +67,7 @@ public class PreparationDetailsJsonSerializer extends JsonSerializer<Preparation
             generator.writeNumberField("creationDate", preparation.getCreationDate()); //$NON-NLS-1$
             generator.writeNumberField("lastModificationDate", preparation.getLastModificationDate()); //$NON-NLS-1$
             if (preparation.getHeadId() != null && versionRepository != null) {
-                final List<Step> steps = PreparationUtils.listSteps(preparation.getHeadId(), versionRepository);
+                final List<Step> steps = preparationUtils.listSteps(preparation.getHeadId(), versionRepository);
 
                 // Steps ids
                 final List<String> ids = steps.stream().map(Step::id).collect(toList());

@@ -35,8 +35,7 @@ $datagrid-cell-font-size: .80em;
 .index-cell {
   text-align: right;
   font-weight: bold;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  @include ellipsis();
 }
 
 .tooltip-ruler {

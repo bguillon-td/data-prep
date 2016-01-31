@@ -111,8 +111,4 @@ public class JsonWriter implements TransformerWriter {
         generator.flush();
     }
 
-    @Override
-    public boolean requireMetadataForHeader() {
-        return false;
-    }
 }

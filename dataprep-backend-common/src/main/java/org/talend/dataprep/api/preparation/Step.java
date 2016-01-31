@@ -15,30 +15,31 @@ public class Step extends Identifiable implements Serializable {
     /** Serialization UID. */
     private static final long serialVersionUID = 1L;
 
-    /**
-     * The "root step": this is the initial step for all preparation (i.e. a newly created preparation has this root
-     * step as head).
-     */
-    public static final Step ROOT_STEP = new Step(null, PreparationActions.ROOT_CONTENT.id());
-
     private String parentId = StringUtils.EMPTY;
 
     private String contentId;
+
+    /** The app version. */
+    @JsonProperty("app-version")
+    private String appVersion;
 
     private StepDiff diff;
 
     //@formatter:off
     @JsonCreator
-    public Step(@JsonProperty("parentId") final String parentId, @JsonProperty("contentId") final String contentId) {
-       this(parentId, contentId, null);
+    public Step(@JsonProperty("parentId") final String parentId, //
+                @JsonProperty("contentId") final String contentId, //
+                @JsonProperty("app-version") final String appVersion) {
+       this(parentId, contentId, appVersion, null);
     }
     //@formatter:on
 
     @PersistenceConstructor
-    public Step(final String parentId, final String contentId, final StepDiff diff) {
+    public Step(final String parentId, final String contentId, final String version, final StepDiff diff) {
         setParent(parentId);
         setContent(contentId);
         setDiff(diff);
+        this.appVersion = version;
     }
 
     public String getContent() {
@@ -65,6 +66,13 @@ public class Step extends Identifiable implements Serializable {
         this.diff = diff;
     }
 
+    /**
+     * @return the AppVersion
+     */
+    public String getAppVersion() {
+        return appVersion;
+    }
+
     @Override
     public String id() {
         return getId();
@@ -82,7 +90,12 @@ public class Step extends Identifiable implements Serializable {
 
     @Override
     public String toString() {
-        return "Step {" + "id='" + id() + '\'' + ", parent='" + parentId + '\'' + ", content='" + contentId + '\'' + '}';
+        return "Step{" + //
+                "parentId='" + parentId + '\'' + //
+                ", contentId='" + contentId + '\'' + //
+                ", appVersion='" + appVersion + '\'' + //
+                ", diff=" + diff + //
+                '}';
     }
 
     @Override
@@ -92,12 +105,12 @@ public class Step extends Identifiable implements Serializable {
         if (o == null || getClass() != o.getClass())
             return false;
         Step step = (Step) o;
-        return Objects.equals(parentId, step.parentId) && Objects.equals(contentId, step.contentId);
+        return Objects.equals(parentId, step.parentId) && Objects.equals(contentId, step.contentId)
+                && Objects.equals(appVersion, step.appVersion) && Objects.equals(diff, step.diff);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(parentId, contentId);
+        return Objects.hash(parentId, contentId, appVersion, diff);
     }
-
 }

@@ -185,6 +185,18 @@
         //---------------------------------------------FEEDBACK---------------------------------------------------------
         //--------------------------------------------------------------------------------------------------------------
         vm.openFeedbackForm = StateService.showFeedback;
+
+        //--------------------------------------------------------------------------------------------------------------
+        //------------------------------------------DATASET PARAMS------------------------------------------------------
+        //--------------------------------------------------------------------------------------------------------------
+        vm.toggleParameters = StateService.toggleDatasetParameters;
+
+        vm.changeDatasetParameters = function changeDatasetParameters(parameters) {
+            StateService.setIsSendingDatasetParameters(true);
+            PlaygroundService.changeDatasetParameters(parameters)
+                .then(StateService.hideDatasetParameters)
+                .finally(StateService.setIsSendingDatasetParameters.bind(null, false));
+        };
     }
 
     /**

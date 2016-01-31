@@ -71,7 +71,17 @@ public final class TransformationContext {
     }
 
     public void freezeActionContexts() {
-        contexts.replaceAll((actionMetadata, actionContext) -> actionContext.asImmutable());
+        contexts.replaceAll((action, actionContext) -> actionContext.asImmutable());
+    }
+
+    public void freezeActionContext(ActionContext actionContext) {
+        contexts.replaceAll((action, ac) -> {
+            if (ac == actionContext) {
+                return actionContext.asImmutable();
+            } else {
+                return ac;
+            }
+        });
     }
 
     /**

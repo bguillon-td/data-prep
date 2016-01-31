@@ -58,6 +58,7 @@
     "karma-phantomjs-launcher": "~0.2.1",
     "main-bower-files": "~2.4.0",
     "minimatch": "^2.0.1",
+    "minimist": "^1.2.0",
     "phantomjs": "^1.9.19",
     "protractor": "~1.4.0",
     "require-dir": "~0.1.0",

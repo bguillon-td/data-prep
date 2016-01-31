@@ -34,14 +34,9 @@
     padding: 0 7px 0 10px;
     text-transform: uppercase;
 
-    display: inline-block;
-    text-align: left;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-
     .button-dropdown-main-text {
       float: left;
+      @include ellipsis();
     }
     .button-dropdown-main-icon {
       float: left;

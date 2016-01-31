@@ -4,6 +4,7 @@ import static java.math.RoundingMode.HALF_UP;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.text.ParseException;
 import java.util.List;
 import java.util.Map;
 
@@ -17,6 +18,7 @@ import org.talend.dataprep.api.dataset.RowMetadata;
 import org.talend.dataprep.api.type.Type;
 import org.talend.dataprep.exception.TDPException;
 import org.talend.dataprep.exception.error.CommonErrorCodes;
+import org.talend.dataprep.number.BigDecimalParser;
 import org.talend.dataprep.transformation.api.action.context.ActionContext;
 import org.talend.dataprep.transformation.api.action.metadata.category.ActionCategory;
 import org.talend.dataprep.transformation.api.action.metadata.common.ActionMetadata;
@@ -169,8 +171,8 @@ public class NumericOperations extends ActionMetadata implements ColumnAction, O
 
     protected String compute(final String stringOperandOne, final String operator, final String stringOperandTwo) {
         try {
-            final BigDecimal operandOne = new BigDecimal(stringOperandOne);
-            final BigDecimal operandTwo = new BigDecimal(stringOperandTwo);
+            final BigDecimal operandOne = BigDecimalParser.toBigDecimal(stringOperandOne);
+            final BigDecimal operandTwo = BigDecimalParser.toBigDecimal(stringOperandTwo);
 
             BigDecimal toReturn;
 

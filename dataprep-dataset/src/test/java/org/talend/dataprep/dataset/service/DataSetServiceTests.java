@@ -7,7 +7,6 @@ import static com.jayway.restassured.path.json.JsonPath.from;
 import static org.hamcrest.Matchers.*;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.*;
-import static org.talend.dataprep.api.dataset.DataSetMetadata.Builder.metadata;
 import static org.talend.dataprep.test.SameJSONFile.sameJSONAsFile;
 import static uk.co.datumedge.hamcrest.json.SameJSONAs.sameJSONAs;
 
@@ -24,13 +23,11 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
-import org.talend.dataprep.api.dataset.ColumnMetadata;
-import org.talend.dataprep.api.dataset.DataSet;
+import org.talend.dataprep.api.dataset.*;
 import org.talend.dataprep.api.dataset.DataSetGovernance.Certification;
-import org.talend.dataprep.api.dataset.DataSetMetadata;
-import org.talend.dataprep.api.dataset.RowMetadata;
 import org.talend.dataprep.api.dataset.location.SemanticDomain;
 import org.talend.dataprep.api.dataset.statistics.Statistics;
+import org.talend.dataprep.api.service.info.VersionService;
 import org.talend.dataprep.api.type.Type;
 import org.talend.dataprep.api.user.UserData;
 import org.talend.dataprep.dataset.DataSetBaseTest;
@@ -69,6 +66,9 @@ public class DataSetServiceTests extends DataSetBaseTest {
     @Autowired
     private Security security;
 
+    @Autowired
+    private VersionService versionService;
+
     @Test
     public void CORSHeaders() throws Exception {
         given().header("Origin", "fake.host.to.trigger.cors")
@@ -81,7 +81,7 @@ public class DataSetServiceTests extends DataSetBaseTest {
         when().get("/datasets").then().statusCode(HttpStatus.OK.value()).body(equalTo("[]"));
         // Adds 1 data set to store
         String id1 = UUID.randomUUID().toString();
-        final DataSetMetadata metadata = metadata().id(id1).name("name1").author("anonymous").created(0)
+        final DataSetMetadata metadata = metadataBuilder.metadata().id(id1).name("name1").author("anonymous").created(0)
                 .formatGuessId(new CSVFormatGuess().getBeanId()).build();
 
         metadata.getContent().addParameter(CSVFormatGuess.SEPARATOR_PARAMETER, ";");
@@ -98,7 +98,7 @@ public class DataSetServiceTests extends DataSetBaseTest {
 
         // Adds a new data set to store
         String id2 = UUID.randomUUID().toString();
-        DataSetMetadata metadata2 = metadata().id(id2).name("name2").author("anonymous").created(0)
+        DataSetMetadata metadata2 = metadataBuilder.metadata().id(id2).name("name2").author("anonymous").created(0)
                 .formatGuessId(new CSVFormatGuess().getBeanId()).build();
         metadata2.getContent().addParameter(CSVFormatGuess.SEPARATOR_PARAMETER, ";");
         dataSetMetadataRepository.add(metadata2);
@@ -113,7 +113,7 @@ public class DataSetServiceTests extends DataSetBaseTest {
         assertFalse(favoritesResp.get(1));
 
         // add favorite
-        UserData userData = new UserData(security.getUserId());
+        UserData userData = new UserData(security.getUserId(), versionService.version().getVersionId());
         HashSet<String> favorites = new HashSet<>();
         favorites.add(id1);
         favorites.add(id2);
@@ -132,11 +132,11 @@ public class DataSetServiceTests extends DataSetBaseTest {
         when().get("/datasets?sort=name").then().statusCode(HttpStatus.OK.value()).body(equalTo("[]"));
         // Adds 2 data set metadata to store
         String id1 = UUID.randomUUID().toString();
-        final DataSetMetadata metadata1 = metadata().id(id1).name("AAAA").author("anonymous").created(0)
+        final DataSetMetadata metadata1 = metadataBuilder.metadata().id(id1).name("AAAA").author("anonymous").created(0)
                 .formatGuessId(new CSVFormatGuess().getBeanId()).build();
         dataSetMetadataRepository.add(metadata1);
         String id2 = UUID.randomUUID().toString();
-        final DataSetMetadata metadata2 = metadata().id(id2).name("BBBB").author("anonymous").created(0)
+        final DataSetMetadata metadata2 = metadataBuilder.metadata().id(id2).name("BBBB").author("anonymous").created(0)
                 .formatGuessId(new CSVFormatGuess().getBeanId()).build();
         dataSetMetadataRepository.add(metadata2);
         // Ensure order by name (most recent first)
@@ -154,11 +154,11 @@ public class DataSetServiceTests extends DataSetBaseTest {
         when().get("/datasets?sort=date").then().statusCode(HttpStatus.OK.value()).body(equalTo("[]"));
         // Adds 2 data set metadata to store
         String id1 = UUID.randomUUID().toString();
-        final DataSetMetadata metadata1 = metadata().id(id1).name("AAAA").author("anonymous").created(20)
+        final DataSetMetadata metadata1 = metadataBuilder.metadata().id(id1).name("AAAA").author("anonymous").created(20)
                 .formatGuessId(new CSVFormatGuess().getBeanId()).build();
         dataSetMetadataRepository.add(metadata1);
         String id2 = UUID.randomUUID().toString();
-        final DataSetMetadata metadata2 = metadata().id(id2).name("BBBB").author("anonymous").created(0)
+        final DataSetMetadata metadata2 = metadataBuilder.metadata().id(id2).name("BBBB").author("anonymous").created(0)
                 .formatGuessId(new CSVFormatGuess().getBeanId()).build();
         dataSetMetadataRepository.add(metadata2);
         // Ensure order by date (most recent first)
@@ -176,11 +176,11 @@ public class DataSetServiceTests extends DataSetBaseTest {
         when().get("/datasets?sort=date&order=asc").then().statusCode(HttpStatus.OK.value()).body(equalTo("[]"));
         // Adds 2 data set metadata to store
         String id1 = UUID.randomUUID().toString();
-        final DataSetMetadata metadata1 = metadata().id(id1).name("AAAA").author("anonymous").created(20)
+        final DataSetMetadata metadata1 = metadataBuilder.metadata().id(id1).name("AAAA").author("anonymous").created(20)
                 .formatGuessId(new CSVFormatGuess().getBeanId()).build();
         dataSetMetadataRepository.add(metadata1);
         String id2 = UUID.randomUUID().toString();
-        final DataSetMetadata metadata2 = metadata().id(id2).name("BBBB").author("anonymous").created(0)
+        final DataSetMetadata metadata2 = metadataBuilder.metadata().id(id2).name("BBBB").author("anonymous").created(0)
                 .formatGuessId(new CSVFormatGuess().getBeanId()).build();
         dataSetMetadataRepository.add(metadata2);
         // Ensure order by date (most recent first)
@@ -214,15 +214,15 @@ public class DataSetServiceTests extends DataSetBaseTest {
         when().get("/datasets?sort=name&order=asc").then().statusCode(HttpStatus.OK.value()).body(equalTo("[]"));
         // Adds 2 data set metadata to store
         String id1 = UUID.randomUUID().toString();
-        final DataSetMetadata metadata1 = metadata().id(id1).name("AAAA").author("anonymous").created(20)
+        final DataSetMetadata metadata1 = metadataBuilder.metadata().id(id1).name("AAAA").author("anonymous").created(20)
                 .formatGuessId(new CSVFormatGuess().getBeanId()).build();
         dataSetMetadataRepository.add(metadata1);
         String id2 = UUID.randomUUID().toString();
-        final DataSetMetadata metadata2 = metadata().id(id2).name("CCCC").author("anonymous").created(0)
+        final DataSetMetadata metadata2 = metadataBuilder.metadata().id(id2).name("CCCC").author("anonymous").created(0)
                 .formatGuessId(new CSVFormatGuess().getBeanId()).build();
         dataSetMetadataRepository.add(metadata2);
         String id3 = UUID.randomUUID().toString();
-        final DataSetMetadata metadata3 = metadata().id(id3).name("bbbb").author("anonymous").created(0)
+        final DataSetMetadata metadata3 = metadataBuilder.metadata().id(id3).name("bbbb").author("anonymous").created(0)
                 .formatGuessId(new CSVFormatGuess().getBeanId()).build();
         dataSetMetadataRepository.add(metadata3);
         // Ensure order by name (last character from alphabet first)
@@ -336,12 +336,13 @@ public class DataSetServiceTests extends DataSetBaseTest {
     public void testFavorite() {
         // given
         final String datasetId = UUID.randomUUID().toString();
-        final DataSetMetadata dataSetMetadata = metadata().id(datasetId).formatGuessId(new CSVFormatGuess().getBeanId()).build();
+        final DataSetMetadata dataSetMetadata = metadataBuilder.metadata().id(datasetId)
+                .formatGuessId(new CSVFormatGuess().getBeanId()).build();
         dataSetMetadata.getContent().addParameter(CSVFormatGuess.SEPARATOR_PARAMETER, ";");
         dataSetMetadataRepository.add(dataSetMetadata);
         contentStore.storeAsRaw(dataSetMetadata, new ByteArrayInputStream(new byte[0]));
 
-        final UserData userData = new UserData(security.getUserId());
+        final UserData userData = new UserData(security.getUserId(), versionService.version().getVersionId());
         userDataRepository.save(userData);
         final Set<String> favorites = new HashSet<>();
         favorites.add(datasetId);
@@ -421,7 +422,8 @@ public class DataSetServiceTests extends DataSetBaseTest {
     public void delete() throws Exception {
         String expectedId = UUID.randomUUID().toString();
 
-        DataSetMetadata dataSetMetadata = metadata().id(expectedId).formatGuessId(new CSVFormatGuess().getBeanId()).build();
+        DataSetMetadata dataSetMetadata = metadataBuilder.metadata().id(expectedId)
+                .formatGuessId(new CSVFormatGuess().getBeanId()).build();
 
         dataSetMetadata.getContent().addParameter(CSVFormatGuess.SEPARATOR_PARAMETER, ";");
         dataSetMetadataRepository.add(dataSetMetadata);
@@ -588,6 +590,68 @@ public class DataSetServiceTests extends DataSetBaseTest {
     }
 
     /**
+     * see https://jira.talendforge.org/browse/TDP-1066
+     */
+    @Test
+    public void shouldUpdateSeparator() throws Exception {
+
+        // given
+        String dataSetId = createCSVDataSet(this.getClass().getResourceAsStream("../avengers.psv"));
+        InputStream metadataInput = when().get("/datasets/{id}/metadata", dataSetId).asInputStream();
+        DataSet dataSet = builder.build().readerFor(DataSet.class).readValue(metadataInput);
+        DataSetMetadata metadata = dataSet.getMetadata();
+
+        // when
+        final Map<String, String> parameters = metadata.getContent().getParameters();
+        parameters.put(CSVFormatGuess.SEPARATOR_PARAMETER, "|");
+        parameters.remove(CSVFormatGuess.HEADER_COLUMNS_PARAMETER);
+        final int statusCode = given() //
+                .contentType(JSON) //
+                .body(builder.build().writer().writeValueAsString(metadata)) //
+                .expect().statusCode(200).log().ifError() //
+                .when().put("/datasets/{id}", dataSetId).getStatusCode();
+
+        assertThat(statusCode, is(200));
+        assertQueueMessages(dataSetId);
+
+        // then
+        InputStream expected = this.getClass().getResourceAsStream("../avengers_expected.json");
+        String datasetContent = given().when().get("/datasets/{id}/content?metadata=true", dataSetId).asString();
+
+        assertThat(datasetContent, sameJSONAsFile(expected));
+    }
+
+    /**
+     * see https://jira.talendforge.org/browse/TDP-1066
+     */
+    @Test
+    public void shouldUpdateLimit() throws Exception {
+
+        // given
+        String dataSetId = createCSVDataSet(this.getClass().getResourceAsStream("../avengers.csv"));
+        InputStream metadataInput = when().get("/datasets/{id}/metadata", dataSetId).asInputStream();
+        DataSet dataSet = builder.build().readerFor(DataSet.class).readValue(metadataInput);
+        DataSetMetadata metadata = dataSet.getMetadata();
+
+        // when
+        metadata.getContent().setLimit(2L);
+        final int statusCode = given() //
+                .contentType(JSON) //
+                .body(builder.build().writer().writeValueAsString(metadata)) //
+                .expect().statusCode(200).log().ifError() //
+                .when().put("/datasets/{id}", dataSetId).getStatusCode();
+
+        assertThat(statusCode, is(200));
+        assertQueueMessages(dataSetId);
+
+        // then
+        InputStream expected = this.getClass().getResourceAsStream("../avengers_expected_limit_2.json");
+        String datasetContent = given().when().get("/datasets/{id}/content?metadata=true", dataSetId).asString();
+
+        assertThat(datasetContent, sameJSONAsFile(expected));
+    }
+
+    /**
      * Test the import of a csv file with a really low separator coefficient variation.
      *
      * @see CSVFormatGuesser
@@ -721,7 +785,7 @@ public class DataSetServiceTests extends DataSetBaseTest {
 
     @Test
     public void getMetadata() throws Exception {
-        DataSetMetadata.Builder builder = DataSetMetadata.Builder.metadata().id("1234");
+        DataSetMetadataBuilder builder = metadataBuilder.metadata().id("1234");
         builder.row(ColumnMetadata.Builder//
                 .column()//
                 .id(1234)//
@@ -752,7 +816,7 @@ public class DataSetServiceTests extends DataSetBaseTest {
         assertFalse(isFavorites);
 
         // add favorite
-        UserData userData = new UserData(security.getUserId());
+        UserData userData = new UserData(security.getUserId(), versionService.version().getVersionId());
         HashSet<String> favorites = new HashSet<>();
         favorites.add("1234");
         userData.setFavoritesDatasets(favorites);
@@ -842,7 +906,7 @@ public class DataSetServiceTests extends DataSetBaseTest {
         when().get("/datasets/favorites").then().statusCode(HttpStatus.OK.value()).body(equalTo("[]"));
         String dsId1 = UUID.randomUUID().toString();
         String dsId2 = UUID.randomUUID().toString();
-        UserData userData = new UserData(security.getUserId());
+        UserData userData = new UserData(security.getUserId(), versionService.version().getVersionId());
         HashSet<String> favorites = new HashSet<>();
         favorites.add(dsId1);
         favorites.add(dsId2);
@@ -859,8 +923,8 @@ public class DataSetServiceTests extends DataSetBaseTest {
         String dsId2 = UUID.randomUUID().toString();
 
         when().get("/datasets/favorites").then().statusCode(HttpStatus.OK.value()).body(equalTo("[]"));
-        dataSetMetadataRepository.add(new DataSetMetadata(dsId1, null, null, 0, null));
-        dataSetMetadataRepository.add(new DataSetMetadata(dsId2, null, null, 0, null));
+        dataSetMetadataRepository.add(metadataBuilder.metadata().id(dsId1).build());
+        dataSetMetadataRepository.add(metadataBuilder.metadata().id(dsId2).build());
         // check set
         when().put("/datasets/{id}/favorite", dsId1).then().statusCode(HttpStatus.OK.value());
         when().put("/datasets/{id}/favorite?unset=false", dsId2).then().statusCode(HttpStatus.OK.value());
@@ -888,7 +952,7 @@ public class DataSetServiceTests extends DataSetBaseTest {
     public void testFavoritesTransientNotStored() {
         String expectedDsId = UUID.randomUUID().toString();
 
-        DataSetMetadata dataSetMetadataToBeSet = new DataSetMetadata(expectedDsId, "", "", 0, null);
+        DataSetMetadata dataSetMetadataToBeSet = metadataBuilder.metadata().id(expectedDsId).build();
         dataSetMetadataToBeSet.setFavorite(true);
         dataSetMetadataRepository.add(dataSetMetadataToBeSet);
         DataSetMetadata dataSetMetadataGet = dataSetMetadataRepository.get(expectedDsId);
@@ -1082,7 +1146,8 @@ public class DataSetServiceTests extends DataSetBaseTest {
 
     private String insertEmptyDataSet() {
         String datasetId = UUID.randomUUID().toString();
-        DataSetMetadata dataSetMetadata = metadata().id(datasetId).formatGuessId(new CSVFormatGuess().getBeanId()).build();
+        DataSetMetadata dataSetMetadata = metadataBuilder.metadata().id(datasetId).formatGuessId(new CSVFormatGuess().getBeanId())
+                .build();
         dataSetMetadata.getContent().addParameter(CSVFormatGuess.SEPARATOR_PARAMETER, ";");
         dataSetMetadataRepository.add(dataSetMetadata);
         contentStore.storeAsRaw(dataSetMetadata, new ByteArrayInputStream(new byte[0]));

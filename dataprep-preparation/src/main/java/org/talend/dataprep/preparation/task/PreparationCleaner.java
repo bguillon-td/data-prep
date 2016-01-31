@@ -6,6 +6,8 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
+import javax.annotation.Resource;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.EnableScheduling;
@@ -32,6 +34,13 @@ public class PreparationCleaner {
     @Value("${preparation.store.remove.hours}")
     private int orphanTime;
 
+    /** The root step. */
+    @Resource(name = "rootStep")
+    private Step rootStep;
+
+    @Autowired
+    private PreparationUtils preparationUtils;
+
     /**
      * Get all the step ids that belong to a preparation
      * @return The step ids
@@ -39,7 +48,7 @@ public class PreparationCleaner {
     private Set<String> getPreparationStepIds() {
         return repository.listAll(Preparation.class)
                 .stream()
-                .flatMap(prep -> PreparationUtils.listStepsIds(prep.getHeadId(), repository).stream())
+                .flatMap(prep -> preparationUtils.listStepsIds(prep.getHeadId(), repository).stream())
                 .collect(toSet());
     }
 
@@ -51,7 +60,7 @@ public class PreparationCleaner {
         final Collection<Step> steps = repository.listAll(Step.class);
         final Set<String> preparationStepIds = getPreparationStepIds();
 
-        final Predicate<Step> isNotRootStep = step -> !Step.ROOT_STEP.getId().equals(step.getId());
+        final Predicate<Step> isNotRootStep = step -> !rootStep.getId().equals(step.getId());
         final Predicate<Step> isOrphan = step -> !preparationStepIds.contains(step.getId());
 
         return steps.stream()
