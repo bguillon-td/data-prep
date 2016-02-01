@@ -8,7 +8,6 @@
      On creation, it fetch dataset list from backend and load playground if 'datasetid' query param is provided
      * @requires data-prep.services.state.service:StateService
      * @requires data-prep.services.dataset.service:DatasetService
-     * @requires data-prep.services.dataset.service:DatasetListSortService
      * @requires data-prep.services.folder.service:FolderService
      * @requires data-prep.services.playground.service:PlaygroundService
      * @requires data-prep.services.uploadWorkflowService.service:UploadWorkflowService
@@ -16,7 +15,7 @@
      * @requires data-prep.services.utils.service:MessageService
      * @requires talend.widget.service:TalendConfirmService
      */
-    function DatasetCopyMoveCtrl ($translate, $stateParams, StateService, DatasetService, DatasetListSortService, PlaygroundService,
+    function DatasetCopyMoveCtrl ($translate, $stateParams, StateService, DatasetService,
                               MessageService, FolderService, state) {
         var vm = this;
 
