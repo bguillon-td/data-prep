@@ -132,7 +132,7 @@ public class StackedTransformer implements Transformer {
         for (DataSetRow dataSetRow : initialAnalysisBuffer) {
             schema.analyze(dataSetRow.order(columns).toArray(DataSetRow.SKIP_TDP_ID));
         }
-        adapter.adapt(columns, schema.getResult(), modifiedColumnsFilter);
+        adapter.adaptForSampling(columns, schema.getResult(), modifiedColumnsFilter);
         // Remember what buffer analysis results were to detect false positive afterwards
         columns.stream().filter(column -> modifiedColumnsFilter.test(column))
                 .forEach(column -> bufferAnalysisSemanticResults.put(column.getId(), column.getDomain()));

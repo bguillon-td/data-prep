@@ -18,14 +18,11 @@ import static org.talend.dataprep.api.type.Type.*;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.math3.stat.descriptive.moment.StandardDeviation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -46,6 +43,7 @@ import org.talend.dataquality.statistics.frequency.DataTypeFrequencyStatistics;
 import org.talend.dataquality.statistics.frequency.pattern.PatternFrequencyStatistics;
 import org.talend.dataquality.statistics.numeric.quantile.QuantileStatistics;
 import org.talend.dataquality.statistics.numeric.summary.SummaryStatistics;
+import org.talend.dataquality.statistics.quality.DataTypeQualityAnalyzer;
 import org.talend.dataquality.statistics.text.TextLengthStatistics;
 import org.talend.dataquality.statistics.type.DataTypeEnum;
 import org.talend.dataquality.statistics.type.DataTypeOccurences;
@@ -68,6 +66,7 @@ public class StatisticsAdapter {
 
     /**
      * Extract analysis result and inject them in columns metadata
+     * 
      * @param columns The columns metadata
      * @param results The analysis results
      * @see #adapt(List, List, Predicate) to filter out columns during extraction of results.
@@ -78,74 +77,133 @@ public class StatisticsAdapter {
 
     /**
      * Extract analysis result and inject them in columns metadata
+     *
      * @param columns The columns metadata
      * @param results The analysis results
      * @param filter A {@link Predicate predicate} to filter columns to adapt.
      */
     public void adapt(List<ColumnMetadata> columns, List<Analyzers.Result> results, Predicate<ColumnMetadata> filter) {
+        genericAdapt(columns, results, filter, false);
+    }
+
+    /**
+     * Extract analysis result and inject them in columns metadata. This method allows to use a subtype, when possible,
+     * of the actual type that have been detected. This methods does not filter any column.
+     *
+     * @param columns The columns metadata
+     * @param results The analysis results
+     * @see #adapt(List, List, Predicate) to filter out columns during extraction of results.
+     */
+    public void adaptForSampling(List<ColumnMetadata> columns, List<Analyzers.Result> results) {
+        adaptForSampling(columns, results, c -> true);
+    }
+
+    /**
+     * Extract analysis result and inject them in columns metadata. This method allows to use a subtype, when possible,
+     * of the actual type that have been detected.
+     * 
+     * @param columns The columns metadata
+     * @param results The analysis results
+     * @param filter A {@link Predicate predicate} to filter columns to adapt.
+     */
+    public void adaptForSampling(List<ColumnMetadata> columns, List<Analyzers.Result> results, Predicate<ColumnMetadata> filter) {
+        genericAdapt(columns, results, filter, true);
+    }
+
+    /**
+     * Extract analysis result and inject them in columns metadata
+     *
+     * @param columns The columns metadata
+     * @param results The analysis results
+     * @param filter A {@link Predicate predicate} to filter columns to adapt.
+     */
+    private void genericAdapt(List<ColumnMetadata> columns, List<Analyzers.Result> results, Predicate<ColumnMetadata> filter,
+            boolean sampling) {
         for (int i = 0; i < results.size(); ++i) {
             final ColumnMetadata currentColumn = columns.get(i);
-            if(!filter.test(currentColumn)) {
+            if (!filter.test(currentColumn)) {
                 // Column needs to be filtered out
                 continue;
             }
             final Analyzers.Result result = results.get(i);
-
-            injectDataType(currentColumn, result);
-            injectValueQuality(currentColumn, result);  // empty, invalid, ...
-            injectSemanticTypes(currentColumn, result);
-            injectCardinality(currentColumn, result);   // distinct + duplicates
-            injectDataFrequency(currentColumn, result);
-            injectPatternFrequency(currentColumn, result);
-            injectQuantile(currentColumn, result);
-            injectNumberSummary(currentColumn, result); // min, max, mean, variance
-            injectTextLength(currentColumn, result);
-            injectNumberHistogram(currentColumn, result);
-            injectDateHistogram(currentColumn, result);
+            injectDataTypeAnalysis(currentColumn, result, sampling);
+            adaptCommonAnalysis(currentColumn, result);
         }
     }
 
-    private void injectDataType(final ColumnMetadata column, final Analyzers.Result result) {
+    /**
+     * Extracts remaining analysis result (other than data type) and inject them in the specified column metadata.
+     * 
+     * @param currentColumn the specified column metadata
+     * @param result the specified Analysis result
+     */
+    private void adaptCommonAnalysis(final ColumnMetadata currentColumn, final Analyzers.Result result) {
+        injectSemanticTypes(currentColumn, result);
+        injectCardinality(currentColumn, result); // distinct + duplicates
+        injectDataFrequency(currentColumn, result);
+        injectPatternFrequency(currentColumn, result);
+        injectQuantile(currentColumn, result);
+        injectNumberSummary(currentColumn, result); // min, max, mean, variance
+        injectTextLength(currentColumn, result);
+        injectNumberHistogram(currentColumn, result);
+        injectDateHistogram(currentColumn, result);
+    }
+
+    private void injectDataTypeAnalysis(final ColumnMetadata column, final Analyzers.Result result, boolean sampling) {
         if (result.exist(DataTypeOccurences.class) && !column.isTypeForced()) {
             final DataTypeOccurences dataType = result.get(DataTypeOccurences.class);
-            final Map<DataTypeEnum, Long> frequencies = dataType.getTypeFrequencies();
-            frequencies.remove(DataTypeEnum.EMPTY); // TDP-226: Don't take into account EMPTY values.
-            // Look at type frequencies distribution (if not spread enough, fall back to STRING).
-            StandardDeviation standardDeviation = new StandardDeviation();
+            final DataTypeEnum suggestedEnumType = suggestType(dataType);
+            final Type suggestedColumnType = Type.get(suggestedEnumType.name());
+            final Type mostFrequentSubType = mostFrequentSubType(dataType);
 
-            double[] values = new double[frequencies.size()];
-            int i = 0;
-            for (Long frequency : frequencies.values()) {
-                values[i++] = frequency;
-            }
-            final double stdDev = standardDeviation.evaluate(values);
-            final Type type;
-            if (stdDev < 1 && frequencies.size() > 1) {
-                type = STRING;
+            column.setType(suggestedColumnType.getName());
+            final long suggestedTypeOccurrenceCount;
+            // When sampling try to use the most frequent sub type of the suggested type when possible
+            if (sampling && mostFrequentSubType != null) {
+                column.getQuality().setMostFrequentSubType(mostFrequentSubType.getName());
+                final Long suggestedEnumTypeFrequency = dataType.getTypeFrequencies().get(suggestedEnumType);
+                suggestedTypeOccurrenceCount = suggestedEnumTypeFrequency != null?suggestedEnumTypeFrequency:0;
             } else {
-                final DataTypeEnum suggestedType = dataType.getSuggestedType();
-                type = Type.get(suggestedType.name());
+                suggestedTypeOccurrenceCount = 0;
             }
-            column.setType(type.getName());
+
+            injectValueQuality(column, result, suggestedTypeOccurrenceCount);
         }
     }
 
-    private void injectValueQuality(final ColumnMetadata column, final Analyzers.Result result) {
+    private void injectValueQuality(final ColumnMetadata column, final Analyzers.Result result, long dataTypeOccurrenceCount) {
         if (result.exist(ValueQualityStatistics.class)) {
             final Statistics statistics = column.getStatistics();
             final Quality quality = column.getQuality();
             final ValueQualityStatistics valueQualityStatistics = result.get(ValueQualityStatistics.class);
-            final int valid = (int) valueQualityStatistics.getValidCount() + (int) valueQualityStatistics.getUnknownCount();
+
+            final long validCount;
+            final long invalidCount;
+            final long allCount = valueQualityStatistics.getCount();
+            final Set<String> invalidValues;
+            final long emptyCount = valueQualityStatistics.getEmptyCount();
+
+            // filter invalids according to the actually used type
+            invalidValues = filterInvalids(Type.get(column.getType()), valueQualityStatistics.getInvalidValues());
+            if (invalidValues.size() < valueQualityStatistics.getInvalidValues().size()) {
+                // some values have been filtered then type used to compute invalids is a subtype of the suggested one
+                validCount = valueQualityStatistics.getValidCount() + valueQualityStatistics.getUnknownCount()
+                        + dataTypeOccurrenceCount;
+            } else {
+                validCount = valueQualityStatistics.getValidCount() + valueQualityStatistics.getUnknownCount();
+            }
+            invalidCount = allCount - emptyCount - validCount;
+
             // Set in column quality...
-            quality.setEmpty((int) valueQualityStatistics.getEmptyCount());
-            quality.setValid(valid);
-            quality.setInvalid((int) valueQualityStatistics.getInvalidCount());
-            quality.setInvalidValues(valueQualityStatistics.getInvalidValues());
+            quality.setEmpty((int) emptyCount);
+            quality.setValid((int) validCount);
+            quality.setInvalid((int) invalidCount);
+            quality.setInvalidValues(invalidValues);
             // ... and statistics
-            statistics.setCount(valueQualityStatistics.getCount());
+            statistics.setCount(allCount);
             statistics.setEmpty(valueQualityStatistics.getEmptyCount());
             statistics.setInvalid(valueQualityStatistics.getInvalidCount());
-            statistics.setValid(valid);
+            statistics.setValid(validCount);
         }
     }
 
@@ -259,7 +317,8 @@ public class StatisticsAdapter {
     private void injectNumberHistogram(final ColumnMetadata column, final Analyzers.Result result) {
         if (NUMERIC.isAssignableFrom(column.getType()) && result.exist(StreamNumberHistogramStatistics.class)) {
             final Statistics statistics = column.getStatistics();
-            final Map<org.talend.dataquality.statistics.numeric.histogram.Range, Long> histogramStatistics = result.get(StreamNumberHistogramStatistics.class).getHistogram();
+            final Map<org.talend.dataquality.statistics.numeric.histogram.Range, Long> histogramStatistics = result
+                    .get(StreamNumberHistogramStatistics.class).getHistogram();
             final NumberFormat format = DecimalFormat.getInstance(ENGLISH);
 
             // Set histogram ranges
@@ -297,4 +356,92 @@ public class StatisticsAdapter {
             textLengthSummary.setMaximalLength(textLengthStatistics.getMaxTextLength());
         }
     }
+
+    /**
+     * Filters the values of type <tt>type</tt> from the set of invalids values.
+     * @param type the specified type
+     * @param invalids the specified set of invalid values
+     * @return the set of invalid values that do not contains values of specified type
+     */
+    private Set<String> filterInvalids(Type type, Set<String> invalids) {
+
+        if (invalids == null || invalids.isEmpty() || Type.STRING.equals(type)) {
+            return Collections.emptySet();
+        }
+        DataTypeQualityAnalyzer analyzer = new DataTypeQualityAnalyzer(DataTypeEnum.get(type.getName()));
+        analyzer.init();
+        final Set<String> result;
+        invalids.stream().forEach(analyzer::analyze);
+        List<ValueQualityStatistics> analyzerResult = analyzer.getResult();
+        result = analyzerResult.get(0).getInvalidValues();
+        return result;
+    }
+
+    /**
+     * Returns the most frequent sub type of the suggested type when it is the second most frequent type.
+     * @param dataType the specified data type occurrences result
+     * @return the most frequent sub type of the suggested type when it is the second most frequent type
+     */
+    private Type mostFrequentSubType(DataTypeOccurences dataType) {
+        final DataTypeEnum suggestedEnumType = suggestType(dataType);
+
+        final List<Map.Entry<DataTypeEnum, Long>> sortedFrequencies = dataType.getTypeFrequencies().entrySet().stream()
+                .sorted((t1, t2) -> Long.compare(t2.getValue(), t1.getValue())).filter(t -> !DataTypeEnum.EMPTY.equals(t)) // remove
+                                                                                                                           // empty
+                                                                                                                           // type
+                .collect(Collectors.toList());
+        final DataTypeEnum secondEnumChoice;
+        // retrieve the second choice
+        if (sortedFrequencies.size() <= 1) {
+            secondEnumChoice = null;
+
+        } else if (!suggestedEnumType.equals(sortedFrequencies.get(0).getKey())) {
+            secondEnumChoice = sortedFrequencies.get(0).getKey();
+        } else {
+            secondEnumChoice = sortedFrequencies.get(1).getKey();
+        }
+        final Type suggested = Type.get(suggestedEnumType.name());
+        final Type secondChoice = secondEnumChoice != null ? Type.get(secondEnumChoice.name()) : null;
+        return TypeUtils.subTypeOfOther(suggested, secondChoice);
+    }
+
+    /** A workaround solution to solve the problem of bug TDP-224 until DQ code changes its code
+     *  TODO: use the DQ code, whenever it solves bug TDP-224
+     * @param dataType the specified data type occurrences result
+     * @return the suggested type
+     */
+    private DataTypeEnum suggestType(DataTypeOccurences dataType){
+        return  suggestType(dataType, 0.5);
+    }
+
+    /** A workaround solution to solve the problem of bug TDP-224 until DQ code changes its code
+     *  TODO: use the DQ code, whenever it solves bug TDP-224
+     * @param dataType the specified data type occurrences result
+     * @param threshold the threshold used to suggest a data type instead of returning the default STRING type.
+     * @return  the suggested type
+     */
+    private DataTypeEnum suggestType(DataTypeOccurences dataType, double threshold){
+
+        Map<DataTypeEnum, Long> typeOccurrences = dataType.getTypeFrequencies();
+        final long nbDouble = typeOccurrences.get(DataTypeEnum.DOUBLE) == null?0L:(typeOccurrences.get(DataTypeEnum.DOUBLE));
+        final long nbInteger = typeOccurrences.get(DataTypeEnum.INTEGER) == null?0L:typeOccurrences.get(DataTypeEnum.INTEGER);
+        DataTypeEnum electedType = DataTypeEnum.STRING;
+        long max = typeOccurrences.get(DataTypeEnum.STRING) == null?0L:(typeOccurrences.get(DataTypeEnum.STRING));;
+        Iterator iterator = typeOccurrences.entrySet().iterator();
+
+        while(iterator.hasNext()) {
+            Map.Entry entry = (Map.Entry)iterator.next();
+            if(!DataTypeEnum.EMPTY.equals(entry.getKey()) && ((Long)entry.getValue()).longValue() > max) {
+                max = ((Long)entry.getValue()).longValue();
+                electedType = (DataTypeEnum)entry.getKey();
+            }
+        }
+
+        if(nbDouble + nbInteger > max && (double)nbDouble / (double)(nbInteger + nbDouble) >= threshold) {
+            return DataTypeEnum.DOUBLE;
+        } else {
+            return electedType;
+        }
+    }
+
 }

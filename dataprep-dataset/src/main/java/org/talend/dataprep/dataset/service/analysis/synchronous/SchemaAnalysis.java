@@ -82,7 +82,7 @@ public class SchemaAnalysis implements SynchronousDataSetAnalyzer {
                 stream.limit(20).map(row -> row.toArray(DataSetRow.SKIP_TDP_ID)).forEach(analyzer::analyze);
 
                 // Find the best suitable type
-                adapter.adapt(metadata.getRowMetadata().getColumns(), analyzer.getResult());
+                adapter.adaptForSampling(metadata.getRowMetadata().getColumns(), analyzer.getResult());
                 LOGGER.info("Analyzed schema in dataset #{}.", dataSetId);
                 metadata.getLifecycle().schemaAnalyzed(true);
                 repository.add(metadata);
