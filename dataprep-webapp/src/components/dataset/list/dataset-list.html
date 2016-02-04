@@ -89,7 +89,17 @@
         </form>
     </talend-modal>
 
-    <dataset-copy-move state="datasetListCtrl.datasetCopyVisibility"></dataset-copy-move>
+    <dataset-copy-move
+            visibility="datasetListCtrl.datasetCopyVisibility"
+            dataset-to-copy-clone="datasetListCtrl.state.folder.datasetToCopyClone"
+            chosen-folder="datasetListCtrl.state.folder.choosedFolder"
+            current-folder="datasetListCtrl.state.folder.currentFolder"
+            set-dataset-to-copy-clone="datasetListCtrl.stateService.setDatasetToCopyClone(ds)"
+            show-success-message="datasetListCtrl.messageService.success(successMsgTitle , successMsgContent)"
+            get-folder-content="datasetListCtrl.folderService.getContent(folder)"
+            on-copy-submit="datasetListCtrl.datasetService.clone(ds, destFolder, name)"
+            on-move-submit="datasetListCtrl.datasetService.move(ds, fromFolder, destFolder, name)"
+    ></dataset-copy-move>
 
 </div>
 

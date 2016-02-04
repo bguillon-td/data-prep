@@ -1,167 +1,131 @@
 (function () {
-	'use strict';
+    'use strict';
 
-	/**
-	 * @ngdoc controller
-	 * @name data-prep.folder-selection.controller:FolderSelectionCtrl
-	 * @description Folder selection controller.
-	 * @requires data-prep.services.state.service:StateService
-	 * @requires data-prep.services.folder.service:FolderService
-	 * @requires data-prep.services.state.constant:state
-	 */
-	function FolderSelectionCtrl(FolderService, state, StateService, $translate) {
-		var vm = this;
-		vm.state = state;
-		vm.visible = false;
+    /**
+     * @ngdoc controller
+     * @name data-prep.folder-selection.controller:FolderSelectionCtrl
+     * @description Folder selection controller
+     * @requires data-prep.services.folder.service:FolderService
+     */
+    function FolderSelectionCtrl($translate, FolderService) {
+        var vm = this;
+        vm.visible = false;
 
-		/**
-		 * @type {Array} folder found after a search
-		 */
-		vm.foldersFound = [];
+        /**
+         * @type {Array} folders found after a search query
+         */
+        vm.foldersFound = [];
 
-		/**
-		 * @ngdoc method
-		 * @name initFolders
-		 * @methodOf data-prep.folder-selection.controller:FolderSelectionCtrl
-		 * @description Display folder destination choice modal
-		 */
-		vm.initFolders = function initFolders() {
-			vm.foldersFound = [];
-			vm.searchFolderQuery = '';
+        /**
+         * @ngdoc method
+         * @name initFolders
+         * @methodOf data-prep.folder-selection.controller:FolderSelectionCtrl
+         * @description Display folder destination choice tree
+         */
+        vm.initFolders = function initFolders() {
+            vm.foldersFound = [];
+            vm.searchFolderQuery = '';
 
-			var toggleToCurrentFolder = state.folder && state.folder.currentFolder && state.folder.currentFolder.id;
+            var rootFolder = {
+                id: '',
+                path: '',
+                level: 0,
+                alreadyToggled: true,
+                showFolder: true,
+                collapsed: false,
+                name: $translate.instant('HOME_FOLDER')
+            };
+            vm.folders = [rootFolder];
 
-			if (toggleToCurrentFolder) {
-				var pathParts = state.folder.currentFolder.id.split('/');
-				var currentPath = pathParts[0];
-			}
+            var pathParts = vm.currentFolder.path.split('/');
+            if (vm.currentFolder.path !== '/') {
+                pathParts.unshift('');
+            }
+            locateCurrentFolder(vm.folders[0], pathParts, '');
+        };
 
-			var rootFolder = {id: '', path: '', collapsed: false, name: $translate.instant('HOME_FOLDER')};
+        function locateCurrentFolder (parentFolder, pathParts, currentPath) {
+            currentPath += currentPath ? '/' + pathParts[0] : pathParts[0];
+            FolderService.children(currentPath)
+                         .then(function (res) {
+                             var currentIndex = _.findIndex(vm.folders, parentFolder);
+                             _.each(res.data, function (child, index) {
+                                 if (!res.data.length) {
+                                     parentFolder.hasNoChildren = true;
+                                 }
+                                 child.level = parentFolder.level + 1;
+                                 child.collapsed = true;
+                                 child.alreadyToggled = false;
+                                 child.showFolder = true;
+                                 vm.folders.splice(currentIndex + 1 + index, 0, child);
+                             });
 
-			FolderService.children()
-					.then(function (res) {
-						rootFolder.nodes = res.data;
-						vm.chooseFolder(rootFolder);
+                             var next = _.find(res.data, {name: pathParts[1]});
 
-						vm.folders = [rootFolder];
-						_.forEach(vm.folders[0].nodes, function (folder) {
-							folder.collapsed = true;
-							// recursive toggle until we reach the current folder
-							if (toggleToCurrentFolder && folder.id === currentPath) {
-								vm.toggle(folder, pathParts.length > 0 ? _.slice(pathParts, 1) : null, currentPath);
-								vm.chooseFolder(folder);
-							}
-						});
-					});
-		};
+                             if (next) {
+                                 pathParts.shift();
 
-		/**
-		 * @ngdoc method
-		 * @name toggle
-		 * @methodOf data-prep.folder-selection.controller:FolderSelectionCtrl
-		 * @description load folder children
-		 * @param {object} folder The folder to display children
-		 * @param {array} pathParts All path parts
-		 * @param {string} currentPath The current path for recursive call
-		 */
-		vm.toggle = function toggle (folder, pathParts, currentPath) {
-			if (!folder.collapsed) {
-				folder.collapsed = true;
-			} else {
-				if (!folder.nodes) {
-					FolderService.children(folder.id)
-							.then(function (res) {
-								folder.nodes = res.data ? res.data : [];
-								vm.collapseNodes(folder);
-								if (pathParts && pathParts[0]) {
-									currentPath += currentPath ? '/' + pathParts[0] : pathParts[0];
-									_.forEach(folder.nodes, function (folder) {
-										if (folder.id === currentPath) {
-											vm.toggle(folder, pathParts.length > 0 ? _.slice(pathParts, 1) : null, currentPath);
-											vm.chooseFolder(folder);
-										}
-									});
-								}
-							});
+                                 if (pathParts.length === 1) {
+                                     next.selected = true;
+                                     vm.selectedFolder = next;
+                                 }
+                                 else {
+                                     next.collapsed = false;
+                                     next.alreadyToggled = true;
+                                     locateCurrentFolder(next, pathParts, currentPath);
+                                 }
+                             }
+                             else {//home level
+                                 parentFolder.selected = true;
+                                 vm.selectedFolder = parentFolder;
+                             }
+                         });
+        }
 
-				} else {
-					vm.collapseNodes(folder);
-				}
-			}
-		};
+        /**
+         * @ngdoc method
+         * @name searchFolders
+         * @methodOf data-prep.folder-selection.controller:FolderSelectionCtrl
+         * @description Search folders corresponding to a given string
+         */
+        vm.searchFolders = function searchFolders() {
+            vm.foldersFound = [];
+            if (vm.searchFolderQuery) {
+                //Add the root folder if it matches the filter
+                var n = $translate.instant('HOME_FOLDER').toLowerCase().indexOf(vm.searchFolderQuery.toLowerCase());
 
+                FolderService.search(vm.searchFolderQuery)
+                             .then(function (response) {
+                                 if (n > -1) {
+                                     var rootFolder = {
+                                         id: '',
+                                         path: '',
+                                         showFolder: true,
+                                         name: $translate.instant('HOME_FOLDER')
+                                     };
+                                     vm.foldersFound.push(rootFolder);
+                                 }
 
-		/**
-		 * @ngdoc method
-		 * @name chooseFolder
-		 * @methodOf data-prep.folder-selection.controller:FolderSelectionCtrl
-		 * @description Set folder destination choice
-		 * @param {object} folder - the folder to use for cloning the data
-		 */
-		vm.chooseFolder = function (folder) {
-			console.log('chooseFolder:'+folder.id);
-			var previousSelected = state.folder.choosedFolder;
-			if (previousSelected) {
-				previousSelected.selected = false;
-			}
-			StateService.setChoosedFolder(folder);
-			folder.selected = true;
-		};
+                                 response.data.map(function (folder) {
+                                     folder.showFolder = true;
+                                     folder.searchResult = true;
+                                     folder.level = 0;
+                                 });
 
-		/**
-		 * @ngdoc method
-		 * @name collapseNodes
-		 * @methodOf data-prep.folder-selection.controller:FolderSelectionCtrl
-		 * @description utility function to collapse nodes
-		 * @param {object} node - parent node of childs to collapse
-		 */
-		vm.collapseNodes = function (node) {
-			_.forEach(node.nodes, function (folder) {
-				folder.collapsed = true;
-			});
-			if (node.nodes.length > 0) {
-				node.collapsed = false;
-			} else {
-				node.collapsed = !node.collapsed;
-			}
-		};
+                                 vm.foldersFound = vm.foldersFound.concat(response.data);
 
+                                 if (vm.foldersFound.length > 0) {
+                                     vm.selectedFolder = vm.foldersFound[0];
+                                     vm.selectedFolder.selected = true;
+                                 }
+                             });
+            } else {
+                vm.initFolders();
+            }
+        };
+    }
 
-		/**
-		 * @ngdoc method
-		 * @name searchFolders
-		 * @methodOf data-prep.folder-selection.controller:FolderSelectionCtrl
-		 * @description Search folders
-		 */
-		vm.searchFolders = function searchFolders () {
-
-			vm.foldersFound = [];
-			if (vm.searchFolderQuery) {
-				//Add the root folder if it matches the filter
-				var n = $translate.instant('HOME_FOLDER').indexOf(vm.searchFolderQuery);
-
-				FolderService.search(vm.searchFolderQuery)
-						.then(function (response) {
-							if (n > -1) {
-								var rootFolder = {id: '', path: '', name: $translate.instant('HOME_FOLDER')};
-								vm.foldersFound.push(rootFolder);
-								vm.foldersFound = vm.foldersFound.concat(response.data);
-							} else {
-								vm.foldersFound = response.data;
-							}
-							if (vm.foldersFound.length > 0) {
-								vm.chooseFolder(vm.foldersFound[0]); //Select by default first folder
-							}
-						});
-			} else {
-				vm.chooseFolder(vm.folders[0]);  //Select by default first folder
-			}
-
-		};
-
-	}
-
-	angular.module('data-prep.folder-selection')
-		.controller('FolderSelectionCtrl', FolderSelectionCtrl);
+    angular.module('data-prep.folder-selection')
+           .controller('FolderSelectionCtrl', FolderSelectionCtrl);
 
 })();

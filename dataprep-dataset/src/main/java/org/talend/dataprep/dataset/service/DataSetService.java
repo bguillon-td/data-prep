@@ -431,71 +431,61 @@ public class DataSetService {
             @ApiParam(value = "The name of the cloned dataset.") @RequestParam(defaultValue = "", required = false) String cloneName,
             @ApiParam(value = "The folder path to create the entry.") @RequestParam(defaultValue = "", required = false) String folderPath)
                     throws IOException {
-
         HttpResponseContext.header("Content-Type", MediaType.TEXT_PLAIN_VALUE);
-
-        DataSet dataSet = get(true, null, dataSetId);
-
-        // use a default name if empty (original name + " Copy" )
-        if (StringUtils.isEmpty( cloneName)){
-            cloneName = dataSet.getMetadata().getName() + " Copy";
-        }
-
-        // just because the lambda need a final variable.... grhhh :-)
-        String newDatasetName = cloneName;
-
-        // if no metadata it's an empty one the get method has already set NO CONTENT http return code
-        // so simply return!!
-        if (dataSet.getMetadata() == null) {
-            return StringUtils.EMPTY;
-        }
-
-        // first check if the name is already used in the target folder
-        final Iterable<FolderEntry> entries = folderRepository.entries(folderPath, "dataset");
-
-        entries.forEach(folderEntry -> {
-            DataSetMetadata dataSetEntry = dataSetMetadataRepository.get(folderEntry.getContentId());
-            if (dataSetEntry != null && StringUtils.equals(newDatasetName, dataSetEntry.getName())) {
-                final ExceptionContext context = ExceptionContext.build() //
-                        .put("id", folderEntry.getContentId()) //
-                        .put("folder", folderPath) //
-                        .put("name", newDatasetName);
-                throw new TDPException(DataSetErrorCodes.DATASET_NAME_ALREADY_USED, context, true);
+        DataSetMetadata original = dataSetMetadataRepository.get(dataSetId);
+        final DistributedLock lock = dataSetMetadataRepository.createDatasetMetadataLock(dataSetId);
+        try {
+            lock.lock(); // lock to ensure any asynchronous analysis is completed.
+            // if no metadata it's an empty one the get method has already set NO CONTENT http return code
+            // so simply return!!
+            if (original == null) {
+                return StringUtils.EMPTY;
             }
-        });
-
-        final String newId = UUID.randomUUID().toString();
-
-        dataSet.getMetadata().setName(cloneName);
-
-        final Marker marker = Markers.dataset(newId);
-        LOG.debug(marker, "Cloning...");
-
-        DataSetMetadata dataSetMetadata = metadataBuilder.metadata() //
-                .id(newId) //
-                .name(cloneName) //
-                .author(security.getUserId()) //
-                .location(dataSet.getMetadata().getLocation()) //
-                .created(System.currentTimeMillis()) //
-                .build();
-
-        // Create the new data set
-        dataSetMetadataRepository.add(dataSetMetadata);
-
-        // Save data set content
-        LOG.debug(marker, "Storing content...");
-        contentStore.storeAsRaw(dataSetMetadata, contentStore.getAsRaw(dataSet.getMetadata()));
-        LOG.debug(marker, "Content stored.");
-
-        queueEvents(newId);
-
-        // create associated folderEntry
-        FolderEntry folderEntry = new FolderEntry("dataset", newId, folderPath);
-        folderRepository.addFolderEntry(folderEntry);
-
-        LOG.debug(marker, "Cloned!");
-
-        return newId;
+            // use a default name if empty (original name + " Copy" )
+            if (StringUtils.isEmpty(cloneName)) {
+                cloneName = original.getName() + " Copy";
+            }
+            // first check if the name is already used in the target folder
+            final Iterable<FolderEntry> entries = folderRepository.entries(folderPath, "dataset");
+            final String newDatasetName = cloneName;
+            entries.forEach(folderEntry -> {
+                DataSetMetadata dataSetEntry = dataSetMetadataRepository.get(folderEntry.getContentId());
+                if (dataSetEntry != null && StringUtils.equals(newDatasetName, dataSetEntry.getName())) {
+                    final ExceptionContext context = ExceptionContext.build() //
+                            .put("id", folderEntry.getContentId()) //
+                            .put("folder", folderPath) //
+                            .put("name", newDatasetName);
+                    throw new TDPException(DataSetErrorCodes.DATASET_NAME_ALREADY_USED, context, true);
+                }
+            });
+            // Create copy (based on original data set metadata)
+            final String newId = UUID.randomUUID().toString();
+            final Marker marker = Markers.dataset(newId);
+            LOG.debug(marker, "Cloning...");
+            DataSetMetadata target = metadataBuilder.metadata() //
+                    .copy(original) //
+                    .id(newId) //
+                    .name(cloneName) //
+                    .author(security.getUserId()) //
+                    .location(original.getLocation()) //
+                    .created(System.currentTimeMillis()) //
+                    .build();
+            // Save data set content
+            LOG.debug(marker, "Storing content...");
+            try (InputStream content = contentStore.getAsRaw(original)) {
+                contentStore.storeAsRaw(target, content);
+            }
+            LOG.debug(marker, "Content stored.");
+            // Create the new data set
+            dataSetMetadataRepository.add(target);
+            // create associated folderEntry
+            FolderEntry folderEntry = new FolderEntry("dataset", newId, folderPath);
+            folderRepository.addFolderEntry(folderEntry);
+            LOG.debug(marker, "Cloned!");
+            return newId;
+        } finally {
+            lock.unlock();
+        }
     }
 
     /**

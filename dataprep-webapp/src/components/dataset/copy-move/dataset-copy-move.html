@@ -1,6 +1,6 @@
 <talend-modal fullscreen="false"
               close-button="false"
-              state="datasetCopyMoveCtrl.state"
+              state="datasetCopyMoveCtrl.visibility"
               disable-close-on-background-click="true"
               disable-enter="true">
 
@@ -8,13 +8,18 @@
     <div class="modal-title" translate-once="CHOOSE_FOLDER_DESTINATION" translate-values="{type: 'dataset', name: dataset.name}">
     </div>
 
-    <folder-selection visible="datasetCopyMoveCtrl.state"></folder-selection>
-
     <form name="datasetCopyMoveCtrl.cloneNameForm" ng-submit="datasetCopyMoveCtrl.cloneNameForm.$valid">
+
+      <folder-selection
+              current-folder="datasetCopyMoveCtrl.currentFolder"
+              ng-model="datasetCopyMoveCtrl.chosenFolder"
+              visible="datasetCopyMoveCtrl.visibility"
+      ></folder-selection>
+
       <div class="clone-name">
         <span translate-once="DATASET_NAME"></span>
         <input type="text"
-               ng-model="datasetCopyMoveCtrl.cloneName"
+               ng-model="datasetCopyMoveCtrl.datasetToCopyClone.name"
                id="new-name-input-id"
                can-be-blank="true"/>
       </div>

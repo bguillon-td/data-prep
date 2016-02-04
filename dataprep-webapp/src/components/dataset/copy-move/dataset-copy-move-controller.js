@@ -4,24 +4,11 @@
     /**
      * @ngdoc controller
      * @name data-prep.dataset-list.controller:DatasetListCtrl
-     * @description Dataset list controller.
-     On creation, it fetch dataset list from backend and load playground if 'datasetid' query param is provided
-     * @requires data-prep.services.state.service:StateService
-     * @requires data-prep.services.dataset.service:DatasetService
-     * @requires data-prep.services.folder.service:FolderService
-     * @requires data-prep.services.playground.service:PlaygroundService
-     * @requires data-prep.services.uploadWorkflowService.service:UploadWorkflowService
-     * @requires data-prep.services.datasetWorkflowService.service:UpdateWorkflowService
-     * @requires data-prep.services.utils.service:MessageService
-     * @requires talend.widget.service:TalendConfirmService
+     * @description enables the user to move/copy a dataset from one folder to another
      */
-    function DatasetCopyMoveCtrl ($translate, $stateParams, StateService, DatasetService,
-                              MessageService, FolderService, state) {
+    function DatasetCopyMoveCtrl() {
         var vm = this;
-
-        vm.datasetService = DatasetService;
-
-        vm.state = false;
+        vm.visibility = false;
 
         vm.isCloningDs = false;
         vm.isMovingDs = false;
@@ -34,23 +21,28 @@
          */
         vm.clone = function () {
             vm.isCloningDs = true;
-            vm.cloneNameForm.$commitViewValue();
+            vm.cloneNameForm.$commitViewValue ();
 
-            DatasetService.clone(state.folder.datasetToCopyClone, state.folder.choosedFolder, vm.cloneName)
-                .then(function () {
-                    MessageService.success('COPY_SUCCESS_TITLE', 'COPY_SUCCESS');
+            vm.onCopySubmit ({
+                    ds: vm.datasetToCopyClone,
+                    destFolder: vm.chosenFolder,
+                    name: vm.datasetToCopyClone.name
+                })
+                .then (function () {
+                    vm.showSuccessMessage ({
+                        successMsgTitle: 'COPY_SUCCESS_TITLE',
+                        successMsgContent: 'COPY_SUCCESS'
+                    });
 
                     // force going to current folder to refresh the content
-                    FolderService.getContent(state.folder.currentFolder);
+                    vm.getFolderContent ({folder: vm.currentFolder});
                     // reset some values to initial values
-                    StateService.setDatasetToCopyClone(null);
-                    vm.cloneName = '';
+                    vm.setDatasetToCopyClone ({ds: null});
                     vm.isCloningDs = false;
+                    vm.visibility = false;
                 }, function () {
                     vm.isCloningDs = false;
-                    setTimeout(vm.focusOnNameInput, 1100);
-                }).finally(function () {
-                    vm.state = false;
+                    setTimeout (vm.focusOnNameInput, 1100);
                 });
         };
 
@@ -62,34 +54,34 @@
          */
         vm.move = function () {
             vm.isMovingDs = true;
-            vm.cloneNameForm.$commitViewValue();
+            vm.cloneNameForm.$commitViewValue ();
 
-            DatasetService.move(state.folder.datasetToCopyClone, state.folder.currentFolder, state.folder.choosedFolder, vm.cloneName)
-                .then(function () {
-                    MessageService.success('MOVE_SUCCESS_TITLE', 'MOVE_SUCCESS');
+            vm.onMoveSubmit ({
+                    ds: vm.datasetToCopyClone,
+                    fromFolder: vm.currentFolder,
+                    destFolder: vm.chosenFolder,
+                    name: vm.datasetToCopyClone.name
+                })
+                .then (function () {
+                    vm.showSuccessMessage ({
+                        successMsgTitle: 'MOVE_SUCCESS_TITLE',
+                        successMsgContent: 'MOVE_SUCCESS'
+                    });
 
                     // force going to current folder to refresh the content
-                    FolderService.getContent(state.folder.currentFolder);
+                    vm.getFolderContent ({folder: vm.currentFolder});
 
                     // reset some values to initial values
-                    StateService.setDatasetToCopyClone(null);
-                    vm.cloneName = '';
+                    vm.setDatasetToCopyClone ({ds: null});
                     vm.isMovingDs = false;
+                    vm.visibility = false;
                 }, function () {
                     vm.isMovingDs = false;
-                    setTimeout(vm.focusOnNameInput, 1100);
-                }).finally(function () {
-                    vm.state = false;
+                    setTimeout (vm.focusOnNameInput, 1100);
                 });
         };
-
-        vm.init = function(){
-          vm.cloneName = state.folder.datasetToCopyClone.name;
-        };
-
     }
 
-
-    angular.module('data-prep.dataset-copy-move')
-        .controller('DatasetCopyMoveCtrl', DatasetCopyMoveCtrl);
-})();
+    angular.module ('data-prep.dataset-copy-move')
+        .controller ('DatasetCopyMoveCtrl', DatasetCopyMoveCtrl);
+}) ();

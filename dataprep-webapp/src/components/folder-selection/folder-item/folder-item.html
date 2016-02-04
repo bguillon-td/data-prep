@@ -1,0 +1,24 @@
+<li style="margin-left:{{folderItemCtrl.item.level * 20}}px"
+    ng-class="{'folder-selected': folderItemCtrl.item.selected}"
+    ng-dblclick="folderItemCtrl.toggle(folderItemCtrl.item)"
+    ng-if="folderItemCtrl.item.showFolder"
+>
+    <a ng-if="!folderItemCtrl.item.searchResult" class="inventory-icon inventory-folder" ng-switch="folderItemCtrl.item.collapsed">
+        <i data-icon="J" ng-if="!folderItemCtrl.item.hasNoChildren" ng-switch-when="false" class="dropdown-button-right" ng-click="folderItemCtrl.toggle(folderItemCtrl.item)"></i>
+        <i data-icon="I" ng-if="!folderItemCtrl.item.hasNoChildren" ng-switch-when="true" class="dropdown-button-down" ng-click="folderItemCtrl.toggle(folderItemCtrl.item)"></i>
+        <i ng-if="folderItemCtrl.item.hasNoChildren" class="has-no-children"></i>
+
+        <img class="icon-img" ng-click="folderItemCtrl.chooseFolder(folderItemCtrl.item)" ng-switch-when="false" src="assets/images/folder/folder_open_small-icon.png"/>
+        <img class="icon-img" ng-click="folderItemCtrl.chooseFolder(folderItemCtrl.item)" ng-switch-when="true" src="assets/images/folder/folder_close_small-icon.png"/>
+    </a>
+
+    <a ng-if="folderItemCtrl.item.searchResult" class="inventory-icon inventory-folder" ng-switch="folderItemCtrl.item.collapsed">
+        <img class="icon-img" ng-click="folderItemCtrl.chooseFolder(folderItemCtrl.item)" src="assets/images/folder/folder_close_small-icon.png"/>
+    </a>
+    <span id="{{folderItemCtrl.item.path}}"
+          ng-click="folderItemCtrl.chooseFolder(folderItemCtrl.item)"
+          class="folder-name"
+    >
+        {{folderItemCtrl.item.name}}
+    </span>
+</li>

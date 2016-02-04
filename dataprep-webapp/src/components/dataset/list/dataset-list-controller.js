@@ -17,7 +17,7 @@
      * @requires data-prep.services.utils.service:StorageService
      * @requires data-prep.services.dataset.service:DatasetListService
      */
-    function DatasetListCtrl (state, $timeout, $translate, $stateParams, StateService, DatasetService, PlaygroundService,
+    function DatasetListCtrl (state, $timeout, $stateParams, StateService, DatasetService, PlaygroundService,
                               TalendConfirmService, MessageService, UploadWorkflowService, UpdateWorkflowService,
                               FolderService, StorageService) {
         var vm = this;
@@ -25,6 +25,9 @@
         vm.datasetService = DatasetService;
         vm.uploadWorkflowService = UploadWorkflowService;
         vm.state = state;
+        vm.stateService = StateService;
+        vm.messageService = MessageService;
+        vm.folderService = FolderService;
 
         /**
          * @ngdoc property
@@ -52,7 +55,7 @@
             StateService.setDatasetsSort(sortType);
             StorageService.setDatasetsSort(sortType.id);
 
-            FolderService.getContent(state.folder.currentFolder)
+            vm.folderService.getContent(state.folder.currentFolder)
                 .catch(function () {
                     StateService.setDatasetsSort(oldSort);
                     StorageService.setDatasetsSort(oldSort.id);
@@ -76,7 +79,7 @@
             StateService.setDatasetsOrder(order);
             StorageService.setDatasetsOrder(order.id);
 
-            FolderService.getContent(state.folder.currentFolder)
+            vm.folderService.getContent(state.folder.currentFolder)
                 .catch(function () {
                     StateService.setDatasetsOrder(oldOrder);
                     StorageService.setDatasetsOrder(oldOrder.id);
@@ -138,7 +141,7 @@
                     return DatasetService.delete(dataset);
                 })
                 .then(function () {
-                    FolderService.getContent(state.folder.currentFolder);
+                    vm.folderService.getContent(state.folder.currentFolder);
                     MessageService.success('REMOVE_SUCCESS_TITLE', 'REMOVE_SUCCESS', {
                         type: 'dataset',
                         name: dataset.name
@@ -215,14 +218,14 @@
         vm.processCertification = function (dataset) {
             vm.datasetService
                 .processCertification(dataset)
-                .then(FolderService.getContent.bind(null, state.folder.currentFolder));
+                .then(vm.folderService.getContent.bind(null, state.folder.currentFolder));
         };
 
         //-------------------------------
         // Folder
         //-------------------------------
 
-        vm.goToFolder = FolderService.getContent;
+        vm.goToFolder = vm.folderService.getContent;
 
         /**
          * @ngdoc method
@@ -245,9 +248,9 @@
             vm.folderNameForm.$commitViewValue();
 
             var pathToCreate = (state.folder.currentFolder.id ? state.folder.currentFolder.id : '') + '/' + vm.folderName;
-            FolderService.create(pathToCreate)
+            vm.folderService.create(pathToCreate)
                 .then(function () {
-                    FolderService.getContent(state.folder.currentFolder);
+                    vm.folderService.getContent(state.folder.currentFolder);
                     vm.folderNameModal = false;
                 });
         };
@@ -264,9 +267,9 @@
             var path = folder.id;
             var lastSlashIndex = path.lastIndexOf('/');
             var newPath = path.substring(0, lastSlashIndex) + '/' + newName;
-            FolderService.rename(path, newPath)
+            vm.folderService.rename(path, newPath)
                 .then(function () {
-                    FolderService.getContent(state.folder.currentFolder);
+                    vm.folderService.getContent(state.folder.currentFolder);
                 });
         };
 
@@ -278,9 +281,9 @@
          * @param {object} folder The folder to remove
          */
         vm.removeFolder = function removeFolder (folder) {
-            FolderService.remove(folder.id)
+            vm.folderService.remove(folder.id)
                 .then(function () {
-                    FolderService.getContent(state.folder.currentFolder);
+                    vm.folderService.getContent(state.folder.currentFolder);
                 });
         };
 
