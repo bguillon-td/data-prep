@@ -17,7 +17,9 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertThat;
 
+import java.io.InputStream;
 import java.util.HashSet;
+import java.util.Random;
 import java.util.Set;
 
 import org.junit.Test;
@@ -25,6 +27,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.talend.dataprep.api.dataset.ColumnMetadata;
 import org.talend.dataprep.api.dataset.DataSetMetadata;
 import org.talend.dataprep.api.dataset.Quality;
+import org.talend.dataprep.api.type.Type;
 import org.talend.dataprep.dataset.DataSetBaseTest;
 import org.talend.dataprep.dataset.service.DataSetServiceTests;
 
@@ -41,6 +44,9 @@ public class QualityAnalysisTest extends DataSetBaseTest {
 
     @Autowired
     ContentAnalysis contentAnalysis;
+
+    /** Random to generate random dataset id. */
+    private Random random = new Random();
 
     @Test
     public void testNoDataSetFound() throws Exception {
@@ -94,5 +100,51 @@ public class QualityAnalysisTest extends DataSetBaseTest {
         expectedInvalidValues.add("N/A");
         assertThat(quality.getInvalidValues(), is(expectedInvalidValues));
 
+    }
+
+    /**
+     * This test ensures that data types have been rightly detected when performing a full analysis.
+     *
+     * See <a href="https://jira.talendforge.org/browse/TDP-224">https://jira.talendforge.org/browse/TDP-1150</a>.
+     *
+     * @throws Exception
+     */
+    @Test
+    public void TDP_1150_full() throws Exception {
+        final DataSetMetadata actual = initializeDataSetMetadata(
+                DataSetServiceTests.class.getResourceAsStream("../invalids_and_type_detection.csv"));
+        assertThat(actual.getLifecycle().schemaAnalyzed(), is(true));
+        String[] expectedNames = {  "string_boolean", "double_integer", "string_integer", "string_double", "string_date",
+                "type_mix", "boolean", "integer", "double", "date", "string", "empty"};
+        Type[] expectedTypes = { Type.BOOLEAN, Type.INTEGER, Type.INTEGER, Type.DOUBLE, Type.DATE, Type.STRING, Type.BOOLEAN,
+                Type.INTEGER, Type.DOUBLE, Type.DATE,Type.STRING, Type.STRING };
+        int i = 0;
+        int j = 0;
+        for (ColumnMetadata column : actual.getRowMetadata().getColumns()) {
+            assertThat(column.getName(), is(expectedNames[i++]));
+            assertThat(column.getType(), is(expectedTypes[j++].getName()));
+        }
+    }
+
+    /**
+     * Initialize a dataset with the given content. Perform the format and the schema analysis.
+     *
+     * @param content the dataset content.
+     * @return the analyzed dataset metadata.
+     */
+    private DataSetMetadata initializeDataSetMetadata(InputStream content) {
+        String id = String.valueOf(random.nextInt(10000));
+        final DataSetMetadata metadata = metadataBuilder.metadata().id(id).build();
+        dataSetMetadataRepository.add(metadata);
+        contentStore.storeAsRaw(metadata, content);
+        formatAnalysis.analyze(id);
+        contentAnalysis.analyze(id);
+        schemaAnalysis.analyze(id);
+        // Analyze quality
+        qualityAnalysis.analyze(id);
+
+        final DataSetMetadata analyzed = dataSetMetadataRepository.get(id);
+        assertThat(analyzed.getLifecycle().schemaAnalyzed(), is(true));
+        return analyzed;
     }
 }

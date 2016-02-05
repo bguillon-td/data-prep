@@ -1,15 +1,15 @@
-//  ============================================================================
+// ============================================================================
 //
-//  Copyright (C) 2006-2016 Talend Inc. - www.talend.com
+// Copyright (C) 2006-2016 Talend Inc. - www.talend.com
 //
-//  This source code is available under agreement available at
-//  https://github.com/Talend/data-prep/blob/master/LICENSE
+// This source code is available under agreement available at
+// https://github.com/Talend/data-prep/blob/master/LICENSE
 //
-//  You should have received a copy of the agreement
-//  along with this program; if not, write to Talend SA
-//  9 rue Pages 92150 Suresnes, France
+// You should have received a copy of the agreement
+// along with this program; if not, write to Talend SA
+// 9 rue Pages 92150 Suresnes, France
 //
-//  ============================================================================
+// ============================================================================
 
 package org.talend.dataprep.api.dataset.statistics;
 
@@ -152,26 +152,22 @@ public class StatisticsAdapter {
     private void injectDataTypeAnalysis(final ColumnMetadata column, final Analyzers.Result result, boolean sampling) {
         if (result.exist(DataTypeOccurences.class) && !column.isTypeForced()) {
             final DataTypeOccurences dataType = result.get(DataTypeOccurences.class);
-            final DataTypeEnum suggestedEnumType = suggestType(dataType);
+            final DataTypeEnum suggestedEnumType = dataType.getSuggestedType();
             final Type suggestedColumnType = Type.get(suggestedEnumType.name());
             final Type mostFrequentSubType = mostFrequentSubType(dataType);
 
+            // the suggested type can be modified by #injectValueQuality
             column.setType(suggestedColumnType.getName());
-            final long suggestedTypeOccurrenceCount;
-            // When sampling try to use the most frequent sub type of the suggested type when possible
-            if (sampling && mostFrequentSubType != null) {
+            injectValueQuality(column, result, dataType);
+            // Try to use the most frequent sub type of the suggested type when possible
+            if (mostFrequentSubType != null && suggestedColumnType != mostFrequentSubType) {
                 column.getQuality().setMostFrequentSubType(mostFrequentSubType.getName());
-                final Long suggestedEnumTypeFrequency = dataType.getTypeFrequencies().get(suggestedEnumType);
-                suggestedTypeOccurrenceCount = suggestedEnumTypeFrequency != null?suggestedEnumTypeFrequency:0;
-            } else {
-                suggestedTypeOccurrenceCount = 0;
             }
 
-            injectValueQuality(column, result, suggestedTypeOccurrenceCount);
         }
     }
 
-    private void injectValueQuality(final ColumnMetadata column, final Analyzers.Result result, long dataTypeOccurrenceCount) {
+    private void injectValueQuality(final ColumnMetadata column, final Analyzers.Result result, DataTypeOccurences dataType) {
         if (result.exist(ValueQualityStatistics.class)) {
             final Statistics statistics = column.getStatistics();
             final Quality quality = column.getQuality();
@@ -183,14 +179,32 @@ public class StatisticsAdapter {
             final Set<String> invalidValues;
             final long emptyCount = valueQualityStatistics.getEmptyCount();
 
-            // filter invalids according to the actually used type
-            invalidValues = filterInvalids(Type.get(column.getType()), valueQualityStatistics.getInvalidValues());
-            if (invalidValues.size() < valueQualityStatistics.getInvalidValues().size()) {
-                // some values have been filtered then type used to compute invalids is a subtype of the suggested one
-                validCount = valueQualityStatistics.getValidCount() + valueQualityStatistics.getUnknownCount()
-                        + dataTypeOccurrenceCount;
+            final Set<String> rawInvalids = valueQualityStatistics.getInvalidValues();
+            final Type columnType = Type.get(column.getType());
+
+            // if the value
+            String invalidDetectionTypeString = column.getQuality().getMostFrequentSubType();
+            Type invalidDetectionType = invalidDetectionTypeString != null ?Type.get(invalidDetectionTypeString):null;
+
+            if ( invalidDetectionType != null && !columnType.equals(invalidDetectionType) ) {
+                if (invalidDetectionType.equals(TypeUtils.subTypeOfOther(invalidDetectionType, columnType))) {
+                    // some values have been filtered then type used to compute invalids is not the good one
+
+                    final Long suggestedEnumTypeFrequency = dataType.getTypeFrequencies().get(dataType.getSuggestedType());
+                    final long dataTypeOccurrenceCount = suggestedEnumTypeFrequency != null ? suggestedEnumTypeFrequency : 0;
+
+                    validCount = valueQualityStatistics.getValidCount() + valueQualityStatistics.getUnknownCount() + dataTypeOccurrenceCount;
+                    invalidValues = filterInvalids(columnType, rawInvalids);
+                }
+                else{
+                    // fallback to string because invalidDetection type is not the subtype of the actual detectedType
+                    validCount = allCount - emptyCount;
+                    invalidValues = Collections.emptySet();
+                    column.setType(Type.STRING.getName());
+                }
             } else {
                 validCount = valueQualityStatistics.getValidCount() + valueQualityStatistics.getUnknownCount();
+                invalidValues = rawInvalids;
             }
             invalidCount = allCount - emptyCount - validCount;
 
@@ -236,7 +250,7 @@ public class StatisticsAdapter {
                     column.setDomainLabel(StringUtils.EMPTY);
                     column.setDomainFrequency(0);
                 }
-            } else if(!StringUtils.isEmpty(column.getDomain())) {
+            } else if (!StringUtils.isEmpty(column.getDomain())) {
                 // Column *had* a domain but seems like new analysis removed it.
                 column.setDomain(StringUtils.EMPTY);
                 column.setDomainLabel(StringUtils.EMPTY);
@@ -358,8 +372,9 @@ public class StatisticsAdapter {
     }
 
     /**
-     * Filters the values of type <tt>type</tt> from the set of invalids values.
-     * @param type the specified type
+     * Filters the values of type <tt>type</tt> from the set of invalids values. Never returns null.
+     *
+     * @param type     the specified type
      * @param invalids the specified set of invalid values
      * @return the set of invalid values that do not contains values of specified type
      */
@@ -374,22 +389,28 @@ public class StatisticsAdapter {
         invalids.stream().forEach(analyzer::analyze);
         List<ValueQualityStatistics> analyzerResult = analyzer.getResult();
         result = analyzerResult.get(0).getInvalidValues();
+        // defensive programming
+        if (result == null || result.isEmpty()) {
+            return Collections.emptySet();
+        }
         return result;
     }
 
     /**
      * Returns the most frequent sub type of the suggested type when it is the second most frequent type.
+     *
      * @param dataType the specified data type occurrences result
      * @return the most frequent sub type of the suggested type when it is the second most frequent type
      */
     private Type mostFrequentSubType(DataTypeOccurences dataType) {
-        final DataTypeEnum suggestedEnumType = suggestType(dataType);
+        final DataTypeEnum suggestedEnumType = dataType.getSuggestedType();
 
         final List<Map.Entry<DataTypeEnum, Long>> sortedFrequencies = dataType.getTypeFrequencies().entrySet().stream()
-                .sorted((t1, t2) -> Long.compare(t2.getValue(), t1.getValue())).filter(t -> !DataTypeEnum.EMPTY.equals(t)) // remove
-                                                                                                                           // empty
-                                                                                                                           // type
+        //@formatter:off
+                .filter(t -> !DataTypeEnum.EMPTY.equals(t.getKey())) // remove empty type
+                .sorted((t1, t2) -> Long.compare(t2.getValue(), t1.getValue()))
                 .collect(Collectors.toList());
+        //@formatter:on
         final DataTypeEnum secondEnumChoice;
         // retrieve the second choice
         if (sortedFrequencies.size() <= 1) {
@@ -403,45 +424,6 @@ public class StatisticsAdapter {
         final Type suggested = Type.get(suggestedEnumType.name());
         final Type secondChoice = secondEnumChoice != null ? Type.get(secondEnumChoice.name()) : null;
         return TypeUtils.subTypeOfOther(suggested, secondChoice);
-    }
-
-    /** A workaround solution to solve the problem of bug TDP-224 until DQ code changes its code
-     *  TODO: use the DQ code, whenever it solves bug TDP-224
-     * @param dataType the specified data type occurrences result
-     * @return the suggested type
-     */
-    private DataTypeEnum suggestType(DataTypeOccurences dataType){
-        return  suggestType(dataType, 0.5);
-    }
-
-    /** A workaround solution to solve the problem of bug TDP-224 until DQ code changes its code
-     *  TODO: use the DQ code, whenever it solves bug TDP-224
-     * @param dataType the specified data type occurrences result
-     * @param threshold the threshold used to suggest a data type instead of returning the default STRING type.
-     * @return  the suggested type
-     */
-    private DataTypeEnum suggestType(DataTypeOccurences dataType, double threshold){
-
-        Map<DataTypeEnum, Long> typeOccurrences = dataType.getTypeFrequencies();
-        final long nbDouble = typeOccurrences.get(DataTypeEnum.DOUBLE) == null?0L:(typeOccurrences.get(DataTypeEnum.DOUBLE));
-        final long nbInteger = typeOccurrences.get(DataTypeEnum.INTEGER) == null?0L:typeOccurrences.get(DataTypeEnum.INTEGER);
-        DataTypeEnum electedType = DataTypeEnum.STRING;
-        long max = typeOccurrences.get(DataTypeEnum.STRING) == null?0L:(typeOccurrences.get(DataTypeEnum.STRING));;
-        Iterator iterator = typeOccurrences.entrySet().iterator();
-
-        while(iterator.hasNext()) {
-            Map.Entry entry = (Map.Entry)iterator.next();
-            if(!DataTypeEnum.EMPTY.equals(entry.getKey()) && ((Long)entry.getValue()).longValue() > max) {
-                max = ((Long)entry.getValue()).longValue();
-                electedType = (DataTypeEnum)entry.getKey();
-            }
-        }
-
-        if(nbDouble + nbInteger > max && (double)nbDouble / (double)(nbInteger + nbDouble) >= threshold) {
-            return DataTypeEnum.DOUBLE;
-        } else {
-            return electedType;
-        }
     }
 
 }

@@ -86,6 +86,28 @@ public class SchemaAnalysisTest extends DataSetBaseTest {
     }
 
     /**
+     *
+     * See <a href="https://jira.talendforge.org/browse/TDP-224">https://jira.talendforge.org/browse/TDP-1150</a>.
+     * @throws Exception
+     */
+    @Test
+    public void TDP_1150_sampling() throws Exception {
+        final DataSetMetadata actual = initializeDataSetMetadata(
+                DataSetServiceTests.class.getResourceAsStream("../invalids_and_type_detection.csv"));
+        assertThat(actual.getLifecycle().schemaAnalyzed(), is(true));
+        String[] expectedNames = { "string_boolean", "double_integer", "string_integer", "string_double", "string_date",
+                "type_mix", "boolean", "integer", "double", "date", "string", "empty"};
+        Type[] expectedTypes = { Type.STRING, Type.DOUBLE, Type.STRING, Type.STRING, Type.STRING, Type.STRING, Type.BOOLEAN,
+                Type.INTEGER, Type.DOUBLE, Type.DATE,Type.STRING, Type.STRING};
+        int i = 0;
+        int j = 0;
+        for (ColumnMetadata column : actual.getRowMetadata().getColumns()) {
+            assertThat(column.getName(), is(expectedNames[i++]));
+            assertThat(column.getType(), is(expectedTypes[j++].getName()));
+        }
+    }
+
+    /**
      * See <a href="https://jira.talendforge.org/browse/TDP-279">https://jira.talendforge.org/browse/TDP-279</a>.
      *
      * @throws Exception
