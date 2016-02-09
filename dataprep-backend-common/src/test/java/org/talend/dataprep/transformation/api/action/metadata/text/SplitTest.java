@@ -397,8 +397,8 @@ public class SplitTest extends AbstractMetadataBaseTest {
         final List<ColumnMetadata> expected = new ArrayList<>();
         expected.add(createMetadata("0000", "recipe"));
         expected.add(createMetadata("0001", "steps"));
-        expected.add(createMetadata("0003", "steps_split"));
-        expected.add(createMetadata("0004", "steps_split"));
+        expected.add(createMetadata("0003", "steps_split_1"));
+        expected.add(createMetadata("0004", "steps_split_2"));
         expected.add(createMetadata("0002", "last update"));
 
         // when
@@ -423,10 +423,10 @@ public class SplitTest extends AbstractMetadataBaseTest {
         final List<ColumnMetadata> expected = new ArrayList<>();
         expected.add(createMetadata("0000", "recipe"));
         expected.add(createMetadata("0001", "steps"));
-        expected.add(createMetadata("0005", "steps_split"));
-        expected.add(createMetadata("0006", "steps_split"));
-        expected.add(createMetadata("0003", "steps_split"));
-        expected.add(createMetadata("0004", "steps_split"));
+        expected.add(createMetadata("0005", "steps_split_1"));
+        expected.add(createMetadata("0006", "steps_split_2"));
+        expected.add(createMetadata("0003", "steps_split_1"));
+        expected.add(createMetadata("0004", "steps_split_2"));
         expected.add(createMetadata("0002", "last update"));
 
         // when

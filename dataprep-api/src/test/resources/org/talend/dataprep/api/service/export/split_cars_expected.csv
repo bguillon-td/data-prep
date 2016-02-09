@@ -1,4 +1,4 @@
-"name","name_split","name_split","economy (mpg)","cylinders","displacement (cc)","power (hp)","weight (lb)","0-60 mph (s)","year"
+"name","name_split_1","name_split_2","economy (mpg)","cylinders","displacement (cc)","power (hp)","weight (lb)","0-60 mph (s)","year"
 "AMC Ambassador Brougham","AMC","Ambassador Brougham","13","8","360","175","3821","11","73"
 "AMC Ambassador DPL","AMC","Ambassador DPL","15","8","390","190","3850","8.5","70"
 "AMC Ambassador SST","AMC","Ambassador SST","17","8","304","150","3672","11.5","72"
