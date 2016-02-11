@@ -1,23 +1,25 @@
-//  ============================================================================
+// ============================================================================
 //
-//  Copyright (C) 2006-2016 Talend Inc. - www.talend.com
+// Copyright (C) 2006-2016 Talend Inc. - www.talend.com
 //
-//  This source code is available under agreement available at
-//  https://github.com/Talend/data-prep/blob/master/LICENSE
+// This source code is available under agreement available at
+// https://github.com/Talend/data-prep/blob/master/LICENSE
 //
-//  You should have received a copy of the agreement
-//  along with this program; if not, write to Talend SA
-//  9 rue Pages 92150 Suresnes, France
+// You should have received a copy of the agreement
+// along with this program; if not, write to Talend SA
+// 9 rue Pages 92150 Suresnes, France
 //
-//  ============================================================================
+// ============================================================================
 
 package org.talend.dataprep.dataset.service.analysis.synchronous;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
 import java.io.InputStream;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Random;
 import java.util.Set;
@@ -114,16 +116,79 @@ public class QualityAnalysisTest extends DataSetBaseTest {
         final DataSetMetadata actual = initializeDataSetMetadata(
                 DataSetServiceTests.class.getResourceAsStream("../invalids_and_type_detection.csv"));
         assertThat(actual.getLifecycle().schemaAnalyzed(), is(true));
-        String[] expectedNames = {  "string_boolean", "double_integer", "string_integer", "string_double", "string_date",
-                "type_mix", "boolean", "integer", "double", "date", "string", "empty"};
+        String[] expectedNames = { "string_boolean", "double_integer", "string_integer", "string_double", "string_date",
+                "type_mix", "boolean", "integer", "double", "date", "string", "empty" };
         Type[] expectedTypes = { Type.BOOLEAN, Type.INTEGER, Type.INTEGER, Type.DOUBLE, Type.DATE, Type.STRING, Type.BOOLEAN,
-                Type.INTEGER, Type.DOUBLE, Type.DATE,Type.STRING, Type.STRING };
+                Type.INTEGER, Type.DOUBLE, Type.DATE, Type.STRING, Type.STRING };
         int i = 0;
         int j = 0;
         for (ColumnMetadata column : actual.getRowMetadata().getColumns()) {
             assertThat(column.getName(), is(expectedNames[i++]));
             assertThat(column.getType(), is(expectedTypes[j++].getName()));
         }
+    }
+
+    /**
+     * This test ensures that data types have been rightly detected when performing a full analysis.
+     *
+     * See <a href="https://jira.talendforge.org/browse/TDP-224">https://jira.talendforge.org/browse/TDP-1150</a>.
+     *
+     * @throws Exception
+     */
+    @Test
+    public void TDP_1150_integer_must_be_detected_as_so_even_if_sampling_detects_text() throws Exception {
+        final DataSetMetadata actual = initializeDataSetMetadata(
+                DataSetServiceTests.class.getResourceAsStream("../valid_must_be_integer.csv"));
+        assertThat(actual.getLifecycle().schemaAnalyzed(), is(true));
+        String expectedName =  "user_id" ;
+        Type expectedType = Type.INTEGER ;
+
+        ColumnMetadata column = actual.getRowMetadata().getColumns().get(0);
+        assertThat(column.getName(), is(expectedName));
+        assertThat(column.getType(), is(expectedType.getName()));
+    }
+
+    /**
+     * This test ensures that string is detected as type even if we use the sub type (integer) of the most frequent type
+     * (String) to detect invalids.
+     *
+     * See <a href="https://jira.talendforge.org/browse/TDP-224">https://jira.talendforge.org/browse/TDP-1150</a>.
+     *
+     * @throws Exception
+     */
+    @Test
+    public void TDP_1150_string_must_be_detected_as_so_if_even_if_subtype_is_integer() throws Exception {
+        final DataSetMetadata actual = initializeDataSetMetadata(
+                DataSetServiceTests.class.getResourceAsStream("../valid_must_be_text1.csv"));
+        assertThat(actual.getLifecycle().schemaAnalyzed(), is(true));
+        String expectedName =  "user_id" ;
+        Type expectedType = Type.STRING ;
+
+        ColumnMetadata column = actual.getRowMetadata().getColumns().get(0);
+        assertThat(column.getName(), is(expectedName));
+        assertThat(column.getType(), is(expectedType.getName()));
+    }
+
+    /**
+     * This is not the perfect solution, but I cannot find better solution to do not display incoherent results. When
+     * date is detected during sampling and is not the most frequent type during full run and we have three different
+     * types we return String as type.
+     *
+     * See <a href="https://jira.talendforge.org/browse/TDP-224">https://jira.talendforge.org/browse/TDP-1150</a>.
+     *
+     * @throws Exception
+     */
+    @Test
+    public void TDP_1150_text_must_be_detected_if_even_if_integer_is_more_frequent() throws Exception {
+        final DataSetMetadata actual = initializeDataSetMetadata(
+                DataSetServiceTests.class.getResourceAsStream("../valid_must_be_text_2.csv"));
+        assertThat(actual.getLifecycle().schemaAnalyzed(), is(true));
+        String expectedName =  "user_id" ;
+        Type expectedType = Type.INTEGER ;
+
+        ColumnMetadata column = actual.getRowMetadata().getColumns().get(0);
+        assertThat(column.getName(), is(expectedName));
+        assertThat(column.getType(), is(expectedType.getName()));
     }
 
     /**
