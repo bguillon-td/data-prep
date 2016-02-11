@@ -52,14 +52,14 @@ public class VersionServiceAPI extends APIService {
     @Value("${preparation.service.url}")
     protected String preparationServiceUrl;
 
+    /**
+     * Returns all the versions of the different services (api, dataset, preparation and transformation).
+     *
+     * @return an array of service versions
+     */
     @RequestMapping(value = "/api/version", method = GET)
     @ApiOperation(value = "Get the version of all services (including underlying low level services)", produces = MediaType.APPLICATION_JSON_VALUE)
     @Timed
-    /**
-     * Returns all the versions of the different services (api, dataset, preparation and transformation).
-     * 
-     * @return an array of service versions
-     */
     public Version[] allVersions() {
         Version[] versions = new Version[4];
         ManifestInfo manifestInfo = ManifestInfo.getInstance();

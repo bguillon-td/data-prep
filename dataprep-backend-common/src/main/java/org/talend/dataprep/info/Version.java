@@ -15,7 +15,7 @@ package org.talend.dataprep.info;
 
 import org.apache.commons.lang.StringUtils;
 
-public class Version {
+public class Version implements Comparable<Version> {
 
     private String versionId;
 
@@ -92,5 +92,12 @@ public class Version {
         result = 31 * result + (buildId != null ? buildId.hashCode() : 0);
         result = 31 * result + (serviceName != null ? serviceName.hashCode() : 0);
         return result;
+    }
+
+    @Override
+    public int compareTo(Version o) {
+        com.github.zafarkhaja.semver.Version thisVersion = com.github.zafarkhaja.semver.Version.valueOf(getVersionId());
+        com.github.zafarkhaja.semver.Version otherVersion = com.github.zafarkhaja.semver.Version.valueOf(o.getVersionId());
+        return thisVersion.compareTo(otherVersion);
     }
 }
