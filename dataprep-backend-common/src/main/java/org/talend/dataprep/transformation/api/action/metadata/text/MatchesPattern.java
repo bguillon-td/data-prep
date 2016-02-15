@@ -19,8 +19,10 @@ import static org.talend.dataprep.api.type.Type.BOOLEAN;
 import static org.talend.dataprep.api.type.Type.STRING;
 import static org.talend.dataprep.transformation.api.action.parameters.ParameterType.REGEX;
 
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.annotation.Nonnull;
 
@@ -183,6 +185,11 @@ public class MatchesPattern extends ActionMetadata implements ColumnAction {
         final ReplaceOnValueHelper replaceOnValueParameter = actionContext.get(REGEX_HELPER_KEY);
 
         return replaceOnValueParameter.matches(value);
+    }
+
+    @Override
+    public Set<Behavior> getBehavior() {
+        return EnumSet.of(Behavior.METADATA_CREATE_COLUMNS);
     }
 
 }

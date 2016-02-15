@@ -20,8 +20,10 @@ import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.Temporal;
 import java.time.temporal.TemporalUnit;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -132,6 +134,11 @@ public class ComputeTimeSince extends AbstractDate implements ColumnAction {
             LOGGER.debug("Unable to parse date {} for {} @ {}", value, columnId, row.getTdpId(), e);
             row.set(computeTimeSinceColumn, StringUtils.EMPTY);
         }
+    }
+
+    @Override
+    public Set<Behavior> getBehavior() {
+        return EnumSet.of(Behavior.METADATA_CREATE_COLUMNS);
     }
 
 }

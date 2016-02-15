@@ -18,6 +18,8 @@ import static org.talend.dataprep.api.type.Type.STRING;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.EnumSet;
+import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
 import org.springframework.stereotype.Component;
@@ -107,4 +109,8 @@ public class ExtractUrlTokens extends ActionMetadata implements ColumnAction {
         }
     }
 
+    @Override
+    public Set<Behavior> getBehavior() {
+        return EnumSet.of(Behavior.METADATA_CREATE_COLUMNS);
+    }
 }

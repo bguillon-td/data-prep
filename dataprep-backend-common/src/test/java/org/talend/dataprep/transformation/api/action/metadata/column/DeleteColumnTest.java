@@ -30,9 +30,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.talend.dataprep.api.dataset.ColumnMetadata;
 import org.talend.dataprep.api.dataset.DataSetRow;
 import org.talend.dataprep.api.dataset.RowMetadata;
+import org.talend.dataprep.api.preparation.Action;
 import org.talend.dataprep.api.type.Type;
 import org.talend.dataprep.transformation.api.action.ActionTestWorkbench;
-import org.talend.dataprep.transformation.api.action.DataSetRowAction;
 import org.talend.dataprep.transformation.api.action.metadata.common.ImplicitParameters;
 import org.talend.dataprep.transformation.api.action.metadata.date.BaseDateTests;
 
@@ -81,7 +81,7 @@ public class DeleteColumnTest extends BaseDateTests {
         parameters.put(ImplicitParameters.COLUMN_ID.getKey().toLowerCase(), "0002");
 
         // when
-        ActionTestWorkbench.test(row, deleteColumn.create(parameters).getRowAction());
+        ActionTestWorkbench.test(row, deleteColumn.create(parameters));
 
         // then
         final int rowSize = row.getRowMetadata().getColumns().size();
@@ -105,7 +105,7 @@ public class DeleteColumnTest extends BaseDateTests {
 
         // when
         parameters.put(ImplicitParameters.COLUMN_ID.getKey().toLowerCase(), "0002");
-        final DataSetRowAction rowAction = deleteColumn.create(parameters).getRowAction();
+        final Action rowAction = deleteColumn.create(parameters);
         ActionTestWorkbench.test(Arrays.asList(row, row2), rowAction);
 
         // then
@@ -134,9 +134,9 @@ public class DeleteColumnTest extends BaseDateTests {
 
         // when
         parameters.put(ImplicitParameters.COLUMN_ID.getKey().toLowerCase(), "0002");
-        final DataSetRowAction action1 = deleteColumn.create(parameters).getRowAction();
+        final Action action1 = deleteColumn.create(parameters);
         parameters.put(ImplicitParameters.COLUMN_ID.getKey().toLowerCase(), "0001");
-        final DataSetRowAction action2 = deleteColumn.create(parameters).getRowAction();
+        final Action action2 = deleteColumn.create(parameters);
         ActionTestWorkbench.test(row, action1, action2);
         ActionTestWorkbench.test(row2, action1, action2);
 

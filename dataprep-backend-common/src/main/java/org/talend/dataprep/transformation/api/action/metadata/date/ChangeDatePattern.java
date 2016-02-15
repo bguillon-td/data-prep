@@ -15,7 +15,9 @@ package org.talend.dataprep.transformation.api.action.metadata.date;
 
 import java.time.DateTimeException;
 import java.time.LocalDateTime;
+import java.util.EnumSet;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
 import org.springframework.stereotype.Component;
@@ -64,7 +66,7 @@ public class ChangeDatePattern extends AbstractDate implements ColumnAction, Dat
 
             //register the new pattern in column stats as most used pattern, to be able to process date action more efficiently later
             final DatePattern newPattern = actionContext.get(COMPILED_DATE_PATTERN);
-            final RowMetadata rowMetadata = actionContext.getInputRowMetadata();
+            final RowMetadata rowMetadata = actionContext.getRowMetadata();
             final ColumnMetadata column = rowMetadata.getById(actionContext.getColumnId());
             final Statistics statistics = column.getStatistics();
 
@@ -117,6 +119,11 @@ public class ChangeDatePattern extends AbstractDate implements ColumnAction, Dat
         }
         patternFrequencies.sort((p1, p2) -> Long.compare(p2.getOccurrences(), p1.getOccurrences()));
         return patternFrequencies.get(0).getOccurrences();
+    }
+
+    @Override
+    public Set<Behavior> getBehavior() {
+        return EnumSet.of(Behavior.VALUES_COLUMN);
     }
 
 }

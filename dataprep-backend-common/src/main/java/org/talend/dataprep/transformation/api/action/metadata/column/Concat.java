@@ -13,8 +13,10 @@
 
 package org.talend.dataprep.transformation.api.action.metadata.column;
 
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
 import org.springframework.stereotype.Component;
@@ -118,7 +120,7 @@ public class Concat extends ActionMetadata implements ColumnAction, OtherColumnP
     public void compile(ActionContext actionContext) {
         super.compile(actionContext);
         if (actionContext.getActionStatus() == ActionContext.ActionStatus.OK) {
-            checkSelectedColumnParameter(actionContext.getParameters(), actionContext.getInputRowMetadata());
+            checkSelectedColumnParameter(actionContext.getParameters(), actionContext.getRowMetadata());
             actionContext.setActionStatus(ActionContext.ActionStatus.OK);
         }
     }
@@ -206,6 +208,11 @@ public class Concat extends ActionMetadata implements ColumnAction, OtherColumnP
             value = defaultValue;
         }
         return value;
+    }
+
+    @Override
+    public Set<Behavior> getBehavior() {
+        return EnumSet.of(Behavior.METADATA_CREATE_COLUMNS);
     }
 
 }

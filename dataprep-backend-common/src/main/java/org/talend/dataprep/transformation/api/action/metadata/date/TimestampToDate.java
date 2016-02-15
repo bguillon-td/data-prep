@@ -16,8 +16,10 @@ package org.talend.dataprep.transformation.api.action.metadata.date;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
 import org.springframework.stereotype.Component;
@@ -129,6 +131,11 @@ public class TimestampToDate extends ActionMetadata implements ColumnAction, Dat
             // empty value if the date cannot be parsed
             return StringUtils.EMPTY;
         }
+    }
+
+    @Override
+    public Set<Behavior> getBehavior() {
+        return EnumSet.of(Behavior.METADATA_CREATE_COLUMNS);
     }
 
 }

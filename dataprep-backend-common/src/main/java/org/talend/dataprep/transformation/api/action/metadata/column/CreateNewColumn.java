@@ -15,9 +15,7 @@ package org.talend.dataprep.transformation.api.action.metadata.column;
 
 import static org.talend.dataprep.transformation.api.action.metadata.category.ActionScope.COLUMN_METADATA;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import org.apache.commons.lang.StringUtils;
 import org.springframework.stereotype.Component;
@@ -131,7 +129,7 @@ public class CreateNewColumn extends ActionMetadata implements ColumnAction {
     public void compile(ActionContext actionContext) {
         super.compile(actionContext);
         if (actionContext.getActionStatus() == ActionContext.ActionStatus.OK) {
-            checkParameters(actionContext.getParameters(), actionContext.getInputRowMetadata());
+            checkParameters(actionContext.getParameters(), actionContext.getRowMetadata());
         }
     }
 
@@ -204,6 +202,11 @@ public class CreateNewColumn extends ActionMetadata implements ColumnAction {
             throw new TDPException(CommonErrorCodes.BAD_ACTION_PARAMETER, ExceptionContext.build().put("paramName",
                     SELECTED_COLUMN_PARAMETER));
         }
+    }
+
+    @Override
+    public Set<Behavior> getBehavior() {
+        return EnumSet.of(Behavior.METADATA_CREATE_COLUMNS);
     }
 
 }

@@ -200,4 +200,9 @@ public class Split extends ActionMetadata implements ColumnAction {
             return parameters.get(SEPARATOR_PARAMETER);
         }
     }
+
+    @Override
+    public Set<Behavior> getBehavior() {
+        return EnumSet.of(Behavior.METADATA_CREATE_COLUMNS);
+    }
 }

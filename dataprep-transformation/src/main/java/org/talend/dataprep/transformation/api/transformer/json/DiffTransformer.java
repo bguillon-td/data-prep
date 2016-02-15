@@ -26,11 +26,11 @@ import org.springframework.stereotype.Component;
 import org.talend.dataprep.api.dataset.DataSet;
 import org.talend.dataprep.api.dataset.DataSetRow;
 import org.talend.dataprep.api.dataset.RowMetadata;
+import org.talend.dataprep.api.preparation.Action;
 import org.talend.dataprep.exception.TDPException;
 import org.talend.dataprep.exception.error.TransformationErrorCodes;
 import org.talend.dataprep.transformation.BaseTransformer;
 import org.talend.dataprep.transformation.api.action.ActionParser;
-import org.talend.dataprep.transformation.api.action.ParsedActions;
 import org.talend.dataprep.transformation.api.action.context.TransformationContext;
 import org.talend.dataprep.transformation.api.transformer.Transformer;
 import org.talend.dataprep.transformation.api.transformer.TransformerWriter;
@@ -68,11 +68,11 @@ class DiffTransformer implements Transformer {
                 configuration.getArguments());
 
         // parse and extract diff configuration
-        final ParsedActions referenceActions = actionParser.parse(previewConfiguration.getReferenceActions());
+        final List<Action> referenceActions = actionParser.parse(previewConfiguration.getReferenceActions());
         InternalTransformationContext reference = new InternalTransformationContext(referenceActions,
                 previewConfiguration.getReferenceContext());
 
-        final ParsedActions previewActions = actionParser.parse(previewConfiguration.getPreviewActions());
+        final List<Action> previewActions = actionParser.parse(previewConfiguration.getPreviewActions());
         InternalTransformationContext preview = new InternalTransformationContext(previewActions,
                 previewConfiguration.getPreviewContext());
 
@@ -163,11 +163,11 @@ class DiffTransformer implements Transformer {
 
     private class InternalTransformationContext {
 
-        private final ParsedActions parsedActions;
-
         private final TransformationContext context;
 
-        public InternalTransformationContext(ParsedActions parsedActions, TransformationContext context) {
+        private final List<Action> parsedActions;
+
+        public InternalTransformationContext(List<Action> parsedActions, TransformationContext context) {
             this.parsedActions = parsedActions;
             this.context = context;
         }
@@ -177,7 +177,7 @@ class DiffTransformer implements Transformer {
         }
 
         public DataSetRow apply(DataSetRow dataSetRow) {
-            return BaseTransformer.baseTransform(Stream.of(dataSetRow), parsedActions.getRowTransformers(), context).findFirst().get();
+            return BaseTransformer.baseTransform(Stream.of(dataSetRow), parsedActions, context).findFirst().get();
         }
 
     }

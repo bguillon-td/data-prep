@@ -17,8 +17,10 @@ import static java.math.RoundingMode.HALF_UP;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
 import org.springframework.context.annotation.Scope;
@@ -134,7 +136,7 @@ public class NumericOperations extends ActionMetadata implements ColumnAction, O
     public void compile(ActionContext actionContext) {
         super.compile(actionContext);
         if (actionContext.getActionStatus() == ActionContext.ActionStatus.OK) {
-            checkParameters(actionContext.getParameters(), actionContext.getInputRowMetadata());
+            checkParameters(actionContext.getParameters(), actionContext.getRowMetadata());
         }
     }
 
@@ -233,6 +235,11 @@ public class NumericOperations extends ActionMetadata implements ColumnAction, O
             throw new TDPException(CommonErrorCodes.BAD_ACTION_PARAMETER, ExceptionContext.build().put("paramName",
                     SELECTED_COLUMN_PARAMETER));
         }
+    }
+
+    @Override
+    public Set<Behavior> getBehavior() {
+        return EnumSet.of(Behavior.METADATA_CREATE_COLUMNS);
     }
 
 }

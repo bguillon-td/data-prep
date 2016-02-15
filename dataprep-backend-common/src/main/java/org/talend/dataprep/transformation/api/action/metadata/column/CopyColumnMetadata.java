@@ -17,7 +17,9 @@ import static org.talend.dataprep.api.dataset.ColumnMetadata.Builder.column;
 import static org.talend.dataprep.transformation.api.action.metadata.category.ActionScope.COLUMN_METADATA;
 
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
 import org.springframework.stereotype.Component;
@@ -99,6 +101,11 @@ public class CopyColumnMetadata extends ActionMetadata implements ColumnAction {
                 }
         );
         row.set(copyColumn, row.get(columnId));
+    }
+
+    @Override
+    public Set<Behavior> getBehavior() {
+        return EnumSet.of(Behavior.METADATA_COPY_COLUMNS);
     }
 
 }

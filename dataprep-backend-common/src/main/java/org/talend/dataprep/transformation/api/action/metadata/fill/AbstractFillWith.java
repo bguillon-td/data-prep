@@ -17,8 +17,10 @@ import java.time.DateTimeException;
 import java.time.LocalDateTime;
 import java.time.Month;
 import java.time.format.DateTimeFormatter;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -62,7 +64,7 @@ public abstract class AbstractFillWith extends ActionMetadata implements OtherCo
     public void compile(ActionContext actionContext) {
         super.compile(actionContext);
         if (actionContext.getActionStatus() == ActionContext.ActionStatus.OK) {
-            final RowMetadata input = actionContext.getInputRowMetadata();
+            final RowMetadata input = actionContext.getRowMetadata();
             checkParameters(actionContext.getParameters(), input);
         }
     }
@@ -178,6 +180,11 @@ public abstract class AbstractFillWith extends ActionMetadata implements OtherCo
             throw new TDPException(CommonErrorCodes.BAD_ACTION_PARAMETER, ExceptionContext.build().put("paramName",
                     SELECTED_COLUMN_PARAMETER));
         }
+    }
+
+    @Override
+    public Set<Behavior> getBehavior() {
+        return EnumSet.of(Behavior.VALUES_COLUMN);
     }
 
 }

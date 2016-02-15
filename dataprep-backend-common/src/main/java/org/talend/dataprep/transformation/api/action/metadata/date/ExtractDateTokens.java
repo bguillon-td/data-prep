@@ -16,9 +16,7 @@ package org.talend.dataprep.transformation.api.action.metadata.date;
 import java.time.DateTimeException;
 import java.time.temporal.ChronoField;
 import java.time.temporal.TemporalAccessor;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import javax.annotation.Nonnull;
 
@@ -189,6 +187,11 @@ public class ExtractDateTokens extends AbstractDate implements ColumnAction {
                 row.set(dateFieldColumns.get(date_field.key), newValue);
             }
         }
+    }
+
+    @Override
+    public Set<Behavior> getBehavior() {
+        return EnumSet.of(Behavior.METADATA_CREATE_COLUMNS);
     }
 
     private static class DateFieldMappingBean {

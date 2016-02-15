@@ -17,7 +17,9 @@ import static org.apache.commons.lang.StringUtils.EMPTY;
 import static org.talend.dataprep.transformation.api.action.metadata.category.ActionScope.COLUMN_METADATA;
 
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.annotation.Nonnull;
 
@@ -136,5 +138,10 @@ public class Rename extends ActionMetadata implements ColumnAction {
         final ColumnMetadata column = rowMetadata.getById(context.getColumnId());
         column.setName(newColumnName);
         context.setActionStatus(ActionContext.ActionStatus.DONE);
+    }
+
+    @Override
+    public Set<Behavior> getBehavior() {
+        return EnumSet.of(Behavior.METADATA_CHANGE_NAME);
     }
 }

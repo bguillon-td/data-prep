@@ -22,8 +22,6 @@ import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Component;
 import org.talend.dataprep.api.dataset.*;
 import org.talend.dataprep.api.dataset.statistics.StatisticsAdapter;
 import org.talend.dataprep.api.preparation.Action;
@@ -34,8 +32,6 @@ import org.talend.dataprep.quality.AnalyzerService;
 import org.talend.dataprep.stream.ExtendedStream;
 import org.talend.dataprep.transformation.BaseTransformer;
 import org.talend.dataprep.transformation.api.action.ActionParser;
-import org.talend.dataprep.transformation.api.action.DataSetRowAction;
-import org.talend.dataprep.transformation.api.action.ParsedActions;
 import org.talend.dataprep.transformation.api.action.context.TransformationContext;
 import org.talend.dataprep.transformation.api.action.metadata.common.ImplicitParameters;
 import org.talend.dataprep.transformation.api.transformer.Transformer;
@@ -45,8 +41,8 @@ import org.talend.dataprep.transformation.format.WriterRegistrationService;
 import org.talend.datascience.common.inference.Analyzer;
 import org.talend.datascience.common.inference.Analyzers;
 
-@Component
-@Scope("prototype")
+// @Component
+// @Scope("prototype")
 public class StackedTransformer implements Transformer {
 
     private static final int ANALYSIS_BUFFER_SIZE = 20;
@@ -151,7 +147,7 @@ public class StackedTransformer implements Transformer {
     @Override
     public void transform(DataSet input, Configuration configuration) {
         try {
-            final ParsedActions parsedActions = actionParser.parse(configuration.getActions());
+            final List<Action> parsedActions = actionParser.parse(configuration.getActions());
             // Keeps modified columns and new columns for statistics
             final DataSetMetadata metadata = input.getMetadata();
             if (metadata != null) {
@@ -159,12 +155,9 @@ public class StackedTransformer implements Transformer {
                 final List<ColumnMetadata> inputColumns = inputRowMetadata.getColumns();
                 final Set<String> originalColumns = inputColumns.stream().map(ColumnMetadata::getId).collect(Collectors.toSet());
                 final Set<String> modifiedColumns = new HashSet<>();
-                final List<Action> actions = parsedActions.getAllActions();
-                if (actions != null) {
-                    for (Action action : actions) {
-                        final String modifiedColumnId = action.getParameters().get(ImplicitParameters.COLUMN_ID.getKey());
-                        modifiedColumns.add(modifiedColumnId);
-                    }
+                for (Action action : parsedActions) {
+                    final String modifiedColumnId = action.getParameters().get(ImplicitParameters.COLUMN_ID.getKey());
+                    modifiedColumns.add(modifiedColumnId);
                 }
                 // Is modified by action OR not contained in original data set metadata (i.e. new column).
                 // TODO This filter does *not* take into account actions that deletes the whole line!
@@ -174,11 +167,10 @@ public class StackedTransformer implements Transformer {
                 modifiedColumnsFilter = c -> true;
             }
 
-            final List<DataSetRowAction> allActions = parsedActions.getRowTransformers();
             final TransformerWriter writer = writersService.getWriter(configuration.formatId(), configuration.output(), configuration.getArguments());
 
             TransformationContext context = new TransformationContext();
-            ExtendedStream<DataSetRow> records = BaseTransformer.baseTransform(input.getRecords(), allActions, context);
+            ExtendedStream<DataSetRow> records = BaseTransformer.baseTransform(input.getRecords(), parsedActions, context); // NOSONAR
             // Write records
             Deque<DataSetRow> processingRows = new ArrayDeque<>();
             writer.startObject();
@@ -218,7 +210,7 @@ public class StackedTransformer implements Transformer {
      */
     private void writeRecords(TransformerWriter writer, Deque<DataSetRow> processingRows, DataSetRow r) {
         try {
-            if (processingRows.size() > 0) {
+            if (!processingRows.isEmpty()) {
                 processingRows.pop();
             }
             if (r.shouldWrite()) {

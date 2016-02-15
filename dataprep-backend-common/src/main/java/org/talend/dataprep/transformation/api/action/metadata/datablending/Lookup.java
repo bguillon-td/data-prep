@@ -20,10 +20,7 @@ import static org.talend.dataprep.transformation.api.action.parameters.Parameter
 import static org.talend.dataprep.transformation.api.action.parameters.ParameterType.STRING;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -227,6 +224,11 @@ public class Lookup extends ActionMetadata implements DataSetAction {
             LOGGER.debug("Unable to parse parameter.", e);
             return Collections.emptyList();
         }
+    }
+
+    @Override
+    public Set<Behavior> getBehavior() {
+        return EnumSet.of(Behavior.METADATA_CREATE_COLUMNS);
     }
 
 }

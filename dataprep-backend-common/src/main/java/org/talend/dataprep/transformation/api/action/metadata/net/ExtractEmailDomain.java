@@ -16,6 +16,9 @@ package org.talend.dataprep.transformation.api.action.metadata.net;
 import static org.talend.dataprep.api.dataset.ColumnMetadata.Builder.column;
 import static org.talend.dataprep.api.type.Type.STRING;
 
+import java.util.EnumSet;
+import java.util.Set;
+
 import org.apache.commons.lang.StringUtils;
 import org.springframework.stereotype.Component;
 import org.talend.dataprep.api.dataset.ColumnMetadata;
@@ -113,6 +116,11 @@ public class ExtractEmailDomain extends ActionMetadata implements ColumnAction {
         row.set(local, localPart);
         final String domainPart = split.length >= 2 ? split[1] : StringUtils.EMPTY;
         row.set(domain, domainPart);
+    }
+
+    @Override
+    public Set<Behavior> getBehavior() {
+        return EnumSet.of(Behavior.METADATA_CREATE_COLUMNS);
     }
 
 }

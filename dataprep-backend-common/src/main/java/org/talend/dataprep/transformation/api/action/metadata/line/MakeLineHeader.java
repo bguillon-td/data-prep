@@ -15,6 +15,9 @@ package org.talend.dataprep.transformation.api.action.metadata.line;
 
 import static org.talend.dataprep.transformation.api.action.metadata.category.ActionCategory.DATA_CLEANSING;
 
+import java.util.EnumSet;
+import java.util.Set;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -66,7 +69,7 @@ public class MakeLineHeader extends ActionMetadata implements RowAction {
                 String newColumnName = context.get(column.getId(), p -> row.get(column.getId()));
                 column.setName(newColumnName);
             }
-            context.setOutputRowMetadata(row.getRowMetadata().clone());
+            context.setRowMetadata(row.getRowMetadata().clone());
             row.setDeleted(true);
         } else {
             boolean hasChanged = false;
@@ -77,9 +80,14 @@ public class MakeLineHeader extends ActionMetadata implements RowAction {
                 } // else don't change (new column names are not yet known.
             }
             if (hasChanged) {
-                context.setOutputRowMetadata(row.getRowMetadata().clone());
+                context.setRowMetadata(row.getRowMetadata().clone());
             }
         }
+    }
+
+    @Override
+    public Set<Behavior> getBehavior() {
+        return EnumSet.of(Behavior.METADATA_CHANGE_NAME, Behavior.VALUES_ALL);
     }
 
 }

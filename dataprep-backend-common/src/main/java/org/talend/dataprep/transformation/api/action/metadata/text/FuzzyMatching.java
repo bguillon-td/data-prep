@@ -18,8 +18,10 @@ import static org.apache.commons.lang.StringUtils.EMPTY;
 import static org.talend.dataprep.api.type.Type.BOOLEAN;
 import static org.talend.dataprep.transformation.api.action.parameters.ParameterType.INTEGER;
 
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.NumberUtils;
@@ -133,6 +135,11 @@ public class FuzzyMatching extends ActionMetadata implements ColumnAction {
     private boolean fuzzyMatches(String value, String reference, int sensitivity) {
         int levenshteinDistance = StringUtils.getLevenshteinDistance(value, reference);
         return levenshteinDistance <= sensitivity;
+    }
+
+    @Override
+    public Set<Behavior> getBehavior() {
+        return EnumSet.of(Behavior.METADATA_CREATE_COLUMNS);
     }
     
 }

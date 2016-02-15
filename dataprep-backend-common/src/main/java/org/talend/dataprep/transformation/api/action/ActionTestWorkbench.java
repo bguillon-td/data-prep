@@ -22,6 +22,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.talend.dataprep.api.dataset.DataSetRow;
 import org.talend.dataprep.api.dataset.RowMetadata;
+import org.talend.dataprep.api.preparation.Action;
 import org.talend.dataprep.transformation.BaseTransformer;
 import org.talend.dataprep.transformation.api.action.context.TransformationContext;
 
@@ -29,18 +30,21 @@ public class ActionTestWorkbench {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ActionTestWorkbench.class);
 
-    public static void test(RowMetadata rowMetadata, DataSetRowAction... actions) {
+    private ActionTestWorkbench() {
+    }
+
+    public static void test(RowMetadata rowMetadata, Action... actions) {
         test(new DataSetRow(rowMetadata), actions);
     }
 
-    public static void test(DataSetRow input, DataSetRowAction... actions) {
+    public static void test(DataSetRow input, Action... actions) {
         test(Collections.singletonList(input), actions);
     }
 
-    public static void test(Collection<DataSetRow> input, DataSetRowAction... actions) {
+    public static void test(Collection<DataSetRow> input, Action... actions) {
         TransformationContext context = new TransformationContext();
-        final List<DataSetRowAction> allActions = new ArrayList<>();
+        final List<Action> allActions = new ArrayList<>();
         Collections.addAll(allActions, actions);
-        BaseTransformer.baseTransform(input.stream(), allActions, context).forEach(r -> LOGGER.debug(r.toString()));
+        BaseTransformer.baseTransform(input.stream(), allActions, context).forEach(r -> LOGGER.debug(r.toString())); // NOSONAR
     }
 }
