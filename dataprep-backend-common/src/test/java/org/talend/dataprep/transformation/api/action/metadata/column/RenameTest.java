@@ -1,15 +1,15 @@
-//  ============================================================================
+// ============================================================================
 //
-//  Copyright (C) 2006-2016 Talend Inc. - www.talend.com
+// Copyright (C) 2006-2016 Talend Inc. - www.talend.com
 //
-//  This source code is available under agreement available at
-//  https://github.com/Talend/data-prep/blob/master/LICENSE
+// This source code is available under agreement available at
+// https://github.com/Talend/data-prep/blob/master/LICENSE
 //
-//  You should have received a copy of the agreement
-//  along with this program; if not, write to Talend SA
-//  9 rue Pages 92150 Suresnes, France
+// You should have received a copy of the agreement
+// along with this program; if not, write to Talend SA
+// 9 rue Pages 92150 Suresnes, France
 //
-//  ============================================================================
+// ============================================================================
 package org.talend.dataprep.transformation.api.action.metadata.column;
 
 import static org.hamcrest.CoreMatchers.is;
@@ -25,12 +25,14 @@ import java.util.Map;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.talend.dataprep.api.dataset.ColumnMetadata;
 import org.talend.dataprep.api.dataset.RowMetadata;
 import org.talend.dataprep.api.type.Type;
 import org.talend.dataprep.transformation.api.action.ActionTestWorkbench;
 import org.talend.dataprep.transformation.api.action.metadata.ActionMetadataTestUtils;
 import org.talend.dataprep.transformation.api.action.metadata.category.ActionCategory;
+import org.talend.dataprep.transformation.api.action.metadata.date.BaseDateTests;
 import org.talend.dataprep.transformation.api.action.parameters.Parameter;
 
 /**
@@ -38,16 +40,16 @@ import org.talend.dataprep.transformation.api.action.parameters.Parameter;
  *
  * @see Rename
  */
-public class RenameTest {
+public class RenameTest extends BaseDateTests {
 
     /** The action to test. */
+    @Autowired
     private Rename action;
 
     private Map<String, String> parameters;
 
     @Before
     public void init() throws IOException {
-        action = new Rename();
         parameters = ActionMetadataTestUtils.parseParameters(CopyColumnTest.class.getResourceAsStream("renameAction.json"));
     }
 
@@ -76,9 +78,9 @@ public class RenameTest {
      */
     @Test
     public void should_update_metadata() {
-        //given
+        // given
         final ColumnMetadata metadata = //
-                column() //
+        column() //
                 .id(1) //
                 .name("first name") //
                 .type(Type.STRING) //
@@ -103,10 +105,10 @@ public class RenameTest {
         final List<ColumnMetadata> expected = new ArrayList<>();
         expected.add(renamedMetadata);
 
-        //when
+        // when
         ActionTestWorkbench.test(rowMetadata, action.create(parameters).getRowAction());
 
-        //then
+        // then
         assertEquals(expected, rowMetadata.getColumns());
     }
 

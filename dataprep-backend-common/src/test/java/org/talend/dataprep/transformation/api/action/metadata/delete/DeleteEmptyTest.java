@@ -1,15 +1,15 @@
-//  ============================================================================
+// ============================================================================
 //
-//  Copyright (C) 2006-2016 Talend Inc. - www.talend.com
+// Copyright (C) 2006-2016 Talend Inc. - www.talend.com
 //
-//  This source code is available under agreement available at
-//  https://github.com/Talend/data-prep/blob/master/LICENSE
+// This source code is available under agreement available at
+// https://github.com/Talend/data-prep/blob/master/LICENSE
 //
-//  You should have received a copy of the agreement
-//  along with this program; if not, write to Talend SA
-//  9 rue Pages 92150 Suresnes, France
+// You should have received a copy of the agreement
+// along with this program; if not, write to Talend SA
+// 9 rue Pages 92150 Suresnes, France
 //
-//  ============================================================================
+// ============================================================================
 
 package org.talend.dataprep.transformation.api.action.metadata.delete;
 
@@ -25,28 +25,30 @@ import java.util.Map;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.talend.dataprep.api.dataset.ColumnMetadata;
 import org.talend.dataprep.api.dataset.DataSetRow;
 import org.talend.dataprep.api.type.Type;
 import org.talend.dataprep.transformation.api.action.ActionTestWorkbench;
 import org.talend.dataprep.transformation.api.action.metadata.ActionMetadataTestUtils;
 import org.talend.dataprep.transformation.api.action.metadata.category.ActionCategory;
+import org.talend.dataprep.transformation.api.action.metadata.date.BaseDateTests;
 
 /**
  * Test class for DeleteEmpty action. Creates one consumer, and test it.
  *
  * @see DeleteEmpty
  */
-public class DeleteEmptyTest {
+public class DeleteEmptyTest extends BaseDateTests {
 
     /** The action to test. */
+    @Autowired
     private DeleteEmpty action;
 
     private Map<String, String> parameters;
 
     @Before
     public void init() throws IOException {
-        action = new DeleteEmpty();
         parameters = ActionMetadataTestUtils.parseParameters(DeleteEmptyTest.class.getResourceAsStream("deleteEmptyAction.json"));
     }
 
@@ -69,76 +71,76 @@ public class DeleteEmptyTest {
 
     @Test
     public void should_delete_because_value_not_set() {
-        //given
+        // given
         final Map<String, String> values = new HashMap<>();
         values.put("name", "David Bowie");
         final DataSetRow row = new DataSetRow(values);
 
-        //when
+        // when
         ActionTestWorkbench.test(row, action.create(parameters).getRowAction());
 
-        //then
+        // then
         assertTrue(row.isDeleted());
         assertEquals("David Bowie", row.get("name"));
     }
 
     @Test
     public void should_delete_because_null() {
-        //given
+        // given
         final Map<String, String> values = new HashMap<>();
         values.put("name", "David Bowie");
         values.put("city", null);
         final DataSetRow row = new DataSetRow(values);
 
-        //when
+        // when
         ActionTestWorkbench.test(row, action.create(parameters).getRowAction());
 
-        //then
+        // then
         assertTrue(row.isDeleted());
     }
 
     @Test
     public void should_delete_because_empty() {
-        //given
+        // given
         final Map<String, String> values = new HashMap<>();
         values.put("name", "David Bowie");
         values.put("city", "");
         final DataSetRow row = new DataSetRow(values);
 
-        //when
+        // when
         ActionTestWorkbench.test(row, action.create(parameters).getRowAction());
 
-        //then
+        // then
         assertTrue(row.isDeleted());
     }
 
     @Test
     public void should_delete_because_value_is_made_of_spaces() {
-        //given
+        // given
         final Map<String, String> values = new HashMap<>();
         values.put("name", "David Bowie");
         values.put("city", " ");
         final DataSetRow row = new DataSetRow(values);
 
-        //when
+        // when
         ActionTestWorkbench.test(row, action.create(parameters).getRowAction());
 
-        //then
+        // then
         assertTrue(row.isDeleted());
     }
 
     @Test
     public void should_not_delete_because_value_set() {
-        //given
+        // given
         final Map<String, String> values = new HashMap<>();
         values.put("name", "David Bowie");
         values.put("city", "-");
         final DataSetRow row = new DataSetRow(values);
 
-        //when
+        // when
         ActionTestWorkbench.test(row, action.create(parameters).getRowAction());
 
-        //then
+        // then
         assertFalse(row.isDeleted());
         assertEquals("David Bowie", row.get("name"));
         assertEquals("-", row.get("city"));
@@ -146,76 +148,76 @@ public class DeleteEmptyTest {
 
     @Test
     public void should_not_delete_because_value_set_2() {
-        //given
+        // given
         final Map<String, String> values = new HashMap<>();
         values.put("name", "David Bowie");
         values.put("city", " a value ");
         final DataSetRow row = new DataSetRow(values);
 
-        //when
+        // when
         ActionTestWorkbench.test(row, action.create(parameters).getRowAction());
 
-        //then
+        // then
         assertFalse(row.isDeleted());
     }
 
     @Test
     public void should_not_delete_because_value_set_of_boolean() {
-        //given
+        // given
         final Map<String, String> values = new HashMap<>();
         values.put("name", "David Bowie");
         values.put("city", "true");
         final DataSetRow row = new DataSetRow(values);
 
-        //when
+        // when
         ActionTestWorkbench.test(row, action.create(parameters).getRowAction());
 
-        //then
+        // then
         assertFalse(row.isDeleted());
     }
 
     @Test
     public void should_not_delete_because_value_set_of_number() {
-        //given
+        // given
         final Map<String, String> values = new HashMap<>();
         values.put("name", "David Bowie");
         values.put("city", "45");
         final DataSetRow row = new DataSetRow(values);
 
-        //when
+        // when
         ActionTestWorkbench.test(row, action.create(parameters).getRowAction());
 
-        //then
+        // then
         assertFalse(row.isDeleted());
     }
 
     @Test
     public void should_not_delete_because_value_set_of_negative_boolean() {
-        //given
+        // given
         final Map<String, String> values = new HashMap<>();
         values.put("name", "David Bowie");
         values.put("city", "-12");
         final DataSetRow row = new DataSetRow(values);
 
-        //when
+        // when
         ActionTestWorkbench.test(row, action.create(parameters).getRowAction());
 
-        //then
+        // then
         assertFalse(row.isDeleted());
     }
 
     @Test
     public void should_not_delete_because_value_set_of_float() {
-        //given
+        // given
         final Map<String, String> values = new HashMap<>();
         values.put("name", "David Bowie");
         values.put("city", "0.001");
         final DataSetRow row = new DataSetRow(values);
 
-        //when
+        // when
         ActionTestWorkbench.test(row, action.create(parameters).getRowAction());
 
-        //then
+        // then
         assertFalse(row.isDeleted());
     }
 

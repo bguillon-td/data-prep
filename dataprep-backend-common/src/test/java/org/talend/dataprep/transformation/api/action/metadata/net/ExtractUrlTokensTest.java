@@ -1,15 +1,15 @@
-//  ============================================================================
+// ============================================================================
 //
-//  Copyright (C) 2006-2016 Talend Inc. - www.talend.com
+// Copyright (C) 2006-2016 Talend Inc. - www.talend.com
 //
-//  This source code is available under agreement available at
-//  https://github.com/Talend/data-prep/blob/master/LICENSE
+// This source code is available under agreement available at
+// https://github.com/Talend/data-prep/blob/master/LICENSE
 //
-//  You should have received a copy of the agreement
-//  along with this program; if not, write to Talend SA
-//  9 rue Pages 92150 Suresnes, France
+// You should have received a copy of the agreement
+// along with this program; if not, write to Talend SA
+// 9 rue Pages 92150 Suresnes, France
 //
-//  ============================================================================
+// ============================================================================
 package org.talend.dataprep.transformation.api.action.metadata.net;
 
 import static org.hamcrest.CoreMatchers.is;
@@ -27,6 +27,7 @@ import java.util.Map;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.talend.dataprep.api.dataset.ColumnMetadata;
 import org.talend.dataprep.api.dataset.DataSetRow;
 import org.talend.dataprep.api.dataset.RowMetadata;
@@ -34,6 +35,7 @@ import org.talend.dataprep.api.type.Type;
 import org.talend.dataprep.transformation.api.action.ActionTestWorkbench;
 import org.talend.dataprep.transformation.api.action.metadata.ActionMetadataTestUtils;
 import org.talend.dataprep.transformation.api.action.metadata.category.ActionCategory;
+import org.talend.dataprep.transformation.api.action.metadata.date.BaseDateTests;
 import org.talend.dataprep.transformation.api.action.metadata.text.Split;
 
 /**
@@ -41,17 +43,18 @@ import org.talend.dataprep.transformation.api.action.metadata.text.Split;
  *
  * @see ExtractEmailDomain
  */
-public class ExtractUrlTokensTest {
+public class ExtractUrlTokensTest extends BaseDateTests {
 
     /** The action to test. */
+    @Autowired
     private ExtractUrlTokens action;
 
     private Map<String, String> parameters;
 
     @Before
     public void init() throws IOException {
-        action = new ExtractUrlTokens();
-        parameters = ActionMetadataTestUtils.parseParameters(ExtractUrlTokensTest.class.getResourceAsStream("extractUrlTokensAction.json"));
+        parameters = ActionMetadataTestUtils
+                .parseParameters(ExtractUrlTokensTest.class.getResourceAsStream("extractUrlTokensAction.json"));
     }
 
     @Test
@@ -112,7 +115,8 @@ public class ExtractUrlTokensTest {
 
         final Map<String, String> expectedValues = new HashMap<>();
         expectedValues.put("0000", "lorem bacon");
-        expectedValues.put("0001", "http://stef:pwd@10.42.10.99:80/home/datasets?datasetid=c522a037-7bd8-42c1-a8ee-a0628c66d8c4#frag");
+        expectedValues.put("0001",
+                "http://stef:pwd@10.42.10.99:80/home/datasets?datasetid=c522a037-7bd8-42c1-a8ee-a0628c66d8c4#frag");
         expectedValues.put("0003", "http");
         expectedValues.put("0004", "10.42.10.99");
         expectedValues.put("0005", "80");
@@ -181,7 +185,8 @@ public class ExtractUrlTokensTest {
         expectedValues.put("0004", "");
         expectedValues.put("0005", "");
         expectedValues.put("0006", "");
-        expectedValues.put("0007", "");        expectedValues.put("0008", "");
+        expectedValues.put("0007", "");
+        expectedValues.put("0008", "");
         expectedValues.put("0009", "");
         expectedValues.put("0010", "");
 
@@ -266,13 +271,17 @@ public class ExtractUrlTokensTest {
     public void testProtocolExtractor() throws URISyntaxException {
         assertEquals("http", UrlTokenExtractors.PROTOCOL_TOKEN_EXTRACTOR.extractToken(new URI("http://www.yahoo.fr")));
         assertEquals("mailto", UrlTokenExtractors.PROTOCOL_TOKEN_EXTRACTOR.extractToken(new URI("mailto:smallet@talend.com")));
-        assertEquals("ftp", UrlTokenExtractors.PROTOCOL_TOKEN_EXTRACTOR.extractToken(new URI("ftp://server:21/this/is/a/resource")));
+        assertEquals("ftp",
+                UrlTokenExtractors.PROTOCOL_TOKEN_EXTRACTOR.extractToken(new URI("ftp://server:21/this/is/a/resource")));
         assertEquals("http", UrlTokenExtractors.PROTOCOL_TOKEN_EXTRACTOR.extractToken(new URI("HTTP://www.yahoo.fr")));
-        assertEquals("http", UrlTokenExtractors.PROTOCOL_TOKEN_EXTRACTOR.extractToken(new URI(
-                "http:10.42.10.99:80/home/datasets?datasetid=c522a037")));
-        assertEquals("file", UrlTokenExtractors.PROTOCOL_TOKEN_EXTRACTOR.extractToken(new URI("file://server:21/this/is/a/resource")));
-        assertEquals("mvn", UrlTokenExtractors.PROTOCOL_TOKEN_EXTRACTOR.extractToken(new URI("mvn://server:21/this/is/a/resource")));
-        assertEquals("tagada", UrlTokenExtractors.PROTOCOL_TOKEN_EXTRACTOR.extractToken(new URI("tagada://server:21/this/is/a/resource")));
+        assertEquals("http", UrlTokenExtractors.PROTOCOL_TOKEN_EXTRACTOR
+                .extractToken(new URI("http:10.42.10.99:80/home/datasets?datasetid=c522a037")));
+        assertEquals("file",
+                UrlTokenExtractors.PROTOCOL_TOKEN_EXTRACTOR.extractToken(new URI("file://server:21/this/is/a/resource")));
+        assertEquals("mvn",
+                UrlTokenExtractors.PROTOCOL_TOKEN_EXTRACTOR.extractToken(new URI("mvn://server:21/this/is/a/resource")));
+        assertEquals("tagada",
+                UrlTokenExtractors.PROTOCOL_TOKEN_EXTRACTOR.extractToken(new URI("tagada://server:21/this/is/a/resource")));
     }
 
 }

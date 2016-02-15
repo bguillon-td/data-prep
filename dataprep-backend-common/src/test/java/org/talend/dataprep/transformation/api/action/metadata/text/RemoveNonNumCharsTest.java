@@ -1,15 +1,15 @@
-//  ============================================================================
+// ============================================================================
 //
-//  Copyright (C) 2006-2016 Talend Inc. - www.talend.com
+// Copyright (C) 2006-2016 Talend Inc. - www.talend.com
 //
-//  This source code is available under agreement available at
-//  https://github.com/Talend/data-prep/blob/master/LICENSE
+// This source code is available under agreement available at
+// https://github.com/Talend/data-prep/blob/master/LICENSE
 //
-//  You should have received a copy of the agreement
-//  along with this program; if not, write to Talend SA
-//  9 rue Pages 92150 Suresnes, France
+// You should have received a copy of the agreement
+// along with this program; if not, write to Talend SA
+// 9 rue Pages 92150 Suresnes, France
 //
-//  ============================================================================
+// ============================================================================
 package org.talend.dataprep.transformation.api.action.metadata.text;
 
 import static org.hamcrest.CoreMatchers.is;
@@ -23,29 +23,32 @@ import java.util.Map;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.talend.dataprep.api.dataset.ColumnMetadata;
 import org.talend.dataprep.api.dataset.DataSetRow;
 import org.talend.dataprep.api.type.Type;
 import org.talend.dataprep.transformation.api.action.ActionTestWorkbench;
 import org.talend.dataprep.transformation.api.action.metadata.ActionMetadataTestUtils;
 import org.talend.dataprep.transformation.api.action.metadata.category.ActionCategory;
+import org.talend.dataprep.transformation.api.action.metadata.date.BaseDateTests;
 
 /**
  * Test class for LowerCase action. Creates one consumer, and test it.
  *
  * @see LowerCase
  */
-public class RemoveNonNumCharsTest {
+public class RemoveNonNumCharsTest extends BaseDateTests {
 
     /** The action to test. */
+    @Autowired
     private RemoveNonNumChars action;
 
     private Map<String, String> parameters;
 
     @Before
     public void init() throws IOException {
-        action = new RemoveNonNumChars();
-        parameters = ActionMetadataTestUtils.parseParameters(RemoveNonNumCharsTest.class.getResourceAsStream("remove_non_num_chars.json"));
+        parameters = ActionMetadataTestUtils
+                .parseParameters(RemoveNonNumCharsTest.class.getResourceAsStream("remove_non_num_chars.json"));
     }
 
     @Test
@@ -65,7 +68,7 @@ public class RemoveNonNumCharsTest {
      */
     @Test
     public void test_basic() {
-        //given
+        // given
         final Map<String, String> values = new HashMap<>();
         values.put("name", "Vincent");
         values.put("entity", "€10k");
@@ -77,30 +80,30 @@ public class RemoveNonNumCharsTest {
         expectedValues.put("entity", "10");
         expectedValues.put("joined", "May 20th 2015");
 
-        //when
+        // when
         ActionTestWorkbench.test(row, action.create(parameters).getRowAction());
 
-        //then
+        // then
         assertEquals(expectedValues, row.values());
     }
 
     @Test
-    public void test_some_values(){
-        assertEquals("10",action.apply("€10k"));
-        assertEquals("10",action.apply("10"));
-        assertEquals("0123456789",action.apply("0123456789"));
-        assertEquals("10-",action.apply("€10-"));
-        assertEquals("10.5",action.apply("€10.5K"));
-        assertEquals("-10,5",action.apply("-$10,5K"));
-        assertEquals("1010",action.apply("aa10aa10"));
-        assertEquals(" 1 2 3- ,",action.apply("A 1 b2 ç3!%£*ê}~(-+*/&\":# ,"));
-        assertEquals(" 123",action.apply("é@ àèÏ123éç"));
+    public void test_some_values() {
+        assertEquals("10", action.apply("€10k"));
+        assertEquals("10", action.apply("10"));
+        assertEquals("0123456789", action.apply("0123456789"));
+        assertEquals("10-", action.apply("€10-"));
+        assertEquals("10.5", action.apply("€10.5K"));
+        assertEquals("-10,5", action.apply("-$10,5K"));
+        assertEquals("1010", action.apply("aa10aa10"));
+        assertEquals(" 1 2 3- ,", action.apply("A 1 b2 ç3!%£*ê}~(-+*/&\":# ,"));
+        assertEquals(" 123", action.apply("é@ àèÏ123éç"));
     }
 
     @Test
-    public void test_some_special_values(){
-        assertEquals("",action.apply(""));
-        assertEquals("",action.apply(null));
+    public void test_some_special_values() {
+        assertEquals("", action.apply(""));
+        assertEquals("", action.apply(null));
     }
 
     @Test

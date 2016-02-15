@@ -1,15 +1,15 @@
-//  ============================================================================
+// ============================================================================
 //
-//  Copyright (C) 2006-2016 Talend Inc. - www.talend.com
+// Copyright (C) 2006-2016 Talend Inc. - www.talend.com
 //
-//  This source code is available under agreement available at
-//  https://github.com/Talend/data-prep/blob/master/LICENSE
+// This source code is available under agreement available at
+// https://github.com/Talend/data-prep/blob/master/LICENSE
 //
-//  You should have received a copy of the agreement
-//  along with this program; if not, write to Talend SA
-//  9 rue Pages 92150 Suresnes, France
+// You should have received a copy of the agreement
+// along with this program; if not, write to Talend SA
+// 9 rue Pages 92150 Suresnes, France
 //
-//  ============================================================================
+// ============================================================================
 package org.talend.dataprep.transformation.api.action.metadata.math;
 
 import static org.hamcrest.CoreMatchers.is;
@@ -23,29 +23,30 @@ import java.util.Map;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.talend.dataprep.api.dataset.ColumnMetadata;
 import org.talend.dataprep.api.dataset.DataSetRow;
 import org.talend.dataprep.api.type.Type;
 import org.talend.dataprep.transformation.api.action.ActionTestWorkbench;
 import org.talend.dataprep.transformation.api.action.metadata.ActionMetadataTestUtils;
 import org.talend.dataprep.transformation.api.action.metadata.category.ActionCategory;
+import org.talend.dataprep.transformation.api.action.metadata.date.BaseDateTests;
 
 /**
  * Test class for RoundHalfUp action. Creates one consumer, and test it.
  *
  * @see RoundHalfUp
  */
-public class RoundHalfUpTest {
+public class RoundHalfUpTest extends BaseDateTests {
 
     /** The action ton test. */
+    @Autowired
     private RoundHalfUp action;
 
     private Map<String, String> parameters;
 
     @Before
     public void init() throws IOException {
-        action = new RoundHalfUp();
-
         parameters = ActionMetadataTestUtils.parseParameters(RoundHalfUpTest.class.getResourceAsStream("roundAction.json"));
     }
 
@@ -66,18 +67,17 @@ public class RoundHalfUpTest {
         assertThat(action.getCategory(), is(ActionCategory.MATH.getDisplayName()));
     }
 
-
     public void testCommon(String input, String expected) {
-        //given
+        // given
         final Map<String, String> values = new HashMap<>();
         values.put("aNumber", input);
         final DataSetRow row = new DataSetRow(values);
 
-        //when
+        // when
         ActionTestWorkbench.test(row, action.create(parameters).getRowAction());
 
-        //then
-        assertEquals( expected, row.get( "aNumber" ) );
+        // then
+        assertEquals(expected, row.get("aNumber"));
     }
 
     @Test
@@ -85,14 +85,14 @@ public class RoundHalfUpTest {
         testCommon("5.0", "5");
         testCommon("5.1", "5");
         testCommon("5.5", "6");
-        testCommon( "5.8", "6" );
+        testCommon("5.8", "6");
     }
 
     @Test
     public void testNegative() {
         testCommon("-5.0", "-5");
-        testCommon( "-5.4", "-5" );
-        testCommon( "-5.6", "-6" );
+        testCommon("-5.4", "-5");
+        testCommon("-5.6", "-6");
     }
 
     @Test

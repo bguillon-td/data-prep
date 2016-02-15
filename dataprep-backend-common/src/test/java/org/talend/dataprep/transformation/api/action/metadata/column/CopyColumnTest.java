@@ -1,15 +1,15 @@
-//  ============================================================================
+// ============================================================================
 //
-//  Copyright (C) 2006-2016 Talend Inc. - www.talend.com
+// Copyright (C) 2006-2016 Talend Inc. - www.talend.com
 //
-//  This source code is available under agreement available at
-//  https://github.com/Talend/data-prep/blob/master/LICENSE
+// This source code is available under agreement available at
+// https://github.com/Talend/data-prep/blob/master/LICENSE
 //
-//  You should have received a copy of the agreement
-//  along with this program; if not, write to Talend SA
-//  9 rue Pages 92150 Suresnes, France
+// You should have received a copy of the agreement
+// along with this program; if not, write to Talend SA
+// 9 rue Pages 92150 Suresnes, France
 //
-//  ============================================================================
+// ============================================================================
 package org.talend.dataprep.transformation.api.action.metadata.column;
 
 import static org.hamcrest.CoreMatchers.is;
@@ -18,11 +18,16 @@ import static org.talend.dataprep.api.dataset.ColumnMetadata.Builder.column;
 import static org.talend.dataprep.transformation.api.action.metadata.ActionMetadataTestUtils.getColumn;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import org.assertj.core.api.Assertions;
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.talend.dataprep.api.dataset.ColumnMetadata;
 import org.talend.dataprep.api.dataset.DataSetRow;
 import org.talend.dataprep.api.dataset.RowMetadata;
@@ -33,22 +38,23 @@ import org.talend.dataprep.api.type.Type;
 import org.talend.dataprep.transformation.api.action.ActionTestWorkbench;
 import org.talend.dataprep.transformation.api.action.metadata.ActionMetadataTestUtils;
 import org.talend.dataprep.transformation.api.action.metadata.category.ActionCategory;
+import org.talend.dataprep.transformation.api.action.metadata.date.BaseDateTests;
 
 /**
  * Test class for Split action. Creates one consumer, and test it.
  *
  * @see CopyColumnMetadata
  */
-public class CopyColumnTest {
+public class CopyColumnTest extends BaseDateTests {
 
     /** The action to test. */
+    @Autowired
     private CopyColumnMetadata action;
 
     private Map<String, String> parameters;
 
     @Before
     public void init() throws IOException {
-        action = new CopyColumnMetadata();
         parameters = ActionMetadataTestUtils.parseParameters(CopyColumnTest.class.getResourceAsStream("copyColumnAction.json"));
     }
 
@@ -113,7 +119,6 @@ public class CopyColumnTest {
         // then
         assertEquals(expected, rowMetadata.getColumns());
     }
-
 
     /**
      * Test with non-consecutive columns ids. This can occurs after some column deletion.
@@ -195,7 +200,6 @@ public class CopyColumnTest {
         Assertions.assertThat(expected.get(1).getSemanticDomains()).isNotNull() //
                 .isNotEmpty().contains(semanticDomain);
     }
-
 
     @Test
     public void test_TDP_567_with_force_true() throws Exception {

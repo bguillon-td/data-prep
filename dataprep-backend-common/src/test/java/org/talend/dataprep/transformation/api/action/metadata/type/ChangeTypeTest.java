@@ -1,15 +1,15 @@
-//  ============================================================================
+// ============================================================================
 //
-//  Copyright (C) 2006-2016 Talend Inc. - www.talend.com
+// Copyright (C) 2006-2016 Talend Inc. - www.talend.com
 //
-//  This source code is available under agreement available at
-//  https://github.com/Talend/data-prep/blob/master/LICENSE
+// This source code is available under agreement available at
+// https://github.com/Talend/data-prep/blob/master/LICENSE
 //
-//  You should have received a copy of the agreement
-//  along with this program; if not, write to Talend SA
-//  9 rue Pages 92150 Suresnes, France
+// You should have received a copy of the agreement
+// along with this program; if not, write to Talend SA
+// 9 rue Pages 92150 Suresnes, France
 //
-//  ============================================================================
+// ============================================================================
 
 package org.talend.dataprep.transformation.api.action.metadata.type;
 
@@ -19,6 +19,7 @@ import java.util.Map;
 
 import org.assertj.core.api.Assertions;
 import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.talend.dataprep.api.dataset.ColumnMetadata;
 import org.talend.dataprep.api.dataset.DataSetRow;
 import org.talend.dataprep.api.dataset.RowMetadata;
@@ -26,8 +27,12 @@ import org.talend.dataprep.api.type.Type;
 import org.talend.dataprep.transformation.api.action.ActionTestWorkbench;
 import org.talend.dataprep.transformation.api.action.metadata.column.TypeChange;
 import org.talend.dataprep.transformation.api.action.metadata.common.ImplicitParameters;
+import org.talend.dataprep.transformation.api.action.metadata.date.BaseDateTests;
 
-public class ChangeTypeTest {
+public class ChangeTypeTest extends BaseDateTests {
+
+    @Autowired
+    private TypeChange typeChange;
 
     @Test
     public void should_change_type() throws Exception {
@@ -47,8 +52,6 @@ public class ChangeTypeTest {
                 .build()));
 
         final DataSetRow row = new DataSetRow(rowMetadata, values);
-
-        TypeChange typeChange = new TypeChange();
 
         Map<String, String> parameters = new HashMap<>();
         parameters.put(TypeChange.NEW_TYPE_PARAMETER_KEY, "STRING");
@@ -71,7 +74,6 @@ public class ChangeTypeTest {
 
     @Test
     public void should_not_apply() {
-        TypeChange typeChange = new TypeChange();
 
         for (Type type : Type.values()) {
 

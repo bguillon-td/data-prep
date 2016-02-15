@@ -1,15 +1,15 @@
-//  ============================================================================
+// ============================================================================
 //
-//  Copyright (C) 2006-2016 Talend Inc. - www.talend.com
+// Copyright (C) 2006-2016 Talend Inc. - www.talend.com
 //
-//  This source code is available under agreement available at
-//  https://github.com/Talend/data-prep/blob/master/LICENSE
+// This source code is available under agreement available at
+// https://github.com/Talend/data-prep/blob/master/LICENSE
 //
-//  You should have received a copy of the agreement
-//  along with this program; if not, write to Talend SA
-//  9 rue Pages 92150 Suresnes, France
+// You should have received a copy of the agreement
+// along with this program; if not, write to Talend SA
+// 9 rue Pages 92150 Suresnes, France
 //
-//  ============================================================================
+// ============================================================================
 package org.talend.dataprep.transformation.api.action.metadata.math;
 
 import static org.hamcrest.CoreMatchers.is;
@@ -24,24 +24,27 @@ import java.util.Map;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.talend.dataprep.api.dataset.ColumnMetadata;
 import org.talend.dataprep.api.dataset.DataSetRow;
 import org.talend.dataprep.api.type.Type;
 import org.talend.dataprep.transformation.api.action.ActionTestWorkbench;
 import org.talend.dataprep.transformation.api.action.metadata.ActionMetadataTestUtils;
 import org.talend.dataprep.transformation.api.action.metadata.category.ActionCategory;
+import org.talend.dataprep.transformation.api.action.metadata.date.BaseDateTests;
 
 /**
  * Unit test for the absolute actions.
  *
  * @see Absolute
  */
-public class AbsoluteTest {
+public class AbsoluteTest extends BaseDateTests {
 
     private static final String FLOAT_COLUMN = "float_column"; //$NON-NLS-1$
 
     private static final String INT_COLUMN = "int_column"; //$NON-NLS-1$
 
+    @Autowired
     private Absolute absolute;
 
     private Map<String, String> absFloatParameters;
@@ -50,7 +53,6 @@ public class AbsoluteTest {
 
     @Before
     public void init() throws IOException {
-        absolute = new Absolute();
 
         absFloatParameters = ActionMetadataTestUtils
                 .parseParameters(AbsoluteTest.class.getResourceAsStream("absoluteFloatAction.json"));

@@ -35,6 +35,8 @@ import org.talend.dataprep.transformation.api.action.metadata.AbstractMetadataBa
 import org.talend.dataprep.transformation.api.action.metadata.ActionMetadataTestUtils;
 import org.talend.dataprep.transformation.api.action.metadata.date.ChangeDatePatternTest;
 
+import javax.annotation.PostConstruct;
+
 /**
  * Unit test for the FillWithStringIfEmpty action.
  *
@@ -46,11 +48,8 @@ public class FillWithDateIfEmptyTest extends AbstractMetadataBaseTest {
     @Autowired
     private FillIfEmpty action;
 
-    /**
-     * Set the action up.
-     */
-    @Before
-    public void setUp() throws Exception {
+    @PostConstruct
+    public void init() {
         action = (FillIfEmpty) action.adapt(ColumnMetadata.Builder.column().type(Type.DATE).build());
     }
 

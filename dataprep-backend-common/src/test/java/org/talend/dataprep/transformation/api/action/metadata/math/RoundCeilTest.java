@@ -1,15 +1,15 @@
-//  ============================================================================
+// ============================================================================
 //
-//  Copyright (C) 2006-2016 Talend Inc. - www.talend.com
+// Copyright (C) 2006-2016 Talend Inc. - www.talend.com
 //
-//  This source code is available under agreement available at
-//  https://github.com/Talend/data-prep/blob/master/LICENSE
+// This source code is available under agreement available at
+// https://github.com/Talend/data-prep/blob/master/LICENSE
 //
-//  You should have received a copy of the agreement
-//  along with this program; if not, write to Talend SA
-//  9 rue Pages 92150 Suresnes, France
+// You should have received a copy of the agreement
+// along with this program; if not, write to Talend SA
+// 9 rue Pages 92150 Suresnes, France
 //
-//  ============================================================================
+// ============================================================================
 package org.talend.dataprep.transformation.api.action.metadata.math;
 
 import static org.hamcrest.CoreMatchers.is;
@@ -23,29 +23,30 @@ import java.util.Map;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.talend.dataprep.api.dataset.ColumnMetadata;
 import org.talend.dataprep.api.dataset.DataSetRow;
 import org.talend.dataprep.api.type.Type;
 import org.talend.dataprep.transformation.api.action.ActionTestWorkbench;
 import org.talend.dataprep.transformation.api.action.metadata.ActionMetadataTestUtils;
 import org.talend.dataprep.transformation.api.action.metadata.category.ActionCategory;
+import org.talend.dataprep.transformation.api.action.metadata.date.BaseDateTests;
 
 /**
  * Test class for RoundCeil action. Creates one consumer, and test it.
  *
  * @see RoundCeil
  */
-public class RoundCeilTest {
+public class RoundCeilTest extends BaseDateTests {
 
     /** The action ton test. */
+    @Autowired
     private RoundCeil action;
 
     private Map<String, String> parameters;
 
     @Before
     public void init() throws IOException {
-        action = new RoundCeil();
-
         parameters = ActionMetadataTestUtils.parseParameters(RoundCeilTest.class.getResourceAsStream("ceilAction.json"));
     }
 
@@ -108,7 +109,6 @@ public class RoundCeilTest {
         testCommon("891234567899.9", "891234567900");
         testCommon("999999999999.9", "1000000000000");
     }
-
 
     @Test
     public void test_huge_number_negative() {

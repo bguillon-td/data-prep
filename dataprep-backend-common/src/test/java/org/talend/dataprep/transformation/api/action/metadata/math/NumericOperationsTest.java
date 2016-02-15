@@ -52,12 +52,6 @@ public class NumericOperationsTest extends AbstractMetadataBaseTest {
     /** The action parameters. */
     private Map<String, String> parameters;
 
-    /**
-     * Constructor.
-     */
-    public NumericOperationsTest() throws IOException {
-        action = new NumericOperations();
-    }
 
     @Before
     public void setUp() throws Exception {

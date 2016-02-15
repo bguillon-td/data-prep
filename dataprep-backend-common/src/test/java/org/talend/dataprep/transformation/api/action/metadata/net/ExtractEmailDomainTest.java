@@ -1,15 +1,15 @@
-//  ============================================================================
+// ============================================================================
 //
-//  Copyright (C) 2006-2016 Talend Inc. - www.talend.com
+// Copyright (C) 2006-2016 Talend Inc. - www.talend.com
 //
-//  This source code is available under agreement available at
-//  https://github.com/Talend/data-prep/blob/master/LICENSE
+// This source code is available under agreement available at
+// https://github.com/Talend/data-prep/blob/master/LICENSE
 //
-//  You should have received a copy of the agreement
-//  along with this program; if not, write to Talend SA
-//  9 rue Pages 92150 Suresnes, France
+// You should have received a copy of the agreement
+// along with this program; if not, write to Talend SA
+// 9 rue Pages 92150 Suresnes, France
 //
-//  ============================================================================
+// ============================================================================
 package org.talend.dataprep.transformation.api.action.metadata.net;
 
 import static org.hamcrest.CoreMatchers.is;
@@ -25,6 +25,7 @@ import java.util.Map;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.talend.dataprep.api.dataset.ColumnMetadata;
 import org.talend.dataprep.api.dataset.DataSetRow;
 import org.talend.dataprep.api.dataset.RowMetadata;
@@ -32,6 +33,7 @@ import org.talend.dataprep.api.type.Type;
 import org.talend.dataprep.transformation.api.action.ActionTestWorkbench;
 import org.talend.dataprep.transformation.api.action.metadata.ActionMetadataTestUtils;
 import org.talend.dataprep.transformation.api.action.metadata.category.ActionCategory;
+import org.talend.dataprep.transformation.api.action.metadata.date.BaseDateTests;
 import org.talend.dataprep.transformation.api.action.metadata.text.Split;
 
 /**
@@ -39,17 +41,18 @@ import org.talend.dataprep.transformation.api.action.metadata.text.Split;
  *
  * @see ExtractEmailDomain
  */
-public class ExtractEmailDomainTest {
+public class ExtractEmailDomainTest extends BaseDateTests {
 
     /** The action to test. */
+    @Autowired
     private ExtractEmailDomain action;
 
     private Map<String, String> parameters;
 
     @Before
     public void init() throws IOException {
-        action = new ExtractEmailDomain();
-        parameters = ActionMetadataTestUtils.parseParameters(ExtractEmailDomainTest.class.getResourceAsStream("extractDomainAction.json"));
+        parameters = ActionMetadataTestUtils
+                .parseParameters(ExtractEmailDomainTest.class.getResourceAsStream("extractDomainAction.json"));
     }
 
     @Test
@@ -69,7 +72,7 @@ public class ExtractEmailDomainTest {
      */
     @Test
     public void test_values() {
-        //given
+        // given
         final Map<String, String> values = new HashMap<>();
         values.put("0000", "lorem bacon");
         values.put("0001", "david.bowie@yopmail.com");
@@ -83,16 +86,16 @@ public class ExtractEmailDomainTest {
         expectedValues.put("0004", "yopmail.com");
         expectedValues.put("0002", "01/01/2015");
 
-        //when
+        // when
         ActionTestWorkbench.test(row, action.create(parameters).getRowAction());
 
-        //then
+        // then
         assertEquals(expectedValues, row.values());
     }
 
     @Test
     public void test_values_invalid() {
-        //given
+        // given
         final Map<String, String> values = new HashMap<>();
         values.put("0000", "lorem bacon");
         values.put("0001", "david.bowie");
@@ -106,10 +109,10 @@ public class ExtractEmailDomainTest {
         expectedValues.put("0004", "");
         expectedValues.put("0002", "01/01/2015");
 
-        //when
+        // when
         ActionTestWorkbench.test(row, action.create(parameters).getRowAction());
 
-        //then
+        // then
         assertEquals(expectedValues, row.values());
     }
 
@@ -118,7 +121,7 @@ public class ExtractEmailDomainTest {
      */
     @Test
     public void test_metadata() {
-        //given
+        // given
         final List<ColumnMetadata> input = new ArrayList<>();
         input.add(createMetadata("0000", "recipe"));
         input.add(createMetadata("0001", "email"));
@@ -132,10 +135,10 @@ public class ExtractEmailDomainTest {
         expected.add(createMetadata("0004", "email_domain"));
         expected.add(createMetadata("0002", "last update"));
 
-        //when
+        // when
         ActionTestWorkbench.test(row, action.create(parameters).getRowAction());
 
-        //then
+        // then
         assertEquals(expected, row.getRowMetadata().getColumns());
     }
 
@@ -144,7 +147,7 @@ public class ExtractEmailDomainTest {
      */
     @Test
     public void test_metadata_with_multiple_executions() {
-        //given
+        // given
         final List<ColumnMetadata> input = new ArrayList<>();
         input.add(createMetadata("0000", "recipe"));
         input.add(createMetadata("0001", "email"));
@@ -160,10 +163,10 @@ public class ExtractEmailDomainTest {
         expected.add(createMetadata("0004", "email_domain"));
         expected.add(createMetadata("0002", "last update"));
 
-        //when
+        // when
         ActionTestWorkbench.test(rowMetadata, action.create(parameters).getRowAction(), action.create(parameters).getRowAction());
 
-        //then
+        // then
         assertEquals(expected, rowMetadata.getColumns());
     }
 

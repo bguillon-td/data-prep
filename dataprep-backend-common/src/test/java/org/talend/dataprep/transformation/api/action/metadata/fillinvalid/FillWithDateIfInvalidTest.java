@@ -42,6 +42,8 @@ import org.talend.dataprep.transformation.api.action.metadata.fill.FillInvalid;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import javax.annotation.PostConstruct;
+
 /**
  * Unit test for FillWithDateIfInvalid action.
  * 
@@ -53,11 +55,8 @@ public class FillWithDateIfInvalidTest extends AbstractMetadataBaseTest {
     @Autowired
     private FillInvalid action;
 
-    /**
-     * Set the action up.
-     */
-    @Before
-    public void setUp() throws Exception {
+    @PostConstruct
+    public void init() {
         action = (FillInvalid) action.adapt(ColumnMetadata.Builder.column().type(Type.DATE).build());
     }
 
