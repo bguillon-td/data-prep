@@ -16,6 +16,9 @@ package org.talend.dataprep.transformation.api.action.metadata.delete;
 import static org.talend.dataprep.transformation.api.action.metadata.category.ActionCategory.DATA_CLEANSING;
 import static org.talend.dataprep.transformation.api.action.metadata.category.ScopeCategory.LINE;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import org.talend.dataprep.api.dataset.ColumnMetadata;
 import org.talend.dataprep.api.dataset.DataSetRow;
@@ -29,12 +32,16 @@ import org.talend.dataprep.transformation.api.action.metadata.common.RowAction;
  * Delete the line which id matches TdpId in context. This id/filtering is managed by ActionMetadata.
  */
 @Component(Delete.ACTION_BEAN_PREFIX + Delete.DELETE_ACTION_NAME)
+@Scope(value = "prototype")
 public class Delete extends ActionMetadata implements RowAction {
 
     public static final String DELETE_ACTION_NAME = "delete";
     public static final String DELETE_SINGLE_LINE = "delete_single_line";
     public static final String DELETE_COLUMN = "delete_column";
     private final ScopeCategory scope;
+    
+    @Autowired
+    private ApplicationContext applicationContext;
 
     public Delete() {
         this(LINE);
@@ -90,6 +97,6 @@ public class Delete extends ActionMetadata implements RowAction {
 
     @Override
     public ActionMetadata adapt(ScopeCategory scope) {
-        return new Delete(scope);
+        return applicationContext.getBean(getClass(), scope);
     }
 }

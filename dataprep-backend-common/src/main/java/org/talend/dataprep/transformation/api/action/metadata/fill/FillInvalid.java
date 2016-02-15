@@ -15,6 +15,9 @@ package org.talend.dataprep.transformation.api.action.metadata.fill;
 
 import static org.talend.dataprep.transformation.api.action.metadata.category.ActionCategory.DATA_CLEANSING;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import org.talend.dataprep.api.dataset.ColumnMetadata;
 import org.talend.dataprep.api.type.Type;
@@ -24,6 +27,7 @@ import org.talend.dataprep.transformation.api.action.metadata.common.ActionMetad
 import org.talend.dataprep.transformation.api.action.metadata.common.ColumnAction;
 
 @Component(ActionMetadata.ACTION_BEAN_PREFIX + FillInvalid.FILL_INVALID_ACTION_NAME)
+@Scope(value = "prototype")
 public class FillInvalid extends AbstractFillWith implements ColumnAction {
 
     public static final String FILL_INVALID_BOOLEAN = "fillinvalidwithdefaultboolean"; //$NON-NLS-1$
@@ -33,6 +37,9 @@ public class FillInvalid extends AbstractFillWith implements ColumnAction {
     public static final String FILL_INVALID_NUMERIC = "fillinvalidwithdefaultnumeric"; //$NON-NLS-1$
 
     public static final String FILL_INVALID_ACTION_NAME = "fillinvalidwithdefault"; //$NON-NLS-1$
+
+    @Autowired
+    private ApplicationContext applicationContext;
 
      public FillInvalid() {
         this(Type.STRING);
@@ -96,9 +103,6 @@ public class FillInvalid extends AbstractFillWith implements ColumnAction {
         if (column == null || !acceptColumn(column)) {
             return this;
         }
-        final FillInvalid fillInvalid = new FillInvalid(Type.valueOf(column.getType().toUpperCase()));
-        fillInvalid.dateParser = this.dateParser; // autowired fields should not be forgotten...
-        return fillInvalid;
-
+        return applicationContext.getBean( getClass(), Type.valueOf(column.getType().toUpperCase()));
     }
 }

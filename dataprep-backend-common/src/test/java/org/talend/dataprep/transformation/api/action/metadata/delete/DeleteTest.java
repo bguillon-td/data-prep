@@ -13,9 +13,9 @@
 
 package org.talend.dataprep.transformation.api.action.metadata.delete;
 
+import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
-import static org.mockito.Mockito.when;
 import static org.talend.dataprep.transformation.api.action.metadata.category.ActionCategory.DATA_CLEANSING;
 import static org.talend.dataprep.transformation.api.action.metadata.category.ScopeCategory.COLUMN;
 import static org.talend.dataprep.transformation.api.action.metadata.category.ScopeCategory.LINE;
@@ -26,13 +26,12 @@ import java.util.Map;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.powermock.api.mockito.PowerMockito;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.talend.dataprep.api.dataset.DataSetRow;
 import org.talend.dataprep.i18n.MessagesBundle;
 import org.talend.dataprep.transformation.api.action.ActionTestWorkbench;
+import org.talend.dataprep.transformation.api.action.metadata.AbstractMetadataBaseTest;
 import org.talend.dataprep.transformation.api.action.metadata.common.ActionMetadata;
 import org.talend.dataprep.transformation.api.action.metadata.common.ImplicitParameters;
 
@@ -41,15 +40,13 @@ import org.talend.dataprep.transformation.api.action.metadata.common.ImplicitPar
  *
  * @see Delete
  */
-@RunWith(PowerMockRunner.class)
-@PrepareForTest(MessagesBundle.class)
-public class DeleteTest {
+public class DeleteTest extends AbstractMetadataBaseTest {
 
+    @Autowired
     private Delete action;
 
     @Before
     public void init() throws IOException {
-        action = new Delete();
         PowerMockito.mockStatic(MessagesBundle.class);
     }
 
@@ -73,30 +70,25 @@ public class DeleteTest {
 
     @Test
     public void should_adapt_to_line_scope() {
-        //given
-        when(MessagesBundle.getString("action.delete_single_line.desc")).thenReturn("Delete single line desc");
-        when(MessagesBundle.getString("action.delete_single_line.label")).thenReturn("Delete single line label");
 
         //when
         final ActionMetadata adaptedAction = action.adapt(LINE);
 
         //then
-        assertThat(adaptedAction.getDescription(), is("Delete single line desc"));
-        assertThat(adaptedAction.getLabel(), is("Delete single line label"));
+        assertThat(adaptedAction.getDescription(), is("Delete this line"));
+        assertThat(adaptedAction.getLabel(), is("Delete Line"));
+
+        assertThat( adaptedAction, not(is(action)) );
     }
 
     @Test
     public void should_adapt_to_column_scope() {
-        //given
-        when(MessagesBundle.getString("action.delete_column.desc")).thenReturn("Delete column desc");
-        when(MessagesBundle.getString("action.delete_column.label")).thenReturn("Delete column label");
-
         //when
         final ActionMetadata adaptedAction = action.adapt(COLUMN);
 
         //then
-        assertThat(adaptedAction.getDescription(), is("Delete column desc"));
-        assertThat(adaptedAction.getLabel(), is("Delete column label"));
+        assertThat(adaptedAction.getDescription(), is("Delete this column"));
+        assertThat(adaptedAction.getLabel(), is("Delete Column"));
     }
 
     @Test

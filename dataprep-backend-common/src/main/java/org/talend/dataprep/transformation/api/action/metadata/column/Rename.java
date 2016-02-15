@@ -1,15 +1,15 @@
-//  ============================================================================
+// ============================================================================
 //
-//  Copyright (C) 2006-2016 Talend Inc. - www.talend.com
+// Copyright (C) 2006-2016 Talend Inc. - www.talend.com
 //
-//  This source code is available under agreement available at
-//  https://github.com/Talend/data-prep/blob/master/LICENSE
+// This source code is available under agreement available at
+// https://github.com/Talend/data-prep/blob/master/LICENSE
 //
-//  You should have received a copy of the agreement
-//  along with this program; if not, write to Talend SA
-//  9 rue Pages 92150 Suresnes, France
+// You should have received a copy of the agreement
+// along with this program; if not, write to Talend SA
+// 9 rue Pages 92150 Suresnes, France
 //
-//  ============================================================================
+// ============================================================================
 
 package org.talend.dataprep.transformation.api.action.metadata.column;
 
@@ -21,6 +21,9 @@ import java.util.List;
 
 import javax.annotation.Nonnull;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import org.talend.dataprep.api.dataset.ColumnMetadata;
 import org.talend.dataprep.api.dataset.DataSetRow;
@@ -38,6 +41,7 @@ import org.talend.dataprep.transformation.api.action.parameters.ParameterType;
  * If the column to rename does not exist or the new name is already used, nothing happen.
  */
 @Component(Rename.ACTION_BEAN_PREFIX + Rename.RENAME_ACTION_NAME)
+@Scope(value = "prototype")
 public class Rename extends ActionMetadata implements ColumnAction {
 
     /** Action name. */
@@ -48,6 +52,9 @@ public class Rename extends ActionMetadata implements ColumnAction {
 
     /** Parameters (column name, new column name...) */
     private final List<Parameter> parameters;
+
+    @Autowired
+    private ApplicationContext applicationContext;
 
     /**
      * Default empty constructor that with no new column name.
@@ -81,7 +88,6 @@ public class Rename extends ActionMetadata implements ColumnAction {
     public String getCategory() {
         return ActionCategory.COLUMN_METADATA.getDisplayName();
     }
-
 
     /**
      * @see ActionMetadata#getActionScope()
@@ -117,7 +123,7 @@ public class Rename extends ActionMetadata implements ColumnAction {
         if (column == null) {
             return this;
         }
-        return new Rename(column.getName());
+        return applicationContext.getBean(getClass(), column.getName());
     }
 
     /**

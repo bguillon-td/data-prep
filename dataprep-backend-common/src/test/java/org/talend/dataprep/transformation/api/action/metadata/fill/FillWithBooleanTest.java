@@ -13,8 +13,12 @@
 
 package org.talend.dataprep.transformation.api.action.metadata.fill;
 
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
+import static org.talend.dataprep.api.dataset.ColumnMetadata.Builder.column;
 import static org.talend.dataprep.transformation.api.action.metadata.ActionMetadataTestUtils.getColumn;
 
 import java.util.Collections;
@@ -48,6 +52,13 @@ public class FillWithBooleanTest extends BaseDateTests {
     @PostConstruct
     public void init() {
         action = (FillWithValue) action.adapt(ColumnMetadata.Builder.column().type(Type.BOOLEAN).build());
+    }
+
+    @Test
+    public void test_adapt() throws Exception {
+        assertThat(action.adapt((ColumnMetadata) null), is(action));
+        ColumnMetadata column = column().name("myColumn").id(0).type(Type.BOOLEAN).build();
+        assertThat(action.adapt(column), is(action));
     }
 
     @Test

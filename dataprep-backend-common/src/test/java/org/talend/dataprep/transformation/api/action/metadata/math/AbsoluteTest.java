@@ -53,7 +53,6 @@ public class AbsoluteTest extends BaseDateTests {
 
     @Before
     public void init() throws IOException {
-
         absFloatParameters = ActionMetadataTestUtils
                 .parseParameters(AbsoluteTest.class.getResourceAsStream("absoluteFloatAction.json"));
         absIntParameters = ActionMetadataTestUtils

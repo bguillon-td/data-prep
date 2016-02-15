@@ -15,6 +15,9 @@ package org.talend.dataprep.transformation.api.action.metadata.fill;
 
 import static org.talend.dataprep.transformation.api.action.metadata.category.ActionCategory.DATA_CLEANSING;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import org.talend.dataprep.api.dataset.ColumnMetadata;
 import org.talend.dataprep.api.type.Type;
@@ -23,6 +26,7 @@ import org.talend.dataprep.transformation.api.action.metadata.common.ActionMetad
 import org.talend.dataprep.transformation.api.action.metadata.common.ColumnAction;
 
 @Component(ActionMetadata.ACTION_BEAN_PREFIX + FillIfEmpty.FILL_EMPTY_ACTION_NAME)
+@Scope(value = "prototype")
 public class FillIfEmpty extends AbstractFillWith implements ColumnAction {
 
     public static final String FILL_EMPTY_ACTION_NAME = "fillemptywithdefault";
@@ -34,6 +38,9 @@ public class FillIfEmpty extends AbstractFillWith implements ColumnAction {
     public static final String FILL_EMPTY_INTEGER = "fillemptywithdefaultinteger"; //$NON-NLS-1$
 
     public static final String FILL_EMPTY_STRING = "fillemptywithdefault"; //$NON-NLS-1$
+
+    @Autowired
+    private ApplicationContext applicationContext;
 
     public FillIfEmpty() {
         this(Type.STRING);
@@ -112,8 +119,6 @@ public class FillIfEmpty extends AbstractFillWith implements ColumnAction {
         if (column == null || !acceptColumn(column)) {
             return this;
         }
-        final FillIfEmpty fillIfEmpty = new FillIfEmpty(Type.valueOf(column.getType().toUpperCase()));
-        fillIfEmpty.dateParser = this.dateParser; // autowired fields should not be forgotten...
-        return fillIfEmpty;
+        return applicationContext.getBean( getClass(), Type.valueOf(column.getType().toUpperCase()));
     }
 }

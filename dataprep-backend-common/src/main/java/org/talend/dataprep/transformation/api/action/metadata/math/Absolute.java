@@ -14,6 +14,9 @@ package org.talend.dataprep.transformation.api.action.metadata.math;
 
 import java.math.BigDecimal;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import org.talend.daikon.number.BigDecimalParser;
 import org.talend.dataprep.api.dataset.ColumnMetadata;
@@ -28,11 +31,15 @@ import org.talend.dataprep.transformation.api.action.metadata.common.ColumnActio
  * This will compute the absolute value for numerical columns.
  */
 @Component(ActionMetadata.ACTION_BEAN_PREFIX + Absolute.ABSOLUTE_ACTION_NAME)
+@Scope(value = "prototype")
 public class Absolute extends ActionMetadata implements ColumnAction {
 
     public static final String ABSOLUTE_ACTION_NAME = "absolute"; //$NON-NLS-1$
 
     private final Type type;
+
+    @Autowired
+    private ApplicationContext applicationContext;
 
     public Absolute() {
         type = Type.INTEGER;
@@ -122,7 +129,7 @@ public class Absolute extends ActionMetadata implements ColumnAction {
         if (column == null || !acceptColumn(column)) {
             return this;
         }
-        return new Absolute(type);
+        return applicationContext.getBean( getClass(), type );
     }
 
 }
