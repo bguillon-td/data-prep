@@ -67,6 +67,7 @@ export default function TextFormatService() {
         }
 
         var constraints = [
+            addTab,
             escapeHtmlTags,
             addLineBreaks,
             addTrailingAndLeadingSpacesDivs
@@ -91,6 +92,17 @@ export default function TextFormatService() {
      */
     function addLineBreaks(value) {
         return value.replace(new RegExp('\n', 'g'), '↵\n'); //eslint-disable-line no-control-regex
+    }
+
+    /**
+     * @ngdoc method
+     * @name addTab
+     * @methodOf data-prep.services.utils:TextFormatService
+     * @description Add tab char
+     * @param {string} value The value to adapt
+     */
+    function addTab(value) {
+        return value.replace(new RegExp('\t', 'g'), '↹'); //eslint-disable-line no-control-regex
     }
 
     /**

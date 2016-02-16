@@ -61,6 +61,17 @@ describe('Text format service', function () {
             expect(result).toBe('my ↵\nnew↵\nvalue');
         }));
 
+        it('should add tab arrows', inject(function (TextFormatService) {
+            //given
+            var value = 'my\tnew\tvalue';
+
+            //when
+            var result = TextFormatService.adaptToGridConstraints(value);
+
+            //then
+            expect(result).toBe('my↹new↹value');
+        }));
+
         it('should escape tags', inject(function (TextFormatService) {
             //given
             var value = '<b>my value</b>';
