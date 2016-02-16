@@ -506,4 +506,41 @@ public class XlsFormatTest extends AbstractSchemaTestUtils {
 
     }
 
+    @Test
+    public void not_fail_on_bad_formulas() throws Exception
+    {
+
+        String fileName = "bad_formulas.xlsx";
+
+        FormatGuess formatGuess;
+
+        String sheetName = "Sheet1";
+
+        XlsSchemaParser xlsSchemaParser = new XlsSchemaParser();
+
+        try (InputStream inputStream = this.getClass().getResourceAsStream( fileName ))
+        {
+            formatGuess = formatGuesser.guess( getRequest( inputStream, UUID.randomUUID().toString() ), "UTF-8" ).getFormatGuess();
+            Assert.assertNotNull( formatGuess );
+            Assert.assertTrue( formatGuess instanceof XlsFormatGuess );
+            Assert.assertEquals( XlsFormatGuess.MEDIA_TYPE, formatGuess.getMediaType() );
+        }
+
+        DataSetMetadata dataSetMetadata = metadataBuilder.metadata().id("beer").sheetName(sheetName).build();
+
+        try (InputStream inputStream = this.getClass().getResourceAsStream(fileName)) {
+
+            List<SchemaParserResult.SheetContent> sheetContents = xlsSchemaParser.parseAllSheets(getRequest(inputStream, "#8"));
+
+            List<ColumnMetadata> columnMetadatas = sheetContents.stream()
+                .filter(sheetContent -> sheetName.equals(sheetContent.getName())).findFirst().get().getColumnMetadatas();
+
+            logger.debug("columnMetadatas: {}", columnMetadatas);
+
+            Assertions.assertThat(columnMetadatas).isNotNull().isNotEmpty().hasSize(32);
+
+            dataSetMetadata.getRowMetadata().setColumns(columnMetadatas);
+        }
+    }
+
 }
