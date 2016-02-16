@@ -92,6 +92,7 @@
   "EXPORT_FILENAME": "Name of the generated export file:",
   "EXPORT_CSV": "Export to CSV",
   "EXPORT_TABLEAU": "Export to TABLEAU",
+  "EXPORT_XLS": "Export to XLSX",
   "OK": "OK",
   "CONFIRM": "Confirm",
 
