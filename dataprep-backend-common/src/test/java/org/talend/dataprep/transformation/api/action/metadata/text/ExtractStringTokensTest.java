@@ -383,8 +383,8 @@ public class ExtractStringTokensTest extends AbstractMetadataBaseTest {
         final List<ColumnMetadata> expected = new ArrayList<>();
         expected.add(createMetadata("0000", "recipe"));
         expected.add(createMetadata("0001", "steps"));
-        expected.add(createMetadata("0003", "steps_part"));
-        expected.add(createMetadata("0004", "steps_part"));
+        expected.add(createMetadata("0003", "steps_part_1"));
+        expected.add(createMetadata("0004", "steps_part_2"));
         expected.add(createMetadata("0002", "last update"));
 
         // when
@@ -409,10 +409,10 @@ public class ExtractStringTokensTest extends AbstractMetadataBaseTest {
         final List<ColumnMetadata> expected = new ArrayList<>();
         expected.add(createMetadata("0000", "recipe"));
         expected.add(createMetadata("0001", "steps"));
-        expected.add(createMetadata("0005", "steps_part"));
-        expected.add(createMetadata("0006", "steps_part"));
-        expected.add(createMetadata("0003", "steps_part"));
-        expected.add(createMetadata("0004", "steps_part"));
+        expected.add(createMetadata("0005", "steps_part_1"));
+        expected.add(createMetadata("0006", "steps_part_2"));
+        expected.add(createMetadata("0003", "steps_part_1"));
+        expected.add(createMetadata("0004", "steps_part_2"));
         expected.add(createMetadata("0002", "last update"));
 
         // when

@@ -59,7 +59,7 @@ public class ExtractStringTokens extends ActionMetadata implements ColumnAction 
     protected static final String SINGLE_COLUMN_MODE = "single_column";
 
     /** The column appendix. */
-    public static final String APPENDIX = "_part"; //$NON-NLS-1$
+    public static final String APPENDIX = "_part_"; //$NON-NLS-1$
 
     /** Regex action parameter. */
     protected static final String PARAMETER_REGEX = "regex"; //$NON-NLS-1$
@@ -164,12 +164,13 @@ public class ExtractStringTokens extends ActionMetadata implements ColumnAction 
         final Stack<String> lastColumnId = new Stack<>();
         lastColumnId.push(columnId);
         for (int i = 0; i < limit; i++) {
+            final int newColumnIndex = i + 1;
             newColumns.add(context.column(column.getName() + APPENDIX + i, (r) -> {
                 final ColumnMetadata c = ColumnMetadata.Builder //
                         .column() //
                         .type(Type.STRING) //
                         .computedId(StringUtils.EMPTY) //
-                        .name(column.getName() + APPENDIX) //
+                        .name(column.getName() + APPENDIX + newColumnIndex) //
                         .build();
                 lastColumnId.push(rowMetadata.insertAfter(lastColumnId.pop(), c));
                 return c;
