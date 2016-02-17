@@ -64,7 +64,7 @@
 
         <div ng-repeat="dataset in datasetListCtrl.state.folder.currentFolderContent.datasets track by dataset.id" id="dataset_{{$index}}">
             <inventory-item
-                copy="datasetListCtrl.openFolderChoice"
+                copy="datasetListCtrl.openFolderSelection"
                 details="INVENTORY_DETAILS"
                 file-model="datasetListCtrl.updateDatasetFile"
                 item="dataset"
@@ -199,6 +199,15 @@
             </form>
         </div>
     </talend-modal>
+
+    <dataset-copy-move
+            chosen-folder="datasetListCtrl.state.folder.currentFolder"
+            current-folder="datasetListCtrl.state.folder.currentFolder"
+            dataset-to-copy-move="datasetListCtrl.datasetToCopyMove"
+            get-folder-content="datasetListCtrl.folderService.getContent(folder)"
+            on-copy-submit="datasetListCtrl.datasetService.clone(ds, destFolder, name)"
+            on-move-submit="datasetListCtrl.datasetService.move(ds, fromFolder, destFolder, name)"
+            show-success-message="datasetListCtrl.messageService.success(successMsgTitle , successMsgContent)"
+            visibility="datasetListCtrl.datasetCopyVisibility"
+    ></dataset-copy-move>
 </div>
-
-

@@ -1,0 +1,70 @@
+<!--
+  ~ ============================================================================
+  ~
+  ~  Copyright (C) 2006-2016 Talend Inc. - www.talend.com
+  ~
+  ~  This source code is available under agreement available at
+  ~  https://github.com/Talend/data-prep/blob/master/LICENSE
+  ~
+  ~  You should have received a copy of the agreement
+  ~  along with this program; if not, write to Talend SA
+  ~  9 rue Pages 92150 Suresnes, France
+  ~
+  ~ ============================================================================
+  -->
+
+<talend-modal fullscreen="false"
+              close-button="false"
+              state="datasetCopyMoveCtrl.visibility"
+              disable-close-on-background-click="true"
+              disable-enter="true">
+
+    <div class="folders-modal-content">
+        <div class="modal-title" translate-once="CHOOSE_FOLDER_DESTINATION" translate-values="{type: 'dataset', name: dataset.name}">
+        </div>
+
+        <form name="datasetCopyMoveCtrl.cloneNameForm" ng-submit="datasetCopyMoveCtrl.cloneNameForm.$valid">
+
+            <folder-selection
+                    current-folder="datasetCopyMoveCtrl.currentFolder"
+                    ng-model="datasetCopyMoveCtrl.chosenFolder"
+                    visible="datasetCopyMoveCtrl.visibility"
+            ></folder-selection>
+
+            <div class="clone-name">
+                <span translate-once="DATASET_NAME"></span>
+                <input type="text"
+                       ng-model="datasetCopyMoveCtrl.datasetToCopyMove.name"
+                       id="new-name-input-id"
+                       can-be-blank="true"/>
+            </div>
+            <div class="modal-buttons">
+                <button type="button"
+                        class="talend-modal-close btn-secondary modal-secondary-button"
+                        ng-disabled="datasetCopyMoveCtrl.isMovingDs || datasetCopyMoveCtrl.isCloningDs"
+                        translate-once="CANCEL">
+                </button>
+
+                <button class="btn-primary modal-primary-button"
+                        ng-disabled="datasetCopyMoveCtrl.cloneNameForm.$invalid  || datasetCopyMoveCtrl.isMovingDs || datasetCopyMoveCtrl.isCloningDs"
+                        ng-switch="datasetCopyMoveCtrl.isMovingDs" ng-click="datasetCopyMoveCtrl.move()">
+                    <span ng-switch-when="false" translate-once="MOVE_HERE_ACTION"></span>
+
+                    <div class="feedback-sending-div" ng-switch-when="true" >
+                        <span class="feedback-sending continuous-rotate"><i data-icon="c" class="icon"></i></span>
+                    </div>
+                </button>
+                <button class="btn-primary modal-primary-button"
+                        ng-disabled="datasetCopyMoveCtrl.cloneNameForm.$invalid || datasetCopyMoveCtrl.isMovingDs || datasetCopyMoveCtrl.isCloningDs"
+                        ng-switch="datasetCopyMoveCtrl.isCloningDs" ng-click="datasetCopyMoveCtrl.clone()">
+                    <span ng-switch-when="false" translate-once="COPY_HERE_ACTION"></span>
+
+                    <div class="feedback-sending-div" ng-switch-when="true" >
+                        <span class="feedback-sending continuous-rotate"><i data-icon="c" class="icon"></i></span>
+                    </div>
+
+                </button>
+            </div>
+        </form>
+    </div>
+</talend-modal>

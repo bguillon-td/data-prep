@@ -14,7 +14,7 @@
 import DatasetListCtrl from './dataset-list-controller';
 import DatasetList from './dataset-list-directive';
 
-(function () {
+(() => {
     'use strict';
 
     /**
@@ -29,6 +29,7 @@ import DatasetList from './dataset-list-directive';
      * @requires data-prep.services.datasetWorkflowService
      * @requires data-prep.services.utils
      * @requires data-prep.services.state
+     * @requires data-prep.dataset-copy-move
      * @requires data-prep.services.folder
      */
     angular.module('data-prep.dataset-list',
@@ -43,6 +44,7 @@ import DatasetList from './dataset-list-directive';
             'data-prep.services.datasetWorkflowService',
             'data-prep.services.utils',
             'data-prep.services.state',
+            'data-prep.dataset-copy-move',
             'data-prep.services.folder'
         ])
         .controller('DatasetListCtrl', DatasetListCtrl)

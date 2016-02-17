@@ -1,0 +1,58 @@
+.folders-modal {
+  padding: 10px 0;
+
+  @include display(flex);
+  @include flex-direction(column);
+  @include justify-content(flex-start);
+  @include flex-wrap(wrap);
+  @include align-items(stretch);
+
+  .action-search {
+    float: right;
+    width: 20%;
+    height: 25px;
+    font-size: 0.8em;
+    padding: 0 0 0 5px;
+    border-top: 1px solid transparent;
+    border-right: 1px solid transparent;
+    border-left: 1px solid transparent;
+    box-shadow: none;
+  }
+
+  .folders {
+    height: 200px;
+    overflow: auto;
+    border: 1px solid #CECECE;
+    padding: 2px;
+
+    .icon-img {
+      vertical-align: bottom;
+    }
+
+    .folder-name {
+      color: $dark-gray;
+      vertical-align: bottom;
+
+      &:hover {
+        cursor: pointer;
+      }
+    }
+
+    .folder-selected {
+      background-color: $light-gray;
+    }
+
+    .has-no-children {
+      margin-left: 20px;
+      line-height: 1;
+      font-size: 1.8em;
+      padding-left: 13px;
+    }
+
+    .dropdown-button-down,
+    .dropdown-button-right {
+      cursor: pointer;
+      color: grey;
+    }
+  }
+}
