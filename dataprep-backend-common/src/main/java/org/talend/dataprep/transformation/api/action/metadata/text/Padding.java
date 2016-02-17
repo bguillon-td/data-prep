@@ -79,8 +79,7 @@ public class Padding extends ActionMetadata implements ColumnAction {
      */
     @Override
     public boolean acceptColumn(ColumnMetadata column) {
-        return Type.STRING.isAssignableFrom(Type.get(column.getType())) //
-                || Type.NUMERIC.isAssignableFrom(Type.get(column.getType()));
+        return Type.STRING.equals(Type.get(column.getType())) || Type.NUMERIC.isAssignableFrom(Type.get(column.getType()));
     }
 
     /**

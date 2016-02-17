@@ -37,7 +37,7 @@ public class BasicRules {
      */
     protected static final Predicate<ColumnMetadata> IS_STRING = columnMetadata -> {
         final Type type = Type.get(columnMetadata.getType());
-        return Type.STRING.isAssignableFrom(type);
+        return Type.STRING.equals(type);
     };
 
     /**
@@ -51,17 +51,13 @@ public class BasicRules {
     /**
      * A helper to filter columns where semantic domain=email.
      */
-    protected static final Predicate<ColumnMetadata> IS_EMAIL = columnMetadata -> {
-        final String domain = columnMetadata.getDomain();
-        return "email".equalsIgnoreCase(columnMetadata.getDomain());
-    };
+    protected static final Predicate<ColumnMetadata> IS_EMAIL = columnMetadata -> "email"
+            .equalsIgnoreCase(columnMetadata.getDomain());
 
     /**
      * A helper to filter columns where semantic domain=url.
      */
-    protected static final Predicate<ColumnMetadata> IS_URL = columnMetadata -> {
-        final String domain = columnMetadata.getDomain();
-        return "url".equalsIgnoreCase(columnMetadata.getDomain());
-    };
+    protected static final Predicate<ColumnMetadata> IS_URL = columnMetadata -> "url"
+            .equalsIgnoreCase(columnMetadata.getDomain());
 
 }

@@ -46,7 +46,7 @@ public class Split extends ActionMetadata implements ColumnAction {
     public static final String SPLIT_ACTION_NAME = "split"; //$NON-NLS-1$
 
     /** The split column appendix. */
-    public static final String SPLIT_APPENDIX = "_split"; //$NON-NLS-1$
+    public static final String SPLIT_APPENDIX = "_split_"; //$NON-NLS-1$
 
     /** The selected separator within the provided list. */
     protected static final String SEPARATOR_PARAMETER = "separator"; //$NON-NLS-1$
@@ -142,13 +142,14 @@ public class Split extends ActionMetadata implements ColumnAction {
         final Stack<String> lastColumnId = new Stack<>();
         lastColumnId.push(columnId);
         for (int i = 0; i < limit; i++) {
+            final int newColumnIndex = i + 1;
             newColumns.add(context.column(column.getName() + SPLIT_APPENDIX + i,
                     (r) -> {
                     final ColumnMetadata c = ColumnMetadata.Builder //
                             .column() //
                             .type(Type.STRING) //
                             .computedId(StringUtils.EMPTY) //
-                            .name(column.getName() + SPLIT_APPENDIX) //
+                            .name(column.getName() + SPLIT_APPENDIX + newColumnIndex) //
                             .build();
                     lastColumnId.push(rowMetadata.insertAfter(lastColumnId.pop(), c));
                     return c;

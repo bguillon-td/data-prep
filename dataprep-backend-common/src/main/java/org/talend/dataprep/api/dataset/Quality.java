@@ -31,6 +31,9 @@ public class Quality implements Serializable {
     @JsonProperty("empty")
     private int empty;
 
+    /** The most frequent sub type of the type considered met while searching for invalids. */
+    private String mostFrequentSubType;
+
     /** Number of invalid records. */
     @JsonProperty("invalid")
     private int invalid;
@@ -55,6 +58,21 @@ public class Quality implements Serializable {
      */
     public void setEmpty(int empty) {
         this.empty = empty;
+    }
+
+    /**
+     * @return the type suggested for a potential new analysis
+     */
+    public String getMostFrequentSubType() {
+        return mostFrequentSubType;
+    }
+
+    /**
+     *
+     * @param mostFrequentSubType the suggested type for a potential new analysis
+     */
+    public void setMostFrequentSubType(String mostFrequentSubType) {
+        this.mostFrequentSubType = mostFrequentSubType;
     }
 
     /**
