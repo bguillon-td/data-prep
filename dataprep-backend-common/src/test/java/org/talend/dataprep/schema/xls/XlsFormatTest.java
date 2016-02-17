@@ -537,10 +537,22 @@ public class XlsFormatTest extends AbstractSchemaTestUtils {
 
             logger.debug("columnMetadatas: {}", columnMetadatas);
 
-            Assertions.assertThat(columnMetadatas).isNotNull().isNotEmpty().hasSize(32);
+            Assertions.assertThat(columnMetadatas).isNotNull().isNotEmpty().hasSize(2);
 
             dataSetMetadata.getRowMetadata().setColumns(columnMetadatas);
         }
+
+        List<Map<String, String>> values = getValuesFromFile(fileName, formatGuess, dataSetMetadata);
+
+        logger.debug("values: {}", values);
+
+        Assertions.assertThat(values.get(0)) //
+            .contains(MapEntry.entry("0000", "Zoo"), //
+                      MapEntry.entry("0001", "Could not resolve external workbook name 'Workbook1.xlsx'. Workbook environment has not been set up., formula: [1]Leads!$D$2"));
+
+        Assertions.assertThat(values.get(1)) //
+            .contains(MapEntry.entry("0000", "Boo"), //
+                      MapEntry.entry("0001", "Could not resolve external workbook name 'Workbook1.xlsx'. Workbook environment has not been set up., formula: [1]Leads!$D$3"));
     }
 
 }

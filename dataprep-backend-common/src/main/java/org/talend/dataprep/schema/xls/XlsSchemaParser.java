@@ -269,7 +269,7 @@ public class XlsSchemaParser implements SchemaParser {
                     xlsType = cell.getCellType() == Cell.CELL_TYPE_FORMULA ? //
                             formulaEvaluator.evaluate(cell).getCellType() : cell.getCellType();
                 } catch (Exception e) {
-
+                    // ignore formula error evaluation get as a String with the formula
                 }
                 switch (xlsType) {
                 case Cell.CELL_TYPE_BOOLEAN:
@@ -281,11 +281,10 @@ public class XlsSchemaParser implements SchemaParser {
                 case Cell.CELL_TYPE_BLANK:
                     currentType = BLANK;
                     break;
+                case Cell.CELL_TYPE_FORMULA:
                 case Cell.CELL_TYPE_STRING:
                     currentType = STRING.getName();
                     break;
-                case Cell.CELL_TYPE_FORMULA:
-                    // should not happen!!!
                 case Cell.CELL_TYPE_ERROR:
                     // we cannot really do anything with an error
                 default:
