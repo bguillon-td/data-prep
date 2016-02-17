@@ -62,7 +62,7 @@ public class HtmlSchemaParser implements SchemaParser {
         try {
             String str = IOUtils.toString(request.getContent(), encoding);
 
-            Document document = Jsoup.parse(str);
+            Document document = Jsoup.parse( request.getContent(), encoding, "" );// .parse(str);
 
             Elements headers = document.select(headerSelector);
 

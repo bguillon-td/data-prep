@@ -61,7 +61,7 @@ public class HtmlFormatGuesser implements FormatGuesser {
         try {
             String str = IOUtils.toString(request.getContent(), encoding);
 
-            Document document = Jsoup.parse(str);
+            Document document = Jsoup.parse( request.getContent(), encoding, null );// .parse(str);
 
             for (Pattern pattern : patterns) {
                 // we found element for both header selector and values selector

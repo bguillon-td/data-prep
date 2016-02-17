@@ -61,7 +61,7 @@ public class HtmlSerializer implements Serializer {
             // select values
             String str = IOUtils.toString(rawContent, encoding);
 
-            Document document = Jsoup.parse(str);
+            Document document = Jsoup.parse( rawContent, encoding, null );// .parse(str);
 
             Elements values = document.select(valuesSelector);
 
