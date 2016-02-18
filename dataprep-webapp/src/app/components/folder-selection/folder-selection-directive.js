@@ -20,12 +20,10 @@
  * <folder-selection
  *        current-folder="datasetCopyMoveCtrl.currentFolder"
  *        ng-model="datasetCopyMoveCtrl.chosenFolder"
- *        visible="datasetCopyMoveCtrl.visibility"
  * ></folder-selection>
  *
  * @param {object}      currentFolder current folder of the dataset
  * @param {object}      ng-model the selected folder
- * @param {boolean}     visible shows the modal
  */
 
 export default function FolderSelection() {
@@ -36,28 +34,15 @@ export default function FolderSelection() {
         bindToController: true,
         scope: {
             currentFolder: '=',
-            selectedFolder: '=ngModel',
-            visible: '='
+            selectedFolder: '=ngModel'
         },
         controllerAs: 'folderSelectionCtrl',
         controller: 'FolderSelectionCtrl',
         link: function (scope, iElement, iAttrs, ctrl) {
-
-            /*
-             * watcher on the visible property to show/hide the modal
-             * */
-            scope.$watch (function () {
-                return ctrl.visible;
-            }, function (newValue) {
-                if (newValue && newValue === true) {
-                    ctrl.initFolders ();
-                }
-            });
-
             /*
              * watcher on the selected folder to update the background
              * */
-            scope.$watch (function () {
+            scope.$watch(function () {
                 return ctrl.selectedFolder;
             }, function (newValue, previousValue) {
                 if (newValue) {

@@ -22,7 +22,6 @@ export default function FolderSelectionCtrl($translate, FolderService) {
     'ngInject';
 
     var vm = this;
-    vm.visible = false;
 
     /**
      * @type {Array} folders found after a search query
@@ -50,11 +49,13 @@ export default function FolderSelectionCtrl($translate, FolderService) {
         };
         vm.folders = [rootFolder];
 
-        var pathParts = vm.currentFolder.path.split('/');
-        if (vm.currentFolder.path !== '/') {
-            pathParts.unshift('');
+        if(vm.currentFolder){
+            var pathParts = vm.currentFolder.path.split('/');
+            if (vm.currentFolder.path !== '/') {
+                pathParts.unshift('');
+            }
+            locateCurrentFolder(vm.folders[0], pathParts, '');
         }
-        locateCurrentFolder(vm.folders[0], pathParts, '');
     };
 
     function locateCurrentFolder(parentFolder, pathParts, currentPath) {
@@ -136,5 +137,7 @@ export default function FolderSelectionCtrl($translate, FolderService) {
             vm.initFolders();
         }
     };
+
+    vm.initFolders();
 }
 

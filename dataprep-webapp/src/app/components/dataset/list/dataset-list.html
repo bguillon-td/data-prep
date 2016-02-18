@@ -193,7 +193,6 @@
                             <div class="feedback-sending-div" ng-switch-when="true" >
                                 <span class="feedback-sending continuous-rotate"><i data-icon="c" class="icon"></i></span>
                             </div>
-
                     </button>
                 </div>
             </form>
@@ -201,13 +200,13 @@
     </talend-modal>
 
     <dataset-copy-move
-            chosen-folder="datasetListCtrl.state.folder.currentFolder"
+            chosen-folder="datasetListCtrl.currentFolderClone"
             current-folder="datasetListCtrl.state.folder.currentFolder"
             dataset-to-copy-move="datasetListCtrl.datasetToCopyMove"
             get-folder-content="datasetListCtrl.folderService.getContent(folder)"
             on-copy-submit="datasetListCtrl.datasetService.clone(ds, destFolder, name)"
             on-move-submit="datasetListCtrl.datasetService.move(ds, fromFolder, destFolder, name)"
-            show-success-message="datasetListCtrl.messageService.success(successMsgTitle , successMsgContent)"
+            show-success-message="datasetListCtrl.messageService.success(successMsgTitle, successMsgContent)"
             visibility="datasetListCtrl.datasetCopyVisibility"
     ></dataset-copy-move>
 </div>

@@ -13,7 +13,7 @@
 
 /**
  * @ngdoc controller
- * @name data-prep.dataset-list.controller:DatasetListCtrl
+ * @name data-prep.dataset-copy-move.controller:DatasetListCtrl
  * @description enables the user to move/copy a dataset from one folder to another
  */
 export default function DatasetCopyMoveCtrl($timeout) {
@@ -49,7 +49,6 @@ export default function DatasetCopyMoveCtrl($timeout) {
               // force going to current folder to refresh the content
               vm.getFolderContent({folder: vm.currentFolder});
               // reset some values to initial values
-              //vm.setDatasetToCopyMove ({ds: null});
               vm.isCloningDs = false;
               vm.visibility = false;
           }, function () {
@@ -84,7 +83,6 @@ export default function DatasetCopyMoveCtrl($timeout) {
               vm.getFolderContent({folder: vm.currentFolder});
 
               // reset some values to initial values
-              //vm.setDatasetToCopyMove ({ds: null});
               vm.isMovingDs = false;
               vm.visibility = false;
           }, function () {

@@ -54,7 +54,6 @@ export default function DatasetCopyMove() {
             getFolderContent: '&',
             onCopySubmit: '&',
             onMoveSubmit: '&',
-            //setDatasetToCopyMove: '&',
             showSuccessMessage: '&',
             visibility: '='
         },
