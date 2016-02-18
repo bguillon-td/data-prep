@@ -18,8 +18,10 @@ import java.util.*;
 
 import javax.inject.Inject;
 
+import com.google.common.collect.Lists;
 import nu.validator.htmlparser.sax.HtmlParser;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringUtils;
 import org.assertj.core.api.Assertions;
 import org.assertj.core.data.MapEntry;
 import org.junit.Test;
@@ -39,6 +41,7 @@ import org.xml.sax.ContentHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
+import org.xml.sax.helpers.DefaultHandler;
 
 public class HtmlFormatTest extends AbstractSchemaTestUtils {
 
@@ -60,25 +63,94 @@ public class HtmlFormatTest extends AbstractSchemaTestUtils {
         datasetMetadata.setEncoding("UTF-16");
 
         Map<String, String> parameters = new HashMap<>(2);
-        parameters.put(HtmlFormatGuesser.HEADER_SELECTOR_KEY, "table tr th");
-        parameters.put(HtmlFormatGuesser.VALUES_SELECTOR_KEY, "table tr td");
+        parameters.put(HtmlFormatGuesser.HEADER_SELECTOR_KEY, "html body table tr th");
+        parameters.put(HtmlFormatGuesser.VALUES_SELECTOR_KEY, "html body table tr td");
 
         datasetMetadata.getContent().setParameters(parameters);
 
+        /*
+
+        final Stack<String> stack = new Stack<>();
+
         HtmlParser htmlParser = new HtmlParser(  );
 
-        htmlParser.setContentHandler( new ContentHandler()
-        {
-            @Override
-            public void setDocumentLocator( Locator locator )
-            {
+        final String headerPattern = "html body table tr th";
 
+        final List<String> headerStack = Arrays.asList( StringUtils.split( headerPattern, ' ' ) );
+
+        final String valuesPattern =  "html body table tr td";
+
+        final List<String> valuesStack = Arrays.asList( StringUtils.split( valuesPattern, ' ' ) );
+
+        final List<String> subValuesStack = valuesStack.subList( 0, valuesStack.size() -1 );
+
+        htmlParser.setContentHandler( new DefaultHandler()
+        {
+            private boolean matchingHeaderPatterns;
+
+            private boolean matchingValuesPatterns;
+
+            private List<String> headerValues = new ArrayList<>(  );
+
+            private List<List<String>> contentValues = new ArrayList<>(  );
+
+            @Override
+            public void startElement( String uri, String localName, String qName, Attributes atts )
+                throws SAXException
+            {
+                stack.push( localName );
+                if (stack.containsAll( headerStack )){
+                    matchingHeaderPatterns = true;
+                }
+
+                if (stack.containsAll( valuesStack )){
+                    matchingValuesPatterns = true;
+                }
             }
 
             @Override
-            public void startDocument()
+            public void endElement( String uri, String localName, String qName )
                 throws SAXException
             {
+                String top = stack.peek();
+                if ( StringUtils.equals( top, localName )){
+                    String removed = stack.pop();
+                    if (stack.containsAll( headerStack )){
+                        matchingHeaderPatterns = true;
+                    } else {
+                        matchingHeaderPatterns = false;
+                    }
+
+                    if (stack.containsAll( valuesStack )){
+                        matchingValuesPatterns = true;
+                    } else {
+                        matchingValuesPatterns = false;
+                    }
+
+                    //new lines of values so create a new List for values ?
+
+                    if (stack.containsAll( subValuesStack ) //
+                        && StringUtils.equals( removed, valuesStack.get( valuesStack.size() - 1 ) )) {
+                        contentValues.add( new ArrayList<>(  ) );
+                    }
+                }
+            }
+
+            @Override
+            public void characters( char[] ch, int start, int length )
+                throws SAXException
+            {
+                // do we really get the whole content once??
+                // we assume yes
+                if (matchingValuesPatterns) {
+                    if (contentValues.isEmpty()) {
+                        contentValues.add( new ArrayList<>(  ) );
+                    }
+                    contentValues.get( contentValues.size() - 1 ).add( new String( ch ) );
+                }
+                if(matchingHeaderPatterns){
+                    headerValues.add( new String( ch ) );
+                }
 
             }
 
@@ -86,67 +158,15 @@ public class HtmlFormatTest extends AbstractSchemaTestUtils {
             public void endDocument()
                 throws SAXException
             {
-
-            }
-
-            @Override
-            public void startPrefixMapping( String prefix, String uri )
-                throws SAXException
-            {
-
-            }
-
-            @Override
-            public void endPrefixMapping( String prefix )
-                throws SAXException
-            {
-
-            }
-
-            @Override
-            public void startElement( String uri, String localName, String qName, Attributes atts )
-                throws SAXException
-            {
-                System.out.println( "foo" );
-            }
-
-            @Override
-            public void endElement( String uri, String localName, String qName )
-                throws SAXException
-            {
-                System.out.println( "foo" );
-            }
-
-            @Override
-            public void characters( char[] ch, int start, int length )
-                throws SAXException
-            {
-                System.out.println( "foo" );
-            }
-
-            @Override
-            public void ignorableWhitespace( char[] ch, int start, int length )
-                throws SAXException
-            {
-
-            }
-
-            @Override
-            public void processingInstruction( String target, String data )
-                throws SAXException
-            {
-
-            }
-
-            @Override
-            public void skippedEntity( String name )
-                throws SAXException
-            {
-
+                super.endDocument();
             }
         } );
 
         htmlParser.parse( new InputSource( this.getClass().getResourceAsStream(fileName)  ) );
+
+        htmlParser.parse( new InputSource( new SchemaParser.Request(this.getClass().getResourceAsStream(fileName), datasetMetadata).getContent() ) );
+
+        */
 
         SchemaParserResult result = parser
                 .parse(new SchemaParser.Request(this.getClass().getResourceAsStream(fileName), datasetMetadata));
