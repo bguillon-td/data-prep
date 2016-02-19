@@ -183,7 +183,8 @@ export default function PlaygroundCtrl($timeout, $state, $stateParams, state, St
             errorGoBack({type: 'preparation'});
         }
         else {
-            PlaygroundService.load(preparation).catch(errorGoBack);
+            PlaygroundService.load(preparation)
+                .catch(() => errorGoBack({type: 'preparation'}));
         }
     }
     else if ($stateParams.datasetid) {
@@ -192,7 +193,8 @@ export default function PlaygroundCtrl($timeout, $state, $stateParams, state, St
             errorGoBack({type: 'dataset'});
         }
         else {
-            PlaygroundService.initPlayground(dataset).catch(errorGoBack);
+            PlaygroundService.initPlayground(dataset)
+                .catch(() => errorGoBack({type: 'dataset'}));
         }
     }
 }

@@ -353,16 +353,15 @@ describe('Playground controller', function () {
     });
 
     describe('initialization', () => {
-        beforeEach(inject(($q, MessageService, PlaygroundService) => {
+        beforeEach(inject(($q, MessageService) => {
             spyOn(MessageService, 'error').and.returnValue();
-            spyOn(PlaygroundService, 'load').and.returnValue($q.when());
-            spyOn(PlaygroundService, 'initPlayground').and.returnValue($q.when());
             stateMock.inventory = {preparations: preparations, datasets: datasets};
         }));
 
-        it('should load playground', inject(($stateParams, PlaygroundService) => {
+        it('should load playground', inject(($q, $stateParams, PlaygroundService) => {
             //given
             $stateParams.prepid = preparations[0].id;
+            spyOn(PlaygroundService, 'load').and.returnValue($q.when());
 
             //when
             createController();
@@ -384,10 +383,25 @@ describe('Playground controller', function () {
             expect($state.go).toHaveBeenCalledWith('nav.home.preparations');
         }));
 
-        it('should load dataset', inject(($stateParams, PlaygroundService) => {
+        it('should go back to previous state when preparation content GET return an error', inject(($q, $state, $stateParams, MessageService, PlaygroundService) => {
+            //given
+            $stateParams.prepid = 'non existing prep';
+            $stateParams.datasetid = null;
+            spyOn(PlaygroundService, 'load').and.returnValue($q.reject());
+
+            //when
+            createController();
+
+            //then
+            expect(MessageService.error).toHaveBeenCalledWith('PLAYGROUND_FILE_NOT_FOUND_TITLE', 'PLAYGROUND_FILE_NOT_FOUND', {type: 'preparation'});
+            expect($state.go).toHaveBeenCalledWith('nav.home.preparations');
+        }));
+
+        it('should load dataset', inject(($q, $stateParams, PlaygroundService) => {
             //given
             $stateParams.prepid = null;
             $stateParams.datasetid = 'de3cc32a-b624-484e-b8e7-dab9061a009c';
+            spyOn(PlaygroundService, 'initPlayground').and.returnValue($q.when());
 
             //when
             createController();
@@ -400,6 +414,20 @@ describe('Playground controller', function () {
             //given
             $stateParams.prepid = null;
             $stateParams.datasetid = 'non existing dataset';
+
+            //when
+            createController();
+
+            //then
+            expect(MessageService.error).toHaveBeenCalledWith('PLAYGROUND_FILE_NOT_FOUND_TITLE', 'PLAYGROUND_FILE_NOT_FOUND', {type: 'dataset'});
+            expect($state.go).toHaveBeenCalledWith('nav.home.preparations');
+        }));
+
+        it('should go back to previous state when dataset content GET return an error', inject(($q, $state, $stateParams, MessageService, PlaygroundService) => {
+            //given
+            $stateParams.prepid = null;
+            $stateParams.datasetid = 'non existing dataset';
+            spyOn(PlaygroundService, 'initPlayground').and.returnValue($q.reject());
 
             //when
             createController();

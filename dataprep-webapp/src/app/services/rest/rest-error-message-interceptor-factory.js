@@ -30,7 +30,7 @@ export default function RestErrorMessageHandler($q, MessageService) {
          */
         responseError: function (rejection) {
             //user cancel the request : we do not show message
-            if (rejection.config.timeout && rejection.config.timeout.$$state.value === 'user cancel') { //eslint-disable-line angular/no-private-call
+            if (rejection.config && rejection.config.timeout && rejection.config.timeout.$$state.value === 'user cancel') { //eslint-disable-line angular/no-private-call
                 return $q.reject(rejection);
             }
 
@@ -41,7 +41,7 @@ export default function RestErrorMessageHandler($q, MessageService) {
             else if (rejection.status === 500) {
                 MessageService.error('SERVER_ERROR_TITLE', 'GENERIC_ERROR');
             }
-            else if (rejection.data.message_title && rejection.data.message) {
+            else if (rejection.data && rejection.data.message_title && rejection.data.message) {
                 MessageService.error(rejection.data.message_title, rejection.data.message);
             }
 

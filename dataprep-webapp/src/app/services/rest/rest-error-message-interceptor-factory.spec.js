@@ -91,7 +91,7 @@ describe('Rest message interceptor factory', function () {
         expect(MessageService.error).toHaveBeenCalledWith('TDP_API_DATASET_STILL_IN_USE_TITLE', 'TDP_API_DATASET_STILL_IN_USE');
     }));
 
-    it('should not show expected error message if not exist', inject(function ($rootScope, $http, MessageService) {
+    it('should not show error message if not exist', inject(function ($rootScope, $http, MessageService) {
         //given
         $httpBackend.expectGET('testService').respond(400, '');
 
@@ -103,5 +103,4 @@ describe('Rest message interceptor factory', function () {
         //then
         expect(MessageService.error).not.toHaveBeenCalled();
     }));
-
 });
