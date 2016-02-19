@@ -1,9 +1,9 @@
 class TalendSplitterCtrl {
-    constructor($scope, $element, $document) {
+    constructor($scope, $element, $window) {
         'ngInject';
         this.drag = false;
         this.$element = $element;
-        this.$document = $document;
+        this.windowElement = angular.element($window);
         this.$scope = $scope;
     }
 
@@ -32,9 +32,9 @@ class TalendSplitterCtrl {
         this.splitHandler.on('mousedown', () => this.drag = true);
 
         const onmouseup = () => this.drag = false;
-        this.$document.on('mouseup', onmouseup);
+        this.windowElement.on('mouseup', onmouseup);
 
-        this.$scope.$on('$destroy', () => this.$document.off('mouseup', onmouseup));
+        this.$scope.$on('$destroy', () => this.windowElement.off('mouseup', onmouseup));
     }
 
     updateSize(event) {

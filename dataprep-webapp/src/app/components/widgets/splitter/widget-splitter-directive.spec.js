@@ -70,7 +70,7 @@ describe('Talend splitter', () => {
                 expect(ctrl.drag).toBe(true);
             });
 
-            it('should set drag flag to true on $document mouseup', inject(($document) => {
+            it('should set drag flag to true on window mouseup', inject(($window) => {
                 //given
                 scope.orientation = 'vertical';
                 createElement();
@@ -80,7 +80,7 @@ describe('Talend splitter', () => {
                 ctrl.drag = true;
 
                 //when
-                $document.trigger(event);
+                angular.element($window).trigger(event);
 
                 //then
                 expect(ctrl.drag).toBe(false);
