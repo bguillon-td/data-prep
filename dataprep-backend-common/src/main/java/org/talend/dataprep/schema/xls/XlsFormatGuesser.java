@@ -14,9 +14,13 @@
 package org.talend.dataprep.schema.xls;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.PushbackInputStream;
 import java.util.Collections;
 
-import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.POIXMLDocument;
+import org.apache.poi.poifs.filesystem.NPOIFSFileSystem;
+import org.apache.poi.util.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,9 +47,20 @@ public class XlsFormatGuesser implements FormatGuesser {
             throw new IllegalArgumentException("Content cannot be null.");
         }
         try {
-            Workbook workbook = XlsUtils.getWorkbook(request);
-            // if poi can read it we assume it's correct excel file && at least one sheet
-            if (workbook != null && workbook.getNumberOfSheets() > 0) {
+
+            InputStream inputStream = request.getContent();
+
+            // If doesn't support mark, wrap up
+            if (!inputStream.markSupported()) {
+                inputStream = new PushbackInputStream(inputStream, 8);
+            }
+
+            // just have a look at file headers
+            // so we do not check any content (i.e at least one sheet etc...)
+            byte[] header8 = IOUtils.peekFirst8Bytes(inputStream);
+
+             // Try to reader headers
+            if (POIXMLDocument.hasOOXMLHeader(inputStream) || NPOIFSFileSystem.hasPOIFSHeader(header8)) {
                 return new FormatGuesser.Result(xlsFormatGuess, encoding, Collections.emptyMap());
             }
         } catch (IOException e) {
