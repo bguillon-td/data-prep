@@ -1,31 +1,37 @@
-//  ============================================================================
+// ============================================================================
 //
-//  Copyright (C) 2006-2016 Talend Inc. - www.talend.com
+// Copyright (C) 2006-2016 Talend Inc. - www.talend.com
 //
-//  This source code is available under agreement available at
-//  https://github.com/Talend/data-prep/blob/master/LICENSE
+// This source code is available under agreement available at
+// https://github.com/Talend/data-prep/blob/master/LICENSE
 //
-//  You should have received a copy of the agreement
-//  along with this program; if not, write to Talend SA
-//  9 rue Pages 92150 Suresnes, France
+// You should have received a copy of the agreement
+// along with this program; if not, write to Talend SA
+// 9 rue Pages 92150 Suresnes, France
 //
-//  ============================================================================
+// ============================================================================
 
 package org.talend.dataprep.schema.html;
 
-import java.util.*;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import javax.inject.Inject;
 
-import org.apache.commons.io.IOUtils;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
+import nu.validator.htmlparser.common.XmlViolationPolicy;
+import nu.validator.htmlparser.sax.HtmlParser;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.talend.dataprep.schema.FormatGuesser;
 import org.talend.dataprep.schema.SchemaParser;
 import org.talend.dataprep.schema.unsupported.UnsupportedFormatGuess;
+import org.xml.sax.InputSource;
 
 @Component("formatGuesser#html")
 public class HtmlFormatGuesser implements FormatGuesser {
@@ -47,7 +53,7 @@ public class HtmlFormatGuesser implements FormatGuesser {
 
     public HtmlFormatGuesser() {
         patterns = new ArrayList<>(1);
-        patterns.add(new Pattern("tr th", "tr td"));
+        patterns.add(new Pattern("html body table tr th", "html body table tr td"));
     }
 
     @Override
@@ -56,18 +62,25 @@ public class HtmlFormatGuesser implements FormatGuesser {
             throw new IllegalArgumentException("Content cannot be null.");
         }
 
-        // UTF-16 is used because of sales force export
-        // TODO ideally we must a list of predefined encoding values
         try {
-            String str = IOUtils.toString(request.getContent(), encoding);
-
-            Document document = Jsoup.parse( request.getContent(), encoding, null );// .parse(str);
-
             for (Pattern pattern : patterns) {
-                // we found element for both header selector and values selector
-                // so we can consider it match
-                if (document.select(pattern.getHeaderSelector()).size() > 0 //
-                        && document.select(pattern.getValuesSelector()).size() > 0) {
+
+                HtmlParser htmlParser = new HtmlParser();
+
+                htmlParser.setStreamabilityViolationPolicy( XmlViolationPolicy.FATAL );
+
+                HeadersContentHandler headersContentHandler = new HeadersContentHandler(pattern.getHeaderSelector(), true);
+
+                htmlParser.setContentHandler(headersContentHandler);
+
+                InputStream inputStream = request.getContent();
+
+                InputSource inputSource = new InputSource(inputStream);
+                // no need to force the encoding the parser will discover it
+                // inputSource.setEncoding( encoding );
+                try {
+                    htmlParser.parse(inputSource);
+                } catch (HeadersContentHandler.FastContentHandlerStopException e) {
                     // save patterns found for the schema parser
                     Map<String, String> parameters = new HashMap<>(2);
                     parameters.put(HEADER_SELECTOR_KEY, pattern.getHeaderSelector());

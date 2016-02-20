@@ -1,30 +1,27 @@
-//  ============================================================================
+// ============================================================================
 //
-//  Copyright (C) 2006-2016 Talend Inc. - www.talend.com
+// Copyright (C) 2006-2016 Talend Inc. - www.talend.com
 //
-//  This source code is available under agreement available at
-//  https://github.com/Talend/data-prep/blob/master/LICENSE
+// This source code is available under agreement available at
+// https://github.com/Talend/data-prep/blob/master/LICENSE
 //
-//  You should have received a copy of the agreement
-//  along with this program; if not, write to Talend SA
-//  9 rue Pages 92150 Suresnes, France
+// You should have received a copy of the agreement
+// along with this program; if not, write to Talend SA
+// 9 rue Pages 92150 Suresnes, France
 //
-//  ============================================================================
+// ============================================================================
 
 package org.talend.dataprep.schema.html;
 
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
 import java.util.List;
 import java.util.Map;
 
+import nu.validator.htmlparser.sax.HtmlParser;
+
 import org.apache.commons.io.IOUtils;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -33,6 +30,7 @@ import org.talend.dataprep.api.dataset.DataSetMetadata;
 import org.talend.dataprep.exception.TDPException;
 import org.talend.dataprep.exception.error.CommonErrorCodes;
 import org.talend.dataprep.schema.Serializer;
+import org.xml.sax.InputSource;
 
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
@@ -58,40 +56,38 @@ public class HtmlSerializer implements Serializer {
 
             List<ColumnMetadata> columns = metadata.getRowMetadata().getColumns();
 
-            // select values
-            String str = IOUtils.toString(rawContent, encoding);
+            ValuesContentHandler valuesContentHandler = new ValuesContentHandler(valuesSelector);
 
-            Document document = Jsoup.parse( rawContent, encoding, null );// .parse(str);
+            HtmlParser htmlParser = new HtmlParser();
 
-            Elements values = document.select(valuesSelector);
+            htmlParser.setContentHandler(valuesContentHandler);
 
-            // selector returns all found cells so we need to swich over new lines with a columns index
-            int idx = 0;
+            htmlParser.parse(new InputSource(rawContent));
 
-            for (Element value : values) {
+            for (List<String> values : valuesContentHandler.getValues()) {
 
-                if (idx == 0) {
-                    generator.writeStartObject();
+                generator.writeStartObject();
+
+                int idx = 0;
+
+                for (String value : values) {
+                    ColumnMetadata columnMetadata = columns.get(idx);
+                    generator.writeFieldName(columnMetadata.getId());
+                    String cellValue = value;
+                    if (cellValue != null) {
+                        generator.writeString(cellValue);
+                    } else {
+                        generator.writeNull();
+                    }
+                    idx++;
                 }
-                ColumnMetadata columnMetadata = columns.get(idx);
-                generator.writeFieldName(columnMetadata.getId());
-                String cellValue = value.text();
-                if (cellValue != null) {
-                    generator.writeString(cellValue);
-                } else {
-                    generator.writeNull();
-                }
-                idx++;
-                if (idx >= columns.size()) {
-                    idx = 0;
-                    generator.writeEndObject();
-                }
+                generator.writeEndObject();
             }
 
             generator.writeEndArray();
             generator.flush();
             return new ByteArrayInputStream(writer.toString().getBytes("UTF-8"));
-        } catch (IOException e) {
+        } catch (Exception e) {
             throw new TDPException(CommonErrorCodes.UNABLE_TO_SERIALIZE_TO_JSON, e);
         }
 
