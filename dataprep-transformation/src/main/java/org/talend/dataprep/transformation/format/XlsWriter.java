@@ -21,6 +21,7 @@ import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,7 +49,7 @@ public class XlsWriter implements TransformerWriter {
 
     private final OutputStream outputStream;
 
-    private final Workbook workbook;
+    private final SXSSFWorkbook workbook;
 
     private final Sheet sheet;
 
@@ -67,7 +68,8 @@ public class XlsWriter implements TransformerWriter {
     public XlsWriter(final OutputStream output, Map<String, String> parameters) {
         try {
             this.outputStream = output;
-            this.workbook = new XSSFWorkbook();
+            // we limit to only 50 rows in memory
+            this.workbook = new SXSSFWorkbook(50);
             // TODO sheet name as an option?
             this.sheet = this.workbook.createSheet("sheet1");
             bufferFile = File.createTempFile("xlsWriter", ".csv");
