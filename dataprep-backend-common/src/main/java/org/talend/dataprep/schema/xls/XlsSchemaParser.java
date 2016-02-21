@@ -16,6 +16,7 @@ package org.talend.dataprep.schema.xls;
 import static org.talend.dataprep.api.type.Type.*;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -26,13 +27,22 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 
+import com.ctc.wstx.sax.WstxSAXParserFactory;
 import org.apache.commons.lang.StringUtils;
 import org.apache.poi.hssf.usermodel.HSSFDateUtil;
+import org.apache.poi.openxml4j.opc.OPCPackage;
 import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.DataFormatter;
 import org.apache.poi.ss.usermodel.FormulaEvaluator;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.util.SAXHelper;
+import org.apache.poi.xssf.eventusermodel.ReadOnlySharedStringsTable;
+import org.apache.poi.xssf.eventusermodel.XSSFReader;
+import org.apache.poi.xssf.eventusermodel.XSSFSheetXMLHandler;
+import org.apache.poi.xssf.model.StylesTable;
+import org.apache.poi.xssf.usermodel.XSSFComment;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.Marker;
@@ -44,6 +54,9 @@ import org.talend.dataprep.exception.error.CommonErrorCodes;
 import org.talend.dataprep.log.Markers;
 import org.talend.dataprep.schema.SchemaParser;
 import org.talend.dataprep.schema.SchemaParserResult;
+import org.xml.sax.ContentHandler;
+import org.xml.sax.InputSource;
+import org.xml.sax.XMLReader;
 
 /**
  * This class is in charge of parsing excel file (note apache poi is used for reading .xls) see https://poi.apache.org/
@@ -63,42 +76,160 @@ public class XlsSchemaParser implements SchemaParser {
     @Override
     public SchemaParserResult parse(Request request) {
 
-        LOGGER.debug(Markers.dataset(request.getMetadata().getId()), "parsing {} ");
+        final Marker marker = Markers.dataset(request.getMetadata().getId());
+
+        LOGGER.debug(marker, "parsing {} ");
 
         // FIXME ATM only first sheet but need to be discuss
         // maybe return List<List<ColumnMetadata>> ??
         // so we could return all sheets
 
-        List<SchemaParserResult.SheetContent> sheetContents = parseAllSheets(request);
+        try
+        {
+            List<SchemaParserResult.SheetContent> sheetContents = parseAllSheets(request);
 
-        if (!sheetContents.isEmpty()) {
-            return sheetContents.size() == 1 ? //
-                    SchemaParserResult.Builder.parserResult() //
-                            .sheetContents(sheetContents) //
-                            .draft(false) //
-                            .build() //
-                    : //
-                    SchemaParserResult.Builder.parserResult() //
-                            .sheetContents(sheetContents) //
-                            .draft(true) //
-                            .sheetName(sheetContents.get(0).getName()) //
-                            .build();
+            if (!sheetContents.isEmpty()) {
+                return sheetContents.size() == 1 ? //
+                        SchemaParserResult.Builder.parserResult() //
+                                .sheetContents(sheetContents) //
+                                .draft(false) //
+                                .build() //
+                        : //
+                        SchemaParserResult.Builder.parserResult() //
+                                .sheetContents(sheetContents) //
+                                .draft(true) //
+                                .sheetName(sheetContents.get(0).getName()) //
+                                .build();
+            }
+
+            return SchemaParserResult.Builder.parserResult() //
+                    .sheetContents(Collections.emptyList()) //
+                    .draft(false) //
+                    .build();
+        } catch (Exception e) {
+            LOGGER.debug(marker, "IOException during parsing xls request :" + e.getMessage(), e);
+            throw new TDPException(CommonErrorCodes.UNEXPECTED_EXCEPTION, e);
         }
-
-        return SchemaParserResult.Builder.parserResult() //
-                .sheetContents(Collections.emptyList()) //
-                .draft(false) //
-                .build();
 
     }
 
+    public List<SchemaParserResult.SheetContent> parseAllSheets(Request request) throws IOException {
+       return XlsUtils.isNewExcelFormat(request.getContent())
+            ? parseAllSheetsNew(request) : parseAllSheetsOldFormat(request);
+    }
+
     /**
-     * Parse all xls sheets and return their
+     * parse excel document using SAX like technology (only available for modern excel documents)
+     * @param request
+     * @return
+     */
+    private List<SchemaParserResult.SheetContent> parseAllSheetsNew(Request request) {
+
+        final Marker marker = Markers.dataset(request.getMetadata().getId());
+
+        List<SchemaParserResult.SheetContent> schemas = new ArrayList<>();
+
+        try {
+            OPCPackage container = OPCPackage.open(request.getContent());
+
+            ReadOnlySharedStringsTable strings = new ReadOnlySharedStringsTable(container);
+            XSSFReader xssfReader = new XSSFReader(container);
+            StylesTable styles = xssfReader.getStylesTable();
+
+            XSSFReader.SheetIterator iter = (XSSFReader.SheetIterator) xssfReader.getSheetsData();
+
+            int i = 0;
+
+            while (iter.hasNext()) {
+                try (InputStream sheetInputStream = iter.next()) {
+                    String sheetName = iter.getSheetName();
+                    InputSource sheetSource = new InputSource(sheetInputStream);
+
+                    DefaultSheetContentsHandler defaultSheetContentsHandler = new DefaultSheetContentsHandler();
+
+                    XMLReader sheetParser = new WstxSAXParserFactory().newSAXParser().getXMLReader(); // SAXHelper.newXMLReader();
+                    ContentHandler handler = new XSSFSheetXMLHandler(styles, strings, defaultSheetContentsHandler
+                            , true);
+                    sheetParser.setContentHandler(handler);
+                    try
+                    {
+                        sheetParser.parse(sheetSource);
+
+                        schemas.add( new SchemaParserResult.SheetContent(sheetName == null ? "sheet-" + i : sheetName, //
+                                                                         defaultSheetContentsHandler.columnsMetadata) );
+
+                        i++;
+                    }
+                    catch ( FastStopParsingException e ) {
+                        // expected here
+                        LOGGER.debug( marker, "FastStopParsingException" );
+                    }
+                }
+            }
+        } catch (Exception e) {
+            LOGGER.debug(marker, "IOException during parsing xls request :" + e.getMessage(), e);
+            throw new TDPException(CommonErrorCodes.UNEXPECTED_EXCEPTION, e);
+        }
+
+        return schemas;
+    }
+
+    private static class FastStopParsingException extends RuntimeException {
+
+        public FastStopParsingException() {
+            // no op
+        }
+    }
+
+    static class DefaultSheetContentsHandler implements XSSFSheetXMLHandler.SheetContentsHandler {
+
+        private Logger logger = LoggerFactory.getLogger( getClass() );
+
+        private List<ColumnMetadata> columnsMetadata = new ArrayList<>(  );
+
+        @Override
+        public void cell(String cellReference, String formattedValue, XSSFComment comment) {
+            logger.debug( "cell" );
+            String headerText = formattedValue;
+            // header text cannot be null so use a default one
+            if (StringUtils.isEmpty(headerText)) {
+                headerText = "col_" + (columnsMetadata.size() + 1); // +1 because it starts from 0
+            }
+
+            // FIXME what do we do if header size is > 1 concat all lines?
+            columnsMetadata.add(ColumnMetadata.Builder //
+                                    .column() //
+                                    .name(headerText) //
+                                    .type(Type.STRING) //
+                                    .build());
+        }
+
+        @Override
+        public void startRow(int rowNum) {
+            logger.debug( "startRow" );
+            if (rowNum > 0) {
+                //throw new FastStopParsingException();
+            }
+        }
+
+        @Override
+        public void endRow(int rowNum) {
+            logger.debug( "endRow" );
+        }
+
+        @Override
+        public void headerFooter(String text, boolean isHeader, String tagName) {
+            logger.debug( "headerFooter" );
+        }
+    }    
+
+    /**
+     * Parse all xls sheets for old excel document type
      * 
      * @param request the xls request.
      * @return The parsed sheets request.
      */
-    public List<SchemaParserResult.SheetContent> parseAllSheets(Request request) {
+    private List<SchemaParserResult.SheetContent> parseAllSheetsOldFormat(Request request) {
 
         final Marker marker = Markers.dataset(request.getMetadata().getId());
 
@@ -148,7 +279,7 @@ public class XlsSchemaParser implements SchemaParser {
      * @param datasetId the dataset id.
      * @return the columns metadata for the given sheet.
      */
-    protected List<ColumnMetadata> parsePerSheet(Sheet sheet, String datasetId, FormulaEvaluator formulaEvaluator) {
+    private List<ColumnMetadata> parsePerSheet(Sheet sheet, String datasetId, FormulaEvaluator formulaEvaluator) {
 
         LOGGER.debug(Markers.dataset(datasetId), "parsing sheet '{}'", sheet.getSheetName());
 
@@ -197,7 +328,7 @@ public class XlsSchemaParser implements SchemaParser {
      * @param averageHeaderSize
      * @return
      */
-    protected Type guessColumnType(Integer colId, SortedMap<Integer, String> columnRows, int averageHeaderSize) {
+    private Type guessColumnType(Integer colId, SortedMap<Integer, String> columnRows, int averageHeaderSize) {
 
         // calculate number per type
 
@@ -237,7 +368,7 @@ public class XlsSchemaParser implements SchemaParser {
      * @param sheet key is the column number, value is a Map with key row number and value Type
      * @return A Map&lt;colId, Map&lt;rowId, type&gt;&gt;
      */
-    protected SortedMap<Integer, SortedMap<Integer, String>> collectSheetTypeMatrix(Sheet sheet, FormulaEvaluator formulaEvaluator) {
+    private SortedMap<Integer, SortedMap<Integer, String>> collectSheetTypeMatrix(Sheet sheet, FormulaEvaluator formulaEvaluator) {
 
         int firstRowNum = sheet.getFirstRowNum();
         int lastRowNum = sheet.getLastRowNum();
@@ -307,7 +438,7 @@ public class XlsSchemaParser implements SchemaParser {
         return cellsTypeMatrix;
     }
 
-    protected String getTypeFromNumericCell(Cell cell) {
+    private String getTypeFromNumericCell(Cell cell) {
         try {
             return HSSFDateUtil.isCellDateFormatted(cell) ? DATE.getName() : NUMERIC.getName();
         } catch (IllegalStateException e) {
@@ -328,7 +459,7 @@ public class XlsSchemaParser implements SchemaParser {
      * @param cellsTypeMatrix key: column number value: row where the type change from String to something else
      * @return The guessed header size.
      */
-    protected int guessHeaderSize(Map<Integer, SortedMap<Integer, String>> cellsTypeMatrix) {
+    private int guessHeaderSize(Map<Integer, SortedMap<Integer, String>> cellsTypeMatrix) {
         SortedMap<Integer, Integer> cellTypeChange = new TreeMap<>();
 
         cellsTypeMatrix.forEach((colId, typePerRow) -> {
@@ -367,4 +498,6 @@ public class XlsSchemaParser implements SchemaParser {
 
         return averageHeaderSize;
     }
+
+
 }

@@ -18,11 +18,22 @@ import static org.talend.dataprep.api.dataset.ColumnMetadata.Builder.column;
 import static uk.co.datumedge.hamcrest.json.SameJSONAs.sameJSONAs;
 
 import java.io.InputStream;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
+import java.util.UUID;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.poi.openxml4j.opc.OPCPackage;
 import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.DataFormatter;
+import org.apache.poi.util.SAXHelper;
+import org.apache.poi.xssf.eventusermodel.ReadOnlySharedStringsTable;
+import org.apache.poi.xssf.eventusermodel.XSSFReader;
+import org.apache.poi.xssf.eventusermodel.XSSFSheetXMLHandler;
+import org.apache.poi.xssf.model.StylesTable;
 import org.assertj.core.api.Assertions;
 import org.assertj.core.data.MapEntry;
 import org.junit.Assert;
@@ -40,6 +51,9 @@ import org.talend.dataprep.schema.FormatGuess;
 import org.talend.dataprep.schema.FormatGuesser;
 import org.talend.dataprep.schema.SchemaParserResult;
 import org.talend.dataprep.schema.unsupported.UnsupportedFormatGuess;
+import org.xml.sax.ContentHandler;
+import org.xml.sax.InputSource;
+import org.xml.sax.XMLReader;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.type.CollectionType;
@@ -54,6 +68,9 @@ public class XlsFormatTest extends AbstractSchemaTestUtils {
     @Qualifier("formatGuesser#xls")
     @Autowired
     private FormatGuesser formatGuesser;
+
+    @Autowired
+    private XlsSchemaParser xlsSchemaParser;
 
     @Test
     public void read_bad_xls_file() throws Exception {
@@ -330,8 +347,6 @@ public class XlsFormatTest extends AbstractSchemaTestUtils {
 
         FormatGuess formatGuess;
 
-        XlsSchemaParser xlsSchemaParser = new XlsSchemaParser();
-
         try (InputStream inputStream = this.getClass().getResourceAsStream(fileName)) {
             formatGuess = formatGuesser.guess(getRequest(inputStream, "#7"), "UTF-8").getFormatGuess();
             Assert.assertNotNull(formatGuess);
@@ -463,8 +478,6 @@ public class XlsFormatTest extends AbstractSchemaTestUtils {
 
         FormatGuess formatGuess;
 
-        XlsSchemaParser xlsSchemaParser = new XlsSchemaParser();
-
         String sheetName = "WEEK SUMMARY";
 
         try (InputStream inputStream = this.getClass().getResourceAsStream(fileName)) {
@@ -516,8 +529,6 @@ public class XlsFormatTest extends AbstractSchemaTestUtils {
 
         String sheetName = "Sheet1";
 
-        XlsSchemaParser xlsSchemaParser = new XlsSchemaParser();
-
         try (InputStream inputStream = this.getClass().getResourceAsStream( fileName ))
         {
             formatGuess = formatGuesser.guess( getRequest( inputStream, UUID.randomUUID().toString() ), "UTF-8" ).getFormatGuess();
@@ -553,6 +564,75 @@ public class XlsFormatTest extends AbstractSchemaTestUtils {
         Assertions.assertThat(values.get(1)) //
             .contains(MapEntry.entry("0000", "Boo"), //
                       MapEntry.entry("0001", ""));
+    }
+
+    @Test
+    public void test_event_xls_parsing() throws Exception
+    {
+        String fileName = "000_DTA_DailyTimeLog.xlsm";//" "Talend_Desk-Tableau-Bord-011214.xls";
+
+        FormatGuess formatGuess;
+
+        try (InputStream inputStream = this.getClass().getResourceAsStream( fileName ))
+        {
+            formatGuess = formatGuesser.guess( getRequest( inputStream, "#7" ), "UTF-8" ).getFormatGuess();
+            Assert.assertNotNull( formatGuess );
+            Assert.assertTrue( formatGuess instanceof XlsFormatGuess );
+            Assert.assertEquals( XlsFormatGuess.MEDIA_TYPE, formatGuess.getMediaType() );
+        }
+
+        InputStream inputStream = this.getClass().getResourceAsStream( fileName );
+
+        OPCPackage container = OPCPackage.open( inputStream );
+
+        ReadOnlySharedStringsTable strings = new ReadOnlySharedStringsTable( container);
+        XSSFReader xssfReader = new XSSFReader(container);
+        StylesTable styles = xssfReader.getStylesTable();
+
+        XSSFReader.SheetIterator iter = (XSSFReader.SheetIterator) xssfReader.getSheetsData();
+
+        while (iter.hasNext()) {
+            String sheetName = iter.getSheetName();
+            try (InputStream sheetInputStream = iter.next()) {
+                InputSource sheetSource = new InputSource(sheetInputStream);
+
+                XMLReader sheetParser = SAXHelper.newXMLReader();
+                ContentHandler handler = new XSSFSheetXMLHandler(styles, null, strings,
+                        new XlsSchemaParser.DefaultSheetContentsHandler(), new DataFormatter(), false);
+                sheetParser.setContentHandler(handler);
+                sheetParser.parse(sheetSource);
+
+            }
+        }
+
+
+    }
+
+    @Test
+    public void detect_old_excel_version() throws Exception {
+        InputStream inputStream = getClass().getResourceAsStream( "Workbook-xls.xls" );
+        Assertions.assertThat( XlsUtils.isOldExcelFormat( inputStream ) ).isTrue();
+
+        inputStream = getClass().getResourceAsStream( "Workbook-xlsx.xlsx" );
+        Assertions.assertThat( XlsUtils.isOldExcelFormat( inputStream ) ).isFalse();
+    }
+
+    @Test
+    public void detect_new_excel_version() throws Exception {
+        InputStream inputStream = getClass().getResourceAsStream( "Workbook-xlsx.xlsx" );
+        Assertions.assertThat( XlsUtils.isNewExcelFormat( inputStream ) ).isTrue();
+
+        inputStream = getClass().getResourceAsStream( "Workbook-xls.xls" );
+        Assertions.assertThat( XlsUtils.isNewExcelFormat( inputStream ) ).isFalse();
+    }
+
+    @Test
+    public void no_detect_excel() throws Exception {
+        InputStream inputStream = getClass().getResourceAsStream( "fake.xls" );
+        Assertions.assertThat( XlsUtils.isNewExcelFormat( inputStream ) ).isFalse();
+
+        inputStream = getClass().getResourceAsStream( "fake.xls" );
+        Assertions.assertThat( XlsUtils.isOldExcelFormat( inputStream ) ).isFalse();
     }
 
 }

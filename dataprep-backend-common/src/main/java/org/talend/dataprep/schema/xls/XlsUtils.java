@@ -14,14 +14,19 @@
 package org.talend.dataprep.schema.xls;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.PushbackInputStream;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Locale;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.poi.POIXMLDocument;
 import org.apache.poi.hssf.usermodel.HSSFDataFormatter;
 import org.apache.poi.hssf.usermodel.HSSFDateUtil;
+import org.apache.poi.poifs.filesystem.NPOIFSFileSystem;
 import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.util.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.Marker;
@@ -150,5 +155,26 @@ public class XlsUtils {
         }
 
     }
+
+    public static boolean isNewExcelFormat( InputStream inputStream) throws IOException {
+        // If doesn't support mark, wrap up
+        if (!inputStream.markSupported()) {
+            inputStream = new PushbackInputStream( inputStream, 8);
+        }
+        // just have a look at file headers
+        byte[] header8 = IOUtils.peekFirst8Bytes( inputStream);
+        return POIXMLDocument.hasOOXMLHeader( inputStream);
+    }
+
+    public static boolean isOldExcelFormat( InputStream inputStream) throws IOException {
+        // If doesn't support mark, wrap up
+        if (!inputStream.markSupported()) {
+            inputStream = new PushbackInputStream( inputStream, 8);
+        }
+        // just have a look at file headers
+        byte[] header8 = IOUtils.peekFirst8Bytes( inputStream);
+        return NPOIFSFileSystem.hasPOIFSHeader( header8);
+    }
+
 
 }

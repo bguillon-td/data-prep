@@ -51,16 +51,14 @@ public class XlsFormatGuesser implements FormatGuesser {
             InputStream inputStream = request.getContent();
 
             // If doesn't support mark, wrap up
+            // at least won't be done twice in XlsUtils detection method
+            // prevent creating PushbackInputStream twice
             if (!inputStream.markSupported()) {
-                inputStream = new PushbackInputStream(inputStream, 8);
+                inputStream = new PushbackInputStream( inputStream, 8);
             }
 
-            // just have a look at file headers
-            // so we do not check any content (i.e at least one sheet etc...)
-            byte[] header8 = IOUtils.peekFirst8Bytes(inputStream);
-
              // Try to reader headers
-            if (POIXMLDocument.hasOOXMLHeader(inputStream) || NPOIFSFileSystem.hasPOIFSHeader(header8)) {
+            if (XlsUtils.isNewExcelFormat( inputStream ) || XlsUtils.isOldExcelFormat( inputStream )) {
                 return new FormatGuesser.Result(xlsFormatGuess, encoding, Collections.emptyMap());
             }
         } catch (IOException e) {
