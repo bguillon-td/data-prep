@@ -67,6 +67,7 @@ public class ValuesContentHandler extends DefaultHandler {
         if (stack.containsAll(valueStack)) {
             matchingValuePattern = true;
         }
+        valueFound = false;
     }
 
     @Override
@@ -74,7 +75,6 @@ public class ValuesContentHandler extends DefaultHandler {
         String top = stack.getLast();
         if (StringUtils.equals(top, localName)) {
             if (stack.containsAll(valueStack)) {
-                //matchingValuePattern = true;
                 if (!valueFound){
                     values.get(values.size() - 1).add(StringUtils.EMPTY);
                 }
@@ -91,8 +91,6 @@ public class ValuesContentHandler extends DefaultHandler {
 
     @Override
     public void characters(char[] ch, int start, int length) throws SAXException {
-        // do we really get the whole content once??
-        // we assume yes
         if (matchingValuePattern) {
             String value = new String(ch);
             LOGGER.debug("value: {}", value);
@@ -112,9 +110,5 @@ public class ValuesContentHandler extends DefaultHandler {
         }
     }
 
-    @Override
-    public void endDocument() throws SAXException {
-        super.endDocument();
-    }
 
 }

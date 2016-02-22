@@ -41,6 +41,11 @@ public class HeadersContentHandler extends DefaultHandler {
     private final List<String> headerStack;
 
     /**
+     * flag to manage empty cells (empty String as value)
+     */
+    private boolean valueFound;
+
+    /**
      * if <code>true</code>
      */
     private boolean fastStop;
@@ -72,15 +77,16 @@ public class HeadersContentHandler extends DefaultHandler {
 
     @Override
     public void startElement(String uri, String localName, String qName, Attributes atts) throws SAXException {
-        stack.push(localName);
+        stack.addLast(localName);
         if (stack.containsAll(headerStack)) {
             matchingHeaderPattern = true;
         }
+        valueFound = false;
     }
 
     @Override
     public void endElement(String uri, String localName, String qName) throws SAXException {
-        String top = stack.peek();
+        String top = stack.getLast();
         if (StringUtils.equals(top, localName)) {
             if (stack.containsAll(headerStack)) {
                 if (this.fastStop) {
@@ -91,25 +97,24 @@ public class HeadersContentHandler extends DefaultHandler {
                 matchingHeaderPattern = false;
             }
         }
-        stack.pop();
+        valueFound = false;
+        stack.removeLast();
     }
 
     @Override
     public void characters(char[] ch, int start, int length) throws SAXException {
-        // do we really get the whole content once??
-        // we assume yes
         if (matchingHeaderPattern) {
             String headerValue = new String(ch);
-            headerValues.add(headerValue);
+            if (!valueFound) {
+                headerValues.add(headerValue);
+            } else {
+                // characters method is called with some buffering so can be called multiple time whereas it's the same
+                // cell.
+                headerValues.set(headerValues.size() - 1, headerValues.get(headerValues.size() - 1) + headerValue);
+            }
             LOGGER.debug("header: {}", headerValue);
-
         }
-
-    }
-
-    @Override
-    public void endDocument() throws SAXException {
-        super.endDocument();
+        valueFound = true;
     }
 
 }
