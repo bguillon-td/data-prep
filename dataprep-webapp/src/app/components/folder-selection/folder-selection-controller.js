@@ -63,10 +63,11 @@ export default function FolderSelectionCtrl($translate, FolderService) {
         FolderService.children(currentPath)
                      .then(function (res) {
                          var currentIndex = _.findIndex(vm.folders, parentFolder);
+                         if (!res.data.length) {
+                             parentFolder.hasNoChildren = true;
+                         }
+
                          _.each(res.data, function (child, index) {
-                             if (!res.data.length) {
-                                 parentFolder.hasNoChildren = true;
-                             }
                              child.level = parentFolder.level + 1;
                              child.collapsed = true;
                              child.alreadyToggled = false;
@@ -106,11 +107,10 @@ export default function FolderSelectionCtrl($translate, FolderService) {
         vm.foldersFound = [];
         if (vm.searchFolderQuery) {
             //Add the root folder if it matches the filter
-            var n = $translate.instant('HOME_FOLDER').toLowerCase().indexOf(vm.searchFolderQuery.toLowerCase());
-
+            var homePosition = $translate.instant('HOME_FOLDER').toLowerCase().indexOf(vm.searchFolderQuery.toLowerCase());
             FolderService.search(vm.searchFolderQuery)
                          .then(function (response) {
-                             if (n > -1) {
+                             if (homePosition > -1) {
                                  var rootFolder = {
                                      id: '',
                                      path: '',

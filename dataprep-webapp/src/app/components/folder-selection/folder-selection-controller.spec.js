@@ -10,188 +10,195 @@
  9 rue Pages 92150 Suresnes, France
 
  ============================================================================*/
-/*
-
-describe('', function(){
 
 
+describe('folder selection controller', function () {
 
+    var createController, scope, ctrl;
 
+    beforeEach(angular.mock.module('data-prep.folder-selection'));
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
- describe('search folders', function () {
-
-     beforeEach(inject(function ($q, MessageService, FolderService) {
-         var foldersFromSearch = [
-             {path: 'folder-1', name: 'folder-1'},
-             {path: 'folder-1/sub-1', name: 'sub-1'},
-             {path: 'folder-1/sub-2/folder-1-beer', name: 'folder-1-beer'}
-         ];
-
-         var childrenFolders = [
-             {id: 'folder-1/beer', path: 'folder-1/beer', name: 'folder-1/beer'},
-             {id: 'folder-2', path: 'folder-2', name: 'folder-2'},
-             {id: 'folder-3', path: 'folder-3', name: 'folder-3'}
-         ];
-
-         spyOn(FolderService, 'children').and.returnValue($q.when({data: childrenFolders}));
-         spyOn(FolderService, 'search').and.returnValue($q.when({data: foldersFromSearch}));
-         spyOn(MessageService, 'success').and.returnValue();
-     }));
-
-     it('should rename folder', inject(function ($q, FolderService) {
-         //given
-         spyOn(FolderService, 'rename').and.returnValue($q.when());
-         spyOn(FolderService, 'getContent').and.returnValue($q.when());
-         var ctrl = createController();
-         var folderToRename = {id: 'toto/1'};
-
-         //when
-         ctrl.renameFolder(folderToRename, '2');
-         scope.$digest();
-         //then
-         expect(FolderService.rename).toHaveBeenCalledWith('toto/1', 'toto/2');
-         expect(FolderService.getContent).toHaveBeenCalledWith(theCurrentFolder);
-     }));
-
-     it('should remove folder', inject(function ($q, FolderService) {
-         //given
-         spyOn(FolderService, 'remove').and.returnValue($q.when(true));
-         spyOn(FolderService, 'getContent').and.returnValue($q.when(true));
-         var ctrl = createController();
-
-         var folder = {id: 'toto'};
-
-         //when
-         ctrl.removeFolder(folder);
-         scope.$digest();
-         //then
-         expect(FolderService.remove).toHaveBeenCalledWith(folder.id);
-         expect(FolderService.getContent).toHaveBeenCalledWith(theCurrentFolder);
-     }));
-
- });
-
-
-
-
-
-
-
-
-
-
-
-    it('should call children service and open modal', inject(function (FolderService) {
-        // given
-        var ctrl = createController();
-        stateMock.folder.currentFolder = {id: 'folder-1', path: 'folder-1', name: 'folder-1'};
-        scope.$digest();
-        spyOn(ctrl, 'chooseFolder').and.returnValue();
-        spyOn(ctrl, 'toggle').and.returnValue();
-
-        // when
-        ctrl.openFolderChoice(datasets[0]);
-        scope.$digest();
-
-        //then
-        expect(FolderService.children).toHaveBeenCalled();
-        expect(ctrl.folderDestinationModal).toBe(true);
-        expect(ctrl.datasetToClone).toBe(datasets[0]);
-        expect(ctrl.foldersFound).toEqual([]);
-        expect(ctrl.searchFolderQuery).toBe('');
-        expect(ctrl.folders).toEqual([{
-            id: '', path: '', collapsed: false, name: 'Home',
-            nodes: [{id: 'folder-1/beer', path: 'folder-1/beer', name: 'folder-1/beer', collapsed: true},
-                {id: 'folder-2', path: 'folder-2', name: 'folder-2', collapsed: true},
-                {id: 'folder-3', path: 'folder-3', name: 'folder-3', collapsed: true}]
-        }]);
-
+    beforeEach(angular.mock.module('pascalprecht.translate', function ($translateProvider) {
+        $translateProvider.translations('en', {
+            'HOME_FOLDER': 'Home'
+        });
+        $translateProvider.preferredLanguage('en');
     }));
 
+    beforeEach(inject(function ($rootScope, $controller) {
+        scope = $rootScope.$new();
 
-    it('should call search folders service', inject(function (FolderService) {
-        //given
-        var foldersFromSearch = [
+        createController = function (myCurrentFolder) {
+            var ctrlFn = $controller('FolderSelectionCtrl', {
+                $scope: scope
+            }, true);
+            ctrlFn.instance.currentFolder = myCurrentFolder;
+            return ctrlFn();
+        };
+    }));
+
+    describe('folders initialization', function () {
+        it('should init folders tree at initialization', inject(function ($translate) {
+            //when
+            ctrl = createController(null);
+
+            //then
+            expect(ctrl.foldersFound).toEqual([]);
+            expect(ctrl.searchFolderQuery).toBe('');
+            expect(ctrl.folders[0]).toEqual({
+                id: '',
+                path: '',
+                level: 0,
+                alreadyToggled: true,
+                showFolder: true,
+                collapsed: false,
+                name: $translate.instant('HOME_FOLDER')
+            });
+        }));
+
+
+        it('should locate current folder in the folders tree at initialization at 1st level', inject(function ($q, $rootScope, FolderService) {
+            //given
+            var currentFolder = {name: 'lookup', path:'lookup'};
+            spyOn(FolderService, 'children').and.returnValue($q.when({data:[currentFolder]}));
+
+            //when
+            ctrl = createController(currentFolder);
+            $rootScope.$digest();
+
+            //then
+            expect(FolderService.children).toHaveBeenCalledWith('');
+            expect(FolderService.children.calls.count()).toBe(1);
+            expect(ctrl.selectedFolder.selected).toBe(true);
+            expect(ctrl.selectedFolder).toEqual(currentFolder);
+        }));
+
+        it('should locate current folder in the folders tree at initialization at Root level', inject(function ($q, $rootScope, FolderService) {
+            //given
+            var currentFolder = {name: 'Home', path:'/'};
+            spyOn(FolderService, 'children').and.returnValue($q.when({data:[]}));
+
+            //when
+            ctrl = createController(currentFolder);
+            $rootScope.$digest();
+
+            //then
+            expect(FolderService.children).toHaveBeenCalledWith('');
+            expect(FolderService.children.calls.count()).toBe(1);
+            expect(ctrl.selectedFolder.selected).toBe(true);
+            expect(ctrl.selectedFolder).toEqual(ctrl.folders[0]);
+            expect(ctrl.selectedFolder.hasNoChildren).toBe(true);
+        }));
+
+        it('should locate current folder in the folders tree at initialization at 2nd/nth level', inject(function ($q, $rootScope, FolderService) {
+            //given
+            var currentFolder = {name: 'subSubFolder', path:'folder/subFolder/subSubFolder'};
+            var counter = 0;
+            spyOn(FolderService, 'children').and.callFake(function(){
+                if(counter === 0){
+                    counter++;
+                    return $q.when({data:[{name: 'folder', path: 'folder'}]});
+                }
+                else if (counter === 1){
+                    counter++;
+                    return $q.when({data:[{name: 'subFolder', path: 'folder/subFolder'}]});
+                }
+                else if(counter === 2){
+                    return $q.when({data:[currentFolder]})
+                }
+            });
+
+            //when
+            ctrl = createController(currentFolder);
+            $rootScope.$digest();
+
+            //then
+            expect(ctrl.selectedFolder).toEqual(currentFolder);
+            expect(ctrl.selectedFolder.selected).toBe(true);
+        }));
+    });
+
+    describe('folders search', function(){
+        var foldersSearchResult = [
             {path: 'folder-1', name: 'folder-1'},
             {path: 'folder-1/sub-1', name: 'sub-1'},
             {path: 'folder-1/sub-2/folder-1-beer', name: 'folder-1-beer'}
         ];
 
-        var ctrl = createController();
-        ctrl.searchFolderQuery = 'beer';
-        spyOn(ctrl, 'chooseFolder').and.returnValue();
+        beforeEach(inject(function($q, FolderService){
+            ctrl = createController(null);
+            spyOn(FolderService, 'search').and.returnValue($q.when({data:foldersSearchResult}));
+        }));
 
-        //when
-        ctrl.searchFolders();
-        scope.$digest();
+        it('should call search folders service', inject(function (FolderService) {
+            //given
+            ctrl.searchFolderQuery = 'beer';
 
-        //then
-        expect(FolderService.search).toHaveBeenCalledWith(ctrl.searchFolderQuery);
-        expect(ctrl.foldersFound).toEqual(foldersFromSearch);
-        expect(ctrl.chooseFolder).toHaveBeenCalledWith(foldersFromSearch[0]);
-    }));
+            //when
+            ctrl.searchFolders();
 
-    it('should call filter root folder and search folders service', inject(function (FolderService) {
-        //given
-        var foldersFromSearch = [
-            {id: '', path: '', name: 'Home'},
-            {path: 'folder-1', name: 'folder-1'},
-            {path: 'folder-1/sub-1', name: 'sub-1'},
-            {path: 'folder-1/sub-2/folder-1-beer', name: 'folder-1-beer'}
-        ];
+            //then
+            expect(ctrl.foldersFound).toEqual([]);
+            expect(FolderService.search).toHaveBeenCalledWith(ctrl.searchFolderQuery);
+        }));
 
-        var ctrl = createController();
-        ctrl.searchFolderQuery = 'H';
-        spyOn(ctrl, 'chooseFolder').and.returnValue();
-        var rootFolder = {id: '', path: '', name: 'Home'};
+        it('should call filter root folder and search folders service', inject(function () {
+            //given
+            ctrl.searchFolderQuery = 'e';
 
-        //when
-        ctrl.searchFolders();
-        scope.$digest();
+            //when
+            ctrl.searchFolders();
+            scope.$digest();
 
-        //then
-        expect(FolderService.search).toHaveBeenCalledWith(ctrl.searchFolderQuery);
-        expect(ctrl.foldersFound).toEqual(foldersFromSearch);
-        expect(ctrl.chooseFolder).toHaveBeenCalledWith(rootFolder);
-    }));
+            //then
+            expect(ctrl.foldersFound.length).toBe(foldersSearchResult.length + 1);
+        }));
 
-    it('should not call search folders service if searchFolderQuery is empty', inject(function (FolderService) {
-        //given
+        it('should not call filter root folder but only search folders service', inject(function () {
+            //given
+            ctrl.searchFolderQuery = 'f';
 
-        var ctrl = createController();
-        ctrl.searchFolderQuery = '';
-        spyOn(ctrl, 'chooseFolder').and.returnValue();
-        ctrl.folders = [
-            {path: 'folder-1', name: 'folder-1'},
-            {path: 'folder-1/sub-1', name: 'sub-1'},
-            {path: 'folder-1/sub-2/folder-1-beer', name: 'folder-1-beer'}
-        ];
-        //when
-        ctrl.searchFolders();
-        scope.$digest();
+            //when
+            ctrl.searchFolders();
+            scope.$digest();
 
-        //then
-        expect(FolderService.search).not.toHaveBeenCalled();
-        expect(ctrl.chooseFolder).toHaveBeenCalledWith({path: 'folder-1', name: 'folder-1'});
-    }));
+            //then
+            expect(ctrl.foldersFound.length).toBe(foldersSearchResult.length);
+            expect(ctrl.foldersFound).toEqual(foldersSearchResult);
+        }));
+
+        it('should show the folders tree and not the search result', inject(function ($translate) {
+            //given
+            ctrl.searchFolderQuery = '';
+
+            //when
+            ctrl.searchFolders();
+            scope.$digest();
+
+            //then
+            expect(ctrl.foldersFound).toEqual([]);
+            expect(ctrl.folders).toEqual([{
+                id: '',
+                path: '',
+                level: 0,
+                alreadyToggled: true,
+                showFolder: true,
+                collapsed: false,
+                name: $translate.instant('HOME_FOLDER')
+            }]);
+        }));
+
+        it('should select the 1st result by default', inject(function () {
+            //given
+            ctrl.searchFolderQuery = 'f';
+
+            //when
+            ctrl.searchFolders();
+            scope.$digest();
+
+            //then
+            expect(ctrl.selectedFolder).toBe(foldersSearchResult[0]);
+            expect(ctrl.selectedFolder.selected).toBe(true);
+        }));
+    });
 });
-
-*/
