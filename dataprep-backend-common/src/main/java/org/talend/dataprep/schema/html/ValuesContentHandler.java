@@ -13,10 +13,10 @@
 
 package org.talend.dataprep.schema.html;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Stack;
 
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -32,7 +32,7 @@ public class ValuesContentHandler extends DefaultHandler {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(HtmlSchemaParser.class);
 
-    private final Stack<String> stack = new Stack<>();
+    private final ArrayDeque<String> stack = new ArrayDeque<>();
 
     private boolean matchingValuePattern;
 
@@ -43,6 +43,11 @@ public class ValuesContentHandler extends DefaultHandler {
 
     private final List<String> valueStack;
 
+    /**
+     * flag to manage empty cells (empty String as value)
+     */
+    private boolean valueFound;
+    
     /**
      *
      * @param valueSelector an html element selector corresponding to values "html body table tr td" <b>attributes not
@@ -58,7 +63,7 @@ public class ValuesContentHandler extends DefaultHandler {
 
     @Override
     public void startElement(String uri, String localName, String qName, Attributes atts) throws SAXException {
-        stack.push(localName);
+        stack.addLast(localName);
         if (stack.containsAll(valueStack)) {
             matchingValuePattern = true;
         }
@@ -66,15 +71,22 @@ public class ValuesContentHandler extends DefaultHandler {
 
     @Override
     public void endElement(String uri, String localName, String qName) throws SAXException {
-        String top = stack.peek();
+        String top = stack.getLast();
         if (StringUtils.equals(top, localName)) {
             if (stack.containsAll(valueStack)) {
-                matchingValuePattern = true;
+                //matchingValuePattern = true;
+                if (!valueFound){
+                    values.get(values.size() - 1).add(StringUtils.EMPTY);
+                }
             } else {
+                if (matchingValuePattern) {
+                    values.add(new ArrayList<>());
+                }
                 matchingValuePattern = false;
             }
         }
-        stack.pop();
+        valueFound = false;
+        stack.removeLast();
     }
 
     @Override
@@ -84,9 +96,20 @@ public class ValuesContentHandler extends DefaultHandler {
         if (matchingValuePattern) {
             String value = new String(ch);
             LOGGER.debug("value: {}", value);
-
+            if (values.isEmpty()) {
+                values.add(new ArrayList<>());
+            }
+            List<String> currentRowValues = values.get(values.size() - 1);
+            if (!valueFound) {
+                currentRowValues.add(value);
+            } else {
+                // characters method is called with some buffering so can be called multiple time whereas it's the same
+                // cell.
+                String previous = currentRowValues.remove(currentRowValues.size() - 1);
+                currentRowValues.add(previous + value);
+            }
+            valueFound = true;
         }
-
     }
 
     @Override

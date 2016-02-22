@@ -44,9 +44,9 @@ public class HtmlFormatTest extends AbstractSchemaTestUtils {
 
     private final static Logger logger = LoggerFactory.getLogger(HtmlFormatTest.class);
 
-    private static final String HEADER_SELECTOR = "html body table tr th";
+    private static final String HEADER_SELECTOR = "html body table tbody tr th";
 
-    private static final String VALUES_SELECTOR = "html body table tr td";
+    private static final String VALUES_SELECTOR = "html body table tbody tr td";
 
     @Inject
     private HtmlSchemaParser parser;

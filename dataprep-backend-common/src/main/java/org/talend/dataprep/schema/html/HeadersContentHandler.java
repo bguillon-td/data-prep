@@ -13,10 +13,10 @@
 
 package org.talend.dataprep.schema.html;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Stack;
 
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -32,7 +32,7 @@ public class HeadersContentHandler extends DefaultHandler {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(HtmlSchemaParser.class);
 
-    private final Stack<String> stack = new Stack<>();
+    private final ArrayDeque<String> stack = new ArrayDeque<>();
 
     private boolean matchingHeaderPattern;
 
@@ -98,7 +98,7 @@ public class HeadersContentHandler extends DefaultHandler {
     public void characters(char[] ch, int start, int length) throws SAXException {
         // do we really get the whole content once??
         // we assume yes
-        if ( matchingHeaderPattern ) {
+        if (matchingHeaderPattern) {
             String headerValue = new String(ch);
             headerValues.add(headerValue);
             LOGGER.debug("header: {}", headerValue);

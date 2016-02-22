@@ -53,7 +53,7 @@ public class HtmlFormatGuesser implements FormatGuesser {
 
     public HtmlFormatGuesser() {
         patterns = new ArrayList<>(1);
-        patterns.add(new Pattern("html body table tr th", "html body table tr td"));
+        patterns.add(new Pattern("html body table tbody tr th", "html body table tbody tr td"));
     }
 
     @Override
