@@ -1,4 +1,4 @@
-describe('Talend splitter', () => {
+describe('Talend splitter component', () => {
     'use strict';
 
     var scope, element, createElement;

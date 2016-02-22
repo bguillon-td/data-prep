@@ -68,8 +68,8 @@ class TalendSplitterCtrl {
 }
 
 /**
- * @ngdoc directive
- * @name talend.widget.directive:TalendSlidable
+ * @ngdoc component
+ * @name talend.widget.component:TalendSlidable
  * @description Slidable widget.<br/>
  * If the slidable is resizable, the widget keeps the last width in localstorage so the element is resized in creation<br/>
  * To customize the slidable width, use the sass mixin to set properly all the flexbox element size
