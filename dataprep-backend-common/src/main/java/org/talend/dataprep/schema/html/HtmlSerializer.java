@@ -15,6 +15,7 @@ package org.talend.dataprep.schema.html;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.StringWriter;
 import java.util.List;
 import java.util.Map;
@@ -22,6 +23,7 @@ import java.util.Map;
 import nu.validator.htmlparser.sax.HtmlParser;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -50,6 +52,7 @@ public class HtmlSerializer implements Serializer {
             String valuesSelector = parameters.get(HtmlFormatGuesser.VALUES_SELECTOR_KEY);
 
             StringWriter writer = new StringWriter();
+
             JsonGenerator generator = new JsonFactory().createGenerator(writer);
 
             generator.writeStartArray();
@@ -65,6 +68,11 @@ public class HtmlSerializer implements Serializer {
             htmlParser.parse(new InputSource(rawContent));
 
             for (List<String> values : valuesContentHandler.getValues()) {
+
+                if (values.isEmpty()){
+                    // avoid empty record which can fail analysis
+                    continue;
+                }
 
                 generator.writeStartObject();
 
