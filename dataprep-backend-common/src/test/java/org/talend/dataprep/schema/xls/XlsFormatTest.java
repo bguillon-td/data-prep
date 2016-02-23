@@ -113,18 +113,17 @@ public class XlsFormatTest extends AbstractSchemaTestUtils {
 
     @Test
     public void read_simple_xls_old_format_file() throws Exception {
-        assert_on_simple_file ("test.xls" );
+        assert_on_simple_file ("test.xls", false );
 
     }
 
     @Test
     public void read_simple_xls_new_format_file() throws Exception {
-        assert_on_simple_file ("test_new.xlsx" );
-
+        assert_on_simple_file ("test_new.xlsx", true );
     }
 
 
-    public void assert_on_simple_file(String fileName ) throws Exception {
+    public void assert_on_simple_file(String fileName, boolean newFormat ) throws Exception {
 
         FormatGuess formatGuess;
 
@@ -155,7 +154,7 @@ public class XlsFormatTest extends AbstractSchemaTestUtils {
 
             logger.debug("columnMetadataFound: {}", columnMetadataFound);
 
-            Assertions.assertThat(columnMetadataFound.getType()).isEqualTo(Type.NUMERIC.getName());
+            Assertions.assertThat(columnMetadataFound.getType()).isEqualTo( newFormat ? Type.STRING.getName() : Type.NUMERIC.getName());
 
         }
 
@@ -274,7 +273,7 @@ public class XlsFormatTest extends AbstractSchemaTestUtils {
 
             ColumnMetadata columnMetadata = columnMetadatas.get(2);
 
-            Assertions.assertThat(columnMetadata.getType()).isEqualTo(Type.NUMERIC.getName());
+            Assertions.assertThat(columnMetadata.getType()).isEqualTo(Type.STRING.getName());
 
             Assertions.assertThat(columnMetadata.getHeaderSize()).isEqualTo(1);
 
@@ -381,7 +380,7 @@ public class XlsFormatTest extends AbstractSchemaTestUtils {
             ColumnMetadata columnMetadata = columnMetadatas.get(4);
             Assertions.assertThat(columnMetadata.getHeaderSize()).isEqualTo(1);
             Assertions.assertThat(columnMetadata.getName()).isEqualTo("age");
-            Assertions.assertThat(columnMetadata.getType()).isEqualTo(Type.NUMERIC.getName());
+            Assertions.assertThat(columnMetadata.getType()).isEqualTo(Type.STRING.getName());
             dataSetMetadata.getRowMetadata().setColumns(columnMetadatas);
         }
 

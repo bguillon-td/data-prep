@@ -188,6 +188,7 @@ public class XlsSchemaParser implements SchemaParser {
                                                 .column() //
                                                 .name("col_" + (columnMetadatas.size() + 1)) //
                                                 .type(Type.STRING) //
+                                                .headerSize( 1 ) //
                                                 .build());
                     }
 
@@ -225,7 +226,7 @@ public class XlsSchemaParser implements SchemaParser {
         @Override
         public void cell(String cellReference, String formattedValue, XSSFComment comment) {
             logger.debug( "cell" );
-            String headerText = formattedValue;
+            String headerText = StringUtils.trim( formattedValue );
             // header text cannot be null so use a default one
             if (StringUtils.isEmpty(headerText)) {
                 headerText = "col_" + (columnsMetadata.size() + 1); // +1 because it starts from 0
@@ -235,6 +236,7 @@ public class XlsSchemaParser implements SchemaParser {
                                     .column() //
                                     .name(headerText) //
                                     .type(Type.STRING) //
+                                    .headerSize( 1 ) //
                                     .build());
         }
 
