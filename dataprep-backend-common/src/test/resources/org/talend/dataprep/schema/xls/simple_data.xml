@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"
+           xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="x14ac"
+           xmlns:x14ac="http://schemas.microsoft.com/office/spreadsheetml/2009/9/ac">
+  <dimension ref="A1:D5"/>
+  <sheetViews>
+    <sheetView tabSelected="1" workbookViewId="0">
+      <selection activeCell="D6" sqref="D6"/>
+    </sheetView>
+  </sheetViews>
+  <sheetFormatPr baseColWidth="10" defaultColWidth="11.5" defaultRowHeight="12" x14ac:dyDescent="0"/>
+  <sheetData>
+    <row r="1" spans="1:4">
+      <c r="A1" t="s">
+        <v>0</v>
+      </c>
+      <c r="B1" t="s">
+        <v>1</v>
+      </c>
+      <c r="C1" t="s">
+        <v>2</v>
+      </c>
+      <c r="D1" t="s">
+        <v>3</v>
+      </c>
+    </row>
+    <row r="2" spans="1:4">
+      <c r="A2" t="s">
+        <v>4</v>
+      </c>
+      <c r="B2" t="s">
+        <v>5</v>
+      </c>
+      <c r="C2" t="s">
+        <v>6</v>
+      </c>
+      <c r="D2">
+        <v>10</v>
+      </c>
+    </row>
+    <row r="3" spans="1:4">
+      <c r="A3" t="s">
+        <v>7</v>
+      </c>
+      <c r="B3" t="s">
+        <v>8</v>
+      </c>
+      <c r="C3" t="s">
+        <v>9</v>
+      </c>
+    </row>
+    <row r="4" spans="1:4">
+      <c r="A4" t="s">
+        <v>10</v>
+      </c>
+      <c r="B4" t="s">
+        <v>5</v>
+      </c>
+      <c r="C4">
+        <v>10</v>
+      </c>
+      <c r="D4">
+        <v>6</v>
+      </c>
+    </row>
+    <row r="5" spans="1:4">
+      <c r="A5" t="s">
+        <v>11</v>
+      </c>
+      <c r="B5" t="s">
+        <v>8</v>
+      </c>
+      <c r="C5" t="s">
+        <v>9</v>
+      </c>
+      <c r="D5">
+        <v>2</v>
+      </c>
+    </row>
+  </sheetData>
+  <sheetProtection selectLockedCells="1" selectUnlockedCells="1"/>
+  <pageMargins left="0.78749999999999998" right="0.78749999999999998" top="1.0527777777777778"
+               bottom="1.0527777777777778" header="0.78749999999999998" footer="0.78749999999999998"/>
+  <pageSetup paperSize="9" orientation="portrait" useFirstPageNumber="1" horizontalDpi="300" verticalDpi="300"/>
+  <headerFooter>
+    <oddHeader>&amp;C&amp;"Times New Roman,Normal"&amp;12&amp;A</oddHeader>
+    <oddFooter>&amp;C&amp;"Times New Roman,Normal"&amp;12Page &amp;P</oddFooter>
+  </headerFooter>
+  <extLst>
+    <ext uri="{64002731-A6B0-56B0-2670-7721B7C09600}"
+         xmlns:mx="http://schemas.microsoft.com/office/mac/excel/2008/main">
+      <mx:PLV Mode="0" OnePage="0" WScale="0"/>
+    </ext>
+  </extLst>
+</worksheet>

@@ -27,17 +27,14 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 
-import com.ctc.wstx.sax.WstxSAXParserFactory;
 import org.apache.commons.lang.StringUtils;
 import org.apache.poi.hssf.usermodel.HSSFDateUtil;
 import org.apache.poi.openxml4j.opc.OPCPackage;
 import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.DataFormatter;
 import org.apache.poi.ss.usermodel.FormulaEvaluator;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.util.SAXHelper;
 import org.apache.poi.xssf.eventusermodel.ReadOnlySharedStringsTable;
 import org.apache.poi.xssf.eventusermodel.XSSFReader;
 import org.apache.poi.xssf.eventusermodel.XSSFSheetXMLHandler;
@@ -57,6 +54,8 @@ import org.talend.dataprep.schema.SchemaParserResult;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.XMLReader;
+
+import com.ctc.wstx.sax.WstxSAXParserFactory;
 
 /**
  * This class is in charge of parsing excel file (note apache poi is used for reading .xls) see https://poi.apache.org/
@@ -116,6 +115,7 @@ public class XlsSchemaParser implements SchemaParser {
     public List<SchemaParserResult.SheetContent> parseAllSheets(Request request) throws IOException {
        return XlsUtils.isNewExcelFormat(request.getContent())
             ? parseAllSheetsNew(request) : parseAllSheetsOldFormat(request);
+       //return parseAllSheetsOldFormat(request);
     }
 
     /**
@@ -134,6 +134,9 @@ public class XlsSchemaParser implements SchemaParser {
 
             ReadOnlySharedStringsTable strings = new ReadOnlySharedStringsTable(container);
             XSSFReader xssfReader = new XSSFReader(container);
+
+            List<String> activeSheetNames = XlsUtils.getActiveSheetsFromWorkbookSpec( xssfReader.getWorkbookData() );
+
             StylesTable styles = xssfReader.getStylesTable();
 
             XSSFReader.SheetIterator iter = (XSSFReader.SheetIterator) xssfReader.getSheetsData();
@@ -143,27 +146,53 @@ public class XlsSchemaParser implements SchemaParser {
             while (iter.hasNext()) {
                 try (InputStream sheetInputStream = iter.next()) {
                     String sheetName = iter.getSheetName();
+                    if (!activeSheetNames.contains( sheetName )) {
+                        // we ignore non active sheets
+                        continue;
+                    }
+
+                    if (sheetInputStream.markSupported()){
+                        sheetInputStream.mark( 1 );
+                    }
+
+                    String dimension = XlsUtils.getDimension( sheetInputStream );
+
+                    sheetInputStream.reset();
+
                     InputSource sheetSource = new InputSource(sheetInputStream);
 
-                    DefaultSheetContentsHandler defaultSheetContentsHandler = new DefaultSheetContentsHandler();
+                    DefaultSheetContentsHandler defaultSheetContentsHandler = new DefaultSheetContentsHandler( true);
 
-                    XMLReader sheetParser = new WstxSAXParserFactory().newSAXParser().getXMLReader(); // SAXHelper.newXMLReader();
-                    ContentHandler handler = new XSSFSheetXMLHandler(styles, strings, defaultSheetContentsHandler
-                            , true);
+                    XMLReader sheetParser = new WstxSAXParserFactory().newSAXParser().getXMLReader();
+                    ContentHandler handler = new XSSFSheetXMLHandler(styles, strings, defaultSheetContentsHandler, true);
+
                     sheetParser.setContentHandler(handler);
-                    try
-                    {
+                    try {
                         sheetParser.parse(sheetSource);
-
-                        schemas.add( new SchemaParserResult.SheetContent(sheetName == null ? "sheet-" + i : sheetName, //
-                                                                         defaultSheetContentsHandler.columnsMetadata) );
-
-                        i++;
-                    }
-                    catch ( FastStopParsingException e ) {
+                    } catch (FastStopParsingException e) {
                         // expected here
-                        LOGGER.debug( marker, "FastStopParsingException" );
+                        LOGGER.debug(marker, "FastStopParsingException");
                     }
+                    SchemaParserResult.SheetContent sheetContent = //
+                    new SchemaParserResult.SheetContent( StringUtils.isEmpty( sheetName ) ? "sheet-" + i : sheetName, //
+                            defaultSheetContentsHandler.columnsMetadata);
+
+                    // the parsing may have not find all columns so we complete using the found dimension
+                    int colNum = XlsUtils.getColumnsNumberFromDimension( dimension );
+
+                    List<ColumnMetadata> columnMetadatas = sheetContent.getColumnMetadatas();
+
+                    while (columnMetadatas.size() < colNum) {
+
+                        columnMetadatas.add(ColumnMetadata.Builder //
+                                                .column() //
+                                                .name("col_" + (columnMetadatas.size() + 1)) //
+                                                .type(Type.STRING) //
+                                                .build());
+                    }
+
+                    schemas.add(sheetContent);
+                    i++;
                 }
             }
         } catch (Exception e) {
@@ -187,6 +216,12 @@ public class XlsSchemaParser implements SchemaParser {
 
         private List<ColumnMetadata> columnsMetadata = new ArrayList<>(  );
 
+        private boolean fastStop;
+
+        public DefaultSheetContentsHandler(boolean fastStop ) {
+            this.fastStop = fastStop;
+        }
+
         @Override
         public void cell(String cellReference, String formattedValue, XSSFComment comment) {
             logger.debug( "cell" );
@@ -196,7 +231,6 @@ public class XlsSchemaParser implements SchemaParser {
                 headerText = "col_" + (columnsMetadata.size() + 1); // +1 because it starts from 0
             }
 
-            // FIXME what do we do if header size is > 1 concat all lines?
             columnsMetadata.add(ColumnMetadata.Builder //
                                     .column() //
                                     .name(headerText) //
@@ -207,8 +241,8 @@ public class XlsSchemaParser implements SchemaParser {
         @Override
         public void startRow(int rowNum) {
             logger.debug( "startRow" );
-            if (rowNum > 0) {
-                //throw new FastStopParsingException();
+            if (rowNum > 0 && fastStop) {
+                throw new FastStopParsingException();
             }
         }
 
@@ -221,11 +255,11 @@ public class XlsSchemaParser implements SchemaParser {
         public void headerFooter(String text, boolean isHeader, String tagName) {
             logger.debug( "headerFooter" );
         }
-    }    
+    }
 
     /**
      * Parse all xls sheets for old excel document type
-     * 
+     *
      * @param request the xls request.
      * @return The parsed sheets request.
      */
@@ -321,7 +355,7 @@ public class XlsSchemaParser implements SchemaParser {
     }
 
     /**
-     * 
+     *
      *
      * @param colId the column id.
      * @param columnRows all rows with previously guessed type: key=row number, value= guessed type
@@ -364,7 +398,7 @@ public class XlsSchemaParser implements SchemaParser {
 
     /**
      * We store (cell types per row) per column.
-     * 
+     *
      * @param sheet key is the column number, value is a Map with key row number and value Type
      * @return A Map&lt;colId, Map&lt;rowId, type&gt;&gt;
      */
@@ -455,7 +489,7 @@ public class XlsSchemaParser implements SchemaParser {
      * We scan all entries to find a common header size value (i.e row line with value type change) more simple all
      * columns/lines with type String
      * </p>
-     * 
+     *
      * @param cellsTypeMatrix key: column number value: row where the type change from String to something else
      * @return The guessed header size.
      */

@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"
+          xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
+  <fileVersion appName="xl" lastEdited="5" lowestEdited="5" rupBuild="9303"
+               codeName="{8C4F1C90-05EB-6A55-5F09-09C24B55AC0B}"/>
+  <workbookPr codeName="ThisWorkbook" defaultThemeVersion="124226"/>
+  <bookViews>
+    <workbookView xWindow="0" yWindow="732" windowWidth="22980" windowHeight="8868" firstSheet="1" activeTab="8"/>
+  </bookViews>
+  <sheets>
+    <sheet name="formdata" sheetId="4" state="hidden" r:id="rId1"/>
+    <sheet name="MONDAY" sheetId="1" r:id="rId2"/>
+    <sheet name="TUESDAY" sheetId="8" r:id="rId3"/>
+    <sheet name="WEDNESDAY" sheetId="10" r:id="rId4"/>
+    <sheet name="THURSDAY" sheetId="11" r:id="rId5"/>
+    <sheet name="FRIDAY" sheetId="12" r:id="rId6"/>
+    <sheet name="SATURDAY" sheetId="13" r:id="rId7"/>
+    <sheet name="SUNDAY" sheetId="14" r:id="rId8"/>
+    <sheet name="WEEK SUMMARY" sheetId="15" r:id="rId9"/>
+  </sheets>
+  <definedNames>
+    <definedName name="ALL_Customers">formdata!$N$114:$N$168</definedName>
+    <definedName name="ALL_Interactions">formdata!$P$86:$P$110</definedName>
+    <definedName name="Architecture">formdata!$D$86:$D$92</definedName>
+    <definedName name="Blanks">formdata!$B$2</definedName>
+    <definedName name="Client">formdata!$D$77:$D$79</definedName>
+    <definedName name="Conference">formdata!$F$77:$F$79</definedName>
+    <definedName name="Customer">formdata!$B$114:$B$120</definedName>
+    <definedName name="DOW">formdata!$B$14:$B$20</definedName>
+    <definedName name="Enablement">formdata!$F$86:$F$89</definedName>
+    <definedName name="Engagement">formdata!$H$86:$H$88</definedName>
+    <definedName name="Environment">formdata!$F$32:$F$38</definedName>
+    <definedName name="Housekeeping">formdata!$D$32:$D$41</definedName>
+    <definedName name="Interaction">formdata!$B$86:$B$92</definedName>
+    <definedName name="Internal">formdata!$B$32:$B$37</definedName>
+    <definedName name="Meetings">formdata!$H$32:$H$42</definedName>
+    <definedName name="Names">formdata!$B$6:$B$10</definedName>
+    <definedName name="Office">formdata!$J$32:$J$35</definedName>
+    <definedName name="OfficeLocations">formdata!$H$77:$H$82</definedName>
+    <definedName name="ORTS">formdata!$L$86:$L$89</definedName>
+    <definedName name="Other">formdata!$L$114:$L$116</definedName>
+    <definedName name="Partner">formdata!$P$114:$P$117</definedName>
+    <definedName name="Primary">formdata!$B$97:$B$108</definedName>
+    <definedName name="Product">formdata!$J$86:$J$93</definedName>
+    <definedName name="Publications">formdata!$L$32:$L$38</definedName>
+    <definedName name="Support">formdata!$N$86:$N$89</definedName>
+    <definedName name="Talend">formdata!$D$46:$D$63</definedName>
+    <definedName name="Tier1">formdata!$F$114:$F$138</definedName>
+    <definedName name="Tier2">formdata!$H$114:$H$124</definedName>
+    <definedName name="Tier3">formdata!$J$114:$J$126</definedName>
+    <definedName name="Training">formdata!$B$46:$B$48</definedName>
+    <definedName name="Travel">formdata!$B$77:$B$80</definedName>
+    <definedName name="Utilizations">formdata!$B$24:$B$28</definedName>
+    <definedName name="Vendor">formdata!$F$46:$F$73</definedName>
+    <definedName name="WhiteGlove">formdata!$D$114:$D$117</definedName>
+  </definedNames>
+  <calcPr calcId="145621"/>
+</workbook>
