@@ -359,9 +359,14 @@ public class XlsUtils {
         }
         String secondPart = parts[1];
 
+        return getColumnsNumberLastCell( secondPart );
+    }
+
+    public static int getColumnsNumberLastCell( String lastCell ) {
+
         List<String> letters = new ArrayList<>(  );
         // get all letters
-        StringCharacterIterator iter = new StringCharacterIterator( secondPart );
+        StringCharacterIterator iter = new StringCharacterIterator( lastCell );
         for(char c = iter.first(); c != StringCharacterIterator.DONE; c = iter.next()) {
             if (!NumberUtils.isNumber( String.valueOf( c ) )) {
                 letters.add( String.valueOf( c ) );
@@ -373,7 +378,7 @@ public class XlsUtils {
         for (int i = 0, size = letters.size(); i < size;i++) {
             String letter = letters.get( i );
             // special values for A if not the last one...
-            if (StringUtils.equals( letter, "A" )) {
+            if (letters.size() > 1 && StringUtils.equals( letter, "A" )) {
                 columnsNumber += 26;
             } else {
                 columnsNumber += Character.getNumericValue( letter.charAt( 0 ) ) - Character.getNumericValue( 'A' ) + 1;

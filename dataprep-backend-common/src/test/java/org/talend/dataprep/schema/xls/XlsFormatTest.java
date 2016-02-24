@@ -73,6 +73,9 @@ public class XlsFormatTest extends AbstractSchemaTestUtils {
     @Autowired
     private XlsSchemaParser xlsSchemaParser;
 
+    @Autowired
+    private XlsSerializer xlsSerializer;
+
     @Test
     public void read_bad_xls_file() throws Exception {
         try (InputStream inputStream = this.getClass().getResourceAsStream("fake.xls")) {
@@ -92,7 +95,7 @@ public class XlsFormatTest extends AbstractSchemaTestUtils {
 
         try (InputStream inputStream = this.getClass().getResourceAsStream(fileName)) {
 
-            InputStream jsonStream = formatGuess.getSerializer().serialize(inputStream, dataSetMetadata);
+            InputStream jsonStream = xlsSerializer.serialize(inputStream, dataSetMetadata);
 
             String json = IOUtils.toString(jsonStream);
 
@@ -364,7 +367,7 @@ public class XlsFormatTest extends AbstractSchemaTestUtils {
             Assert.assertEquals(XlsFormatGuess.MEDIA_TYPE, formatGuess.getMediaType());
         }
 
-        DataSetMetadata dataSetMetadata = metadataBuilder.metadata().id("beer").sheetName("sheet-1").build();
+        DataSetMetadata dataSetMetadata = metadataBuilder.metadata().id("beer").sheetName("Leads").build();
 
         try (InputStream inputStream = this.getClass().getResourceAsStream(fileName)) {
 
@@ -517,15 +520,15 @@ public class XlsFormatTest extends AbstractSchemaTestUtils {
 
         logger.debug("values: {}", values);
 
-        Assertions.assertThat(values.get(4).get("0003")).isNotEmpty().isEqualTo("26-Oct-2015");
+        Assertions.assertThat(values.get(4).get("0003")).isNotEmpty().isEqualTo("10/26/15");
 
         Assertions.assertThat(values.get(5).get("0003")).isNotEmpty().isEqualTo("MONDAY");
 
-        Assertions.assertThat(values.get(7).get("0003")).isNotEmpty().isEqualTo("8.0");
+        Assertions.assertThat(values.get(7).get("0003")).isNotEmpty().isEqualTo("8.00");
 
-        Assertions.assertThat(values.get(30).get("0003")).isNotEmpty().isEqualTo("6.0");
+        Assertions.assertThat(values.get(30).get("0003")).isNotEmpty().isEqualTo("6.00");
 
-        Assertions.assertThat(values.get(31).get("0003")).isNotEmpty().isEqualTo("18.5");
+        Assertions.assertThat(values.get(31).get("0003")).isNotEmpty().isEqualTo("18.50");
 
     }
 

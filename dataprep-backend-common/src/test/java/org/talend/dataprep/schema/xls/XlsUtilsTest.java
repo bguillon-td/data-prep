@@ -85,6 +85,7 @@ public class XlsUtilsTest {
     @Test
     public void dimension_calculation( ) throws Exception {
         Assertions.assertThat( XlsUtils.getColumnsNumberFromDimension( "A1:D5" ) ).isEqualTo( 4 );
+        Assertions.assertThat( XlsUtils.getColumnsNumberFromDimension( "A1:A151" ) ).isEqualTo( 1 );
         Assertions.assertThat( XlsUtils.getColumnsNumberFromDimension( "B1:AG142" ) ).isEqualTo( 33 );
     }
 
